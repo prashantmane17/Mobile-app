@@ -127,7 +127,7 @@ export default function SignUp() {
               <Text className="text-center text-gray-600">
                 Already have an account?
               </Text>
-              <Link href="/" asChild>
+              <Link href="/native" asChild>
                 <TouchableOpacity className="mt-2">
                   <Text className="text-center text-blue-500 font-semibold">
                     Log In
