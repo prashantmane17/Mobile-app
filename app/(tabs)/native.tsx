@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Image, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
 
 interface BalanceItemProps {
   label: string;
@@ -78,9 +79,7 @@ export default function FinancialProfile() {
       </View>
 
       <View className="px-4 mb-6">
-        <Text className="text-lg font-bold text-white mb-4">
-          Quick Actions
-        </Text>
+        <Text className="text-lg font-bold text-white mb-4">Quick Actions</Text>
         <ActionButton
           icon="card-outline"
           label="Manage Cards"
@@ -130,9 +129,11 @@ export default function FinancialProfile() {
       </View>
 
       <View className="px-4 mb-8">
-        <TouchableOpacity className="bg-red-500 py-3 rounded-lg">
-          <Text className="text-white text-center font-bold">Log Out</Text>
-        </TouchableOpacity>
+        <Link href="/" asChild>
+          <TouchableOpacity className="bg-red-500 py-3 rounded-lg">
+            <Text className="text-white text-center font-bold">Log Out</Text>
+          </TouchableOpacity>
+        </Link>
       </View>
     </ScrollView>
   );
