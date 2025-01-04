@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, Alert, } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 
@@ -16,12 +16,46 @@ export default function Header() {
         setFormData({ ...formData, [field]: value });
     };
 
-    const handleCreateUser = () => {
-        console.log('User Data:', formData);
-        // Reset form and close modal
-        setFormData({ name: '', email: '', password: '' });
-        setModalVisible(false);
+    const handleCreateUser = async () => {
+        try {
+            console.log('User Data:', formData);
+
+            // Prepare the form data as a URL-encoded string
+            const formBody = new URLSearchParams(formData).toString();
+
+            // Send the data to the API
+            const response = await fetch('http://192.168.1.25:8080/createUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                credentials: 'include', // Ensures cookies are sent with the request if needed
+                body: formBody, // Attach the form data
+            });
+
+            const responseText = await response.text(); // Get the response text from the backend
+            console.log("res---", responseText)
+            if (response.ok) {
+                if (response.status === 201) {
+                    Alert.alert('Success', responseText);
+                    setFormData({ name: '', email: '', password: '' }); // Reset form data
+                    setModalVisible(false); // Close modal
+                } else {
+                    Alert.alert('Error', responseText || 'An unexpected error occurred.');
+                }
+            } else if (response.status === 409) {
+                Alert.alert('Error', 'Email already exists.');
+            } else if (response.status === 400) {
+                Alert.alert('Error', 'Organization ID is missing in the session.');
+            } else {
+                Alert.alert('Error', 'Something went wrong. Please try again later.');
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            Alert.alert('Error', 'Something went wrong. Please try again later.');
+        }
     };
+
 
     return (
         <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">

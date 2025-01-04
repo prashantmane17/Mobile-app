@@ -20,32 +20,43 @@ export default function LoginScreen() {
     };
 
     const handleLogin = async () => {
+        if (!formData.email || !formData.password) {
+            Alert.alert('Validation Error', 'Please enter both email and password.');
+            return;
+        }
         try {
-            const response = await fetch('/api/auth/login', {
+            const formBody = new URLSearchParams({
+                email: formData.email,
+                password: formData.password,
+            }).toString();
+
+            const response = await fetch('http://192.168.1.25:8080/validate-login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: JSON.stringify(formData
-                ),
+                body: formBody,
             });
 
-            const data = await response.json();
-            console.log("data---", data)
-            if (response.ok) {
+            const responseText = await response.text();
 
+            console.log("res---", responseText)
+            if (response.ok && responseText.includes("User Created successfully")) {
                 Alert.alert('Login Successful', 'You have logged in successfully!');
-                // Optionally save user data or token in context, redux, or local storage.
-                navigation.navigate('Home'); // Redirect to Home screen after successful login
+                setFormData(intialData)
+                navigation.navigate('AdminDashboard');
+
+            } else if (responseText.includes("Incorrect Email/Password")) {
+                Alert.alert('Login Failed', 'Incorrect Email/Password');
             } else {
-                // Handle errors (e.g., incorrect username/password)
-                Alert.alert('Login Failed', data.message || 'An error occurred');
+                Alert.alert('Login Failed', 'An unexpected error occurred.');
             }
         } catch (error) {
             Alert.alert('Error', 'Something went wrong. Please try again later.');
             console.error(error);
         }
     };
+
 
     return (
         <KeyboardAvoidingView
