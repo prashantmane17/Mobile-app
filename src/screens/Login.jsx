@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Animated, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Animated, Alert, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
@@ -8,9 +8,10 @@ export default function LoginScreen() {
     const intialData = {
         email: "",
         password: '',
-    }
+    };
 
     const [formData, setFormData] = useState(intialData);
+    const [isLoading, setIsLoading] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const handleChange = (name, value) => {
         setFormData(prevData => ({
@@ -24,6 +25,7 @@ export default function LoginScreen() {
             Alert.alert('Validation Error', 'Please enter both email and password.');
             return;
         }
+        setIsLoading(true); // Show loading indicator
         try {
             const formBody = new URLSearchParams({
                 email: formData.email,
@@ -38,14 +40,14 @@ export default function LoginScreen() {
                 body: formBody,
             });
 
+
             const responseText = await response.text();
 
-            console.log("res---", responseText)
+            console.log("res---", responseText);
             if (response.ok && responseText.includes("User Created successfully")) {
                 Alert.alert('Login Successful', 'You have logged in successfully!');
-                setFormData(intialData)
+                setFormData(intialData);
                 navigation.navigate('AdminDashboard');
-
             } else if (responseText.includes("Incorrect Email/Password")) {
                 Alert.alert('Login Failed', 'Incorrect Email/Password');
             } else {
@@ -54,9 +56,10 @@ export default function LoginScreen() {
         } catch (error) {
             Alert.alert('Error', 'Something went wrong. Please try again later.');
             console.error(error);
+        } finally {
+            setIsLoading(false); // Hide loading indicator
         }
     };
-
 
     return (
         <KeyboardAvoidingView
@@ -119,6 +122,13 @@ export default function LoginScreen() {
                     </TouchableOpacity>
                 </View>
             </Animated.View>
-        </KeyboardAvoidingView >
+            {isLoading && (
+                <View className="absolute top-0 left-0 z-50 w-screen h-screen flex-1 items-center justify-center bg-black opacity-60">
+                    <ActivityIndicator size="large" color="#FFFFFF" />
+                    {/* <Text className="text-indigo-600 bg-white mt-4">Loading...</Text> */}
+                </View>
+            )}
+
+        </KeyboardAvoidingView>
     );
 }

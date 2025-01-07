@@ -23,18 +23,14 @@ export default function SignUpScreen() {
 
     const handleSignUp = async () => {
         const { businessName, email, phoneNumber, password, confirmPassword } = formData;
-
-        // Validate form inputs
         if (!businessName || !email || !phoneNumber || !password || !confirmPassword) {
             Alert.alert('Error', 'Please fill all fields.');
             return;
         }
-
         if (password !== confirmPassword) {
             Alert.alert('Error', 'Passwords do not match.');
             return;
         }
-
         if (!acceptedTerms) {
             Alert.alert('Error', 'You must accept the Terms and Conditions.');
             return;

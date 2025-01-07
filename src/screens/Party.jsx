@@ -34,7 +34,7 @@ export default function Party() {
                 className="flex-1"
                 contentContainerClassName="py-4"
             >
-                <Text>Party</Text>
+                <Text>Create Customer</Text>
             </ScrollView>
         </View>
     );

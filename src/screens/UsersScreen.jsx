@@ -27,6 +27,25 @@ const SAMPLE_USERS = [
 ];
 
 export default function UsersScreen() {
+
+    const fetchAdminDashboard = async () => {
+        try {
+            const response = await fetch('http://192.168.1.25:8080/admin-dashbord', {
+                method: 'GET',
+                credentials: 'include',
+            });
+            console.log("res---", response)
+            if (response.ok) {
+                const data = await response.text();
+                console.log('Dashboard Data:', data);
+            } else {
+                console.error('Failed to load dashboard:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard:', error);
+        }
+    };
+    fetchAdminDashboard();
     return (
         <View className="flex-1 bg-gray-100">
             <Header />

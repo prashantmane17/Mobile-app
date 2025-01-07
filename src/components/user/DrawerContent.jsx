@@ -41,30 +41,30 @@ export default function DrawerContent(props) {
                     }}
                 >
                     <Feather name="users" size={20} color={`${activeScreen === 'Parties' ? '#4F46E5' : '#ffffff'}`} />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Parties' ? 'text-indigo-600' : 'text-white'}`} >Parties</Text>
+                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Parties' ? 'text-indigo-600' : 'text-white'}`} >Customer</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Dashboard' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Settings')}
+                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Items' ? 'bg-indigo-50' : ''}`}
+                    onPress={() => navigation.navigate('Items')}
                 >
-                    <Feather name="shopping-bag" size={20} color="#ffffff" />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Dashboard' ? 'text-indigo-600' : 'text-white'}`} >Items</Text>
+                    <Feather name="shopping-bag" size={20} color={`${activeScreen === 'Items' ? '#4F46E5' : '#ffffff'}`} />
+                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Items' ? 'text-indigo-600' : 'text-white'}`} >Items</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Dashboard' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Settings')}
+                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Sales' ? 'bg-indigo-50' : ''}`}
+                    onPress={() => navigation.navigate('Sales')}
                 >
-                    <Feather name="shopping-cart" size={20} color="#ffffff" />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Dashboard' ? 'text-indigo-600' : 'text-white'}`} >Sales</Text>
+                    <Feather name="shopping-cart" size={20} color={`${activeScreen === 'Sales' ? '#4F46E5' : '#ffffff'}`} />
+                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Sales' ? 'text-indigo-600' : 'text-white'}`} >Sales</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Dashboard' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Settings')}
+                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Expenses' ? 'bg-indigo-50' : ''}`}
+                    onPress={() => navigation.navigate('Expenses')}
                 >
-                    <Feather name="truck" size={20} color="#ffffff" />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Dashboard' ? 'text-indigo-600' : 'text-white'}`} >Purchase</Text>
+                    <Feather name="truck" size={20} color={`${activeScreen === 'Expenses' ? '#4F46E5' : '#ffffff'}`} />
+                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Expenses' ? 'text-indigo-600' : 'text-white'}`} >Expenses</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Dashboard' ? 'bg-indigo-50' : ''}`}
                     onPress={() => navigation.navigate('Settings')}
                 >
@@ -91,7 +91,7 @@ export default function DrawerContent(props) {
                 >
                     <Feather name="settings" size={20} color="#ffffff" />
                     <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Dashboard' ? 'text-indigo-600' : 'text-white'}`} >Report</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
             </DrawerContentScrollView>
 

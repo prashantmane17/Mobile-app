@@ -14,25 +14,86 @@ export default function ForgetPassword() {
     const otpInputs = useRef([]);
 
     const handleSendOTP = async () => {
-        // TODO: Implement API call to send OTP
-        Alert.alert('OTP Sent', 'Please check your email for the OTP');
-        setStep(2);
+        try {
+            const response = await fetch("http://192.168.1.25:8080/send-otp", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email }), // Ensure correct formatting
+            });
+            console.log('res----', response)
+            if (response.ok) {
+                const result = await response.json();
+                console.log("result----", result)
+                if (result.success) {
+                    Alert.alert("OTP Sent", "Please check your email for the OTP");
+                    setStep(2);
+                }
+            } else {
+                const error = await response.json();
+                Alert.alert("Error", error.message || "Failed to send OTP");
+            }
+        } catch (error) {
+            Alert.alert("Error", error.message || "Network error");
+        }
     };
 
+
     const handleVerifyOTP = async () => {
-        // TODO: Implement API call to verify OTP
-        Alert.alert('OTP Verified', 'Please set your new password');
-        setStep(3);
+        try {
+            const response = await fetch("http://192.168.1.25:8080/verify-otp", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ otp: otp.join("") }), // Join OTP array into a single string
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    Alert.alert("OTP Verified", "Please set your new password");
+                    setStep(3);
+                }
+            } else {
+                const error = await response.json();
+                Alert.alert("Error", error.message || "Invalid OTP");
+            }
+        } catch (error) {
+            Alert.alert("Error", error.message || "Network error");
+        }
     };
+
 
     const handleResetPassword = async () => {
         if (newPassword !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
+            Alert.alert("Error", "Passwords do not match");
             return;
         }
-        // TODO: Implement API call to reset password
-        Alert.alert('Success', 'Your password has been reset successfully');
-        navigation.navigate('Login');
+
+        try {
+            const response = await fetch("http://192.168.1.25:8080/reset-password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ password: newPassword }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    Alert.alert("Success", "Your password has been reset successfully");
+                    navigation.navigate("Login");
+                }
+            } else {
+                const error = await response.json();
+                Alert.alert("Error", error.message || "Failed to reset password");
+            }
+        } catch (error) {
+            Alert.alert("Error", error.message || "Network error");
+        }
     };
 
     const handleOtpChange = (index, value) => {
@@ -40,7 +101,6 @@ export default function ForgetPassword() {
         newOtp[index] = value;
         setOtp(newOtp);
 
-        // Move to next input if value is entered
         if (value !== '' && index < 5) {
             otpInputs.current[index + 1].focus();
         }
