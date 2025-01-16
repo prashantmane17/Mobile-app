@@ -5,6 +5,9 @@ import Party from '../screens/Party';
 import DrawerContent from '../components/user/DrawerContent';
 import { View } from 'react-native';
 import Header from '../components/user/Header';
+import CustomerList from '../screens/Party';
+import AddCustomerForm from '../screens/AddCustomerForm';
+import AddItemForm from '../screens/AddItemForm';
 
 const Drawer = createDrawerNavigator();
 
@@ -22,7 +25,9 @@ export default function EmployeeNavigator() {
             }}
         >
             <Drawer.Screen name="Dashboard" component={UsersDashboardScreen} />
-            <Drawer.Screen name="Parties" component={Party} />
+            <Drawer.Screen name="Parties" component={CustomerList} />
+            <Drawer.Screen name="AddCustomerForm" component={AddCustomerForm} />
+            <Drawer.Screen name="AddItemForm" component={AddItemForm} />
         </Drawer.Navigator>
     );
 }

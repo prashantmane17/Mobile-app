@@ -34,7 +34,7 @@ export default function App() {
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="AdminDashboard">
+        <Stack.Navigator initialRouteName="UserDashboard">
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Signup" component={SignUpScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />

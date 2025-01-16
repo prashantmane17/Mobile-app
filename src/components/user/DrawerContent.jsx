@@ -44,11 +44,11 @@ export default function DrawerContent(props) {
                     <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Parties' ? 'text-indigo-600' : 'text-white'}`} >Customer</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Items' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Items')}
+                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'AddItemForm' ? 'bg-indigo-50' : ''}`}
+                    onPress={() => props.navigation.navigate('AddItemForm')}
                 >
-                    <Feather name="shopping-bag" size={20} color={`${activeScreen === 'Items' ? '#4F46E5' : '#ffffff'}`} />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Items' ? 'text-indigo-600' : 'text-white'}`} >Items</Text>
+                    <Feather name="shopping-bag" size={20} color={`${activeScreen === 'AddItemForm' ? '#4F46E5' : '#ffffff'}`} />
+                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'AddItemForm' ? 'text-indigo-600' : 'text-white'}`} >Items</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Sales' ? 'bg-indigo-50' : ''}`}
