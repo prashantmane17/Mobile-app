@@ -7,7 +7,6 @@ import * as ImagePicker from "expo-image-picker";
 export default function EnhancedAddCustomerForm() {
     const navigation = useNavigation();
     const [activeTab, setActiveTab] = useState('details');
-    const [selectedImage, setSelectedImage] = useState(null);
     const [customerType, setCustomerType] = useState('Business');
     const [taxPreference, setTaxPreference] = useState('Taxable');
     const [billingAddress, setBillingAddress] = useState({
@@ -34,24 +33,7 @@ export default function EnhancedAddCustomerForm() {
         setShippingAddress({ ...billingAddress });
     };
 
-    const pickImage = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-            alert("Permission to access the gallery is required!");
-            return;
-        }
 
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsMultipleSelection: true,
-            base64: false,
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            setSelectedImage(result.assets[0].uri);
-        }
-    };
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -108,28 +90,7 @@ export default function EnhancedAddCustomerForm() {
                             </View>
                         </View>
 
-                        <View className="space-y-2">
-                            <Text className="text-sm font-medium text-gray-600">Documents</Text>
-                            <TouchableOpacity
-                                className="p-6 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center bg-gray-50"
-                                onPress={pickImage}
-                            >
-                                <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                                <Text className="text-blue-500 font-medium">Upload a file</Text>
-                                <Text className="text-gray-500 text-sm">or drag and drop</Text>
-                                <Text className="text-gray-400 text-xs mt-1">Up to 10 files, 10MB each</Text>
-                            </TouchableOpacity>
-                            {selectedImage && (
-                                <View className="mt-4">
-                                    <Text className="text-gray-600 mb-2">Selected Image:</Text>
-                                    <Image
-                                        source={{ uri: selectedImage }}
-                                        className="w-full h-40 rounded-lg"
-                                        resizeMode="cover"
-                                    />
-                                </View>
-                            )}
-                        </View>
+
                     </View>
                 );
             case 'address':
@@ -364,24 +325,13 @@ export default function EnhancedAddCustomerForm() {
                     <ArrowLeft className="w-6 h-6 text-blue-500" />
                 </TouchableOpacity>
                 <View>
-                    <Text className="text-xl font-bold text-gray-800">Add Customer</Text>
+                    <Text className="text-xl font-bold text-gray-800">Create Customer</Text>
                 </View>
             </View>
             <ScrollView>
                 <View className="bg-white">
                     {/* Basic Info Form */}
                     <View className="p-4 space-y-4">
-                        <View className="space-y-2">
-                            <Text className="text-sm font-medium text-gray-600">Customer Type</Text>
-                            <TouchableOpacity
-                                className="p-3 border border-gray-200 rounded-lg bg-white flex-row justify-between items-center"
-                                onPress={() => setCustomerType(customerType === 'Business' ? 'Individual' : 'Business')}
-                            >
-                                <Text className="text-gray-700">{customerType}</Text>
-                                <ChevronDown className="w-5 h-5 text-gray-400" />
-                            </TouchableOpacity>
-                        </View>
-
                         <View className="flex-row gap-3">
                             <View className="flex-1 space-y-2">
                                 <Text className="text-sm font-medium text-gray-600">First Name</Text>
