@@ -3,17 +3,18 @@
 import React, { useState } from 'react';
 import { View, ScrollView, Text, TextInput, TouchableOpacity, SafeAreaView, Image } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 
 
 export default function AddItemForm() {
-
+    const navigation = useNavigation();
 
     return (
         <SafeAreaView className="flex-1 bg-gray-50">
             {/* Header */}
             <View className="bg-white border-b border-gray-200">
                 <View className="p-4 flex-row items-center">
-                    <TouchableOpacity className="mr-3">
+                    <TouchableOpacity className="mr-3" onPress={() => navigation.navigate('ItemScreen')}>
                         <ArrowLeft className="w-6 h-6 text-blue-500" />
                     </TouchableOpacity>
                     <Text className="text-xl font-bold text-gray-800">Add Item</Text>

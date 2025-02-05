@@ -37,9 +37,9 @@ export default function Header() {
 
             <View className="flex-row items-center gap-2">
                 <View className="flex-row items-center space-x-4">
-                    <TouchableOpacity>
+                    {/* <TouchableOpacity>
                         <Bell className="w-6 h-6 text-gray-600" />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <View className=" flex-row justify-center items-center bg-gray-50 relative">
                         <TouchableOpacity
                             className="bg-blue-500 rounded-full p-2"

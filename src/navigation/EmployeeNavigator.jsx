@@ -8,6 +8,7 @@ import Header from '../components/user/Header';
 import CustomerList from '../screens/Party';
 import AddCustomerForm from '../screens/AddCustomerForm';
 import AddItemForm from '../screens/AddItemForm';
+import ItemScreen from '../screens/ItemScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -26,6 +27,7 @@ export default function EmployeeNavigator() {
         >
             <Drawer.Screen name="Dashboard" component={UsersDashboardScreen} />
             <Drawer.Screen name="Parties" component={CustomerList} />
+            <Drawer.Screen name="ItemScreen" component={ItemScreen} />
             <Drawer.Screen name="AddCustomerForm" component={AddCustomerForm} />
             <Drawer.Screen name="AddItemForm" component={AddItemForm} />
         </Drawer.Navigator>

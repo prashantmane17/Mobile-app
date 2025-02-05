@@ -4,7 +4,7 @@ import { Plus, Search, Import, User, Building, Mail, Phone, ChevronDown, MoreVer
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-export default function CustomerList() {
+export default function ItemScreen() {
     const [selectedNumber, setSelectedNumber] = useState(25);
     const [isDropdownVisible, setDropdownVisible] = useState(false);
 
@@ -12,12 +12,11 @@ export default function CustomerList() {
     const navigation = useNavigation();
     const customers = [
         {
-            name: 'sales jr',
-            company: 'wipro',
-            email: 'fopor13313@kwalah.com',
-            phone: '919940712326',
-            gstType: 'consumer',
-            receivables: '0.0'
+            itemName: 'Oil',
+            itemCode: '67776',
+            HSNCode: '92170872',
+            taxPref: 'Taxable',
+            price: '9000',
         },
     ];
 
@@ -28,17 +27,17 @@ export default function CustomerList() {
                     <View className="flex-row items-center px-3 py-2 bg-gray-100 rounded-lg">
                         <Search className="w-5 h-5 text-gray-400 mr-2" />
                         <TextInput
-                            placeholder="Search Customers"
+                            placeholder="Search Items"
                             className="flex-1 text-gray-700"
                         />
                     </View>
 
                     <View className="flex-row gap-2  items-center justify-between">
 
-                        <TouchableOpacity onPress={() => navigation.navigate('AddCustomerForm')}
+                        <TouchableOpacity onPress={() => navigation.navigate('AddItemForm')}
                             className="flex-row items-center px-3 py-2 bg-blue-500 rounded-lg">
                             <Plus className="w-4 h-4 text-white mr-1" />
-                            <Text className="text-white">Create Customer</Text>
+                            <Text className="text-white">Create Items</Text>
                         </TouchableOpacity>
                         <View className="flex-row items-center relative">
                             <Text>Show : </Text>
@@ -78,61 +77,48 @@ export default function CustomerList() {
 
                 {/* Customer List */}
                 <ScrollView className="flex-1 p-3">
-                    {customers.map((customer, index) => (
+                    {customers.map((items, index) => (
                         <View key={index} className="p-4 mb-3 mx-2 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm border border-blue-100">
                             <View className="space-y-3">
                                 {/* Name Section */}
-                                <View className="flex-row items-center">
-                                    <View className="w-8 h-8 rounded bg-blue-400 items-center justify-center mr-2">
-                                        <User className="text-white w-4 h-4" />
-                                    </View>
-                                    <Text className="text-xl font-bold text-gray-800">{customer.name}</Text>
+                                <View className="flex-row items-center justify-between mb-1">
+                                    <Text className="text-lg font-semibold text-gray-900">Item Name:</Text>
+                                    <Text className="text-lg font-bold text-gray-800 ml-2">{items.itemName}</Text>
                                 </View>
 
-                                {/* Company Section */}
-                                <View className="flex-row items-center  p-2 rounded-lg">
-                                    <View className="w-6 h-6 rounded bg-purple-400 items-center justify-center mr-2">
-                                        <Building className="text-white w-3 h-3" />
-                                    </View>
-                                    <Text className="text-gray-700 font-medium">{customer.company}</Text>
+                                {/* Item Code */}
+                                <View className="flex-row items-center justify-between mb-1">
+                                    <Text className="text-lg font-semibold text-gray-900">Item Code:</Text>
+                                    <Text className="text-gray-700 font-medium ml-2">{items.itemCode}</Text>
                                 </View>
 
-                                {/* Email Section */}
-                                <View className="flex-row items-center p-2 rounded-lg">
-                                    <View className="w-6 h-6 rounded bg-green-400 items-center justify-center mr-2">
-                                        <Mail className="text-white w-3 h-3" />
-                                    </View>
-                                    <Text className="text-gray-700 flex-1 font-medium">{customer.email}</Text>
+                                {/* HSN Code */}
+                                <View className="flex-row items-center justify-between mb-1">
+                                    <Text className="text-lg font-semibold text-gray-900">HSN Code:</Text>
+                                    <Text className="text-gray-700 font-medium ml-2">{items.HSNCode}</Text>
                                 </View>
 
-                                {/* Phone & Receivables Section */}
+                                {/* Tax Type */}
                                 <View className="flex-row items-center justify-between">
-                                    <View className="flex-row items-center  p-2 rounded-lg flex-1 mr-2">
-                                        <View className="w-6 h-6 rounded bg-orange-400 items-center justify-center mr-2">
-                                            <Phone className="text-white w-3 h-3" />
-                                        </View>
-                                        <Text className="text-gray-700 font-medium">{customer.phone}</Text>
+                                    <Text className="text-lg font-semibold text-gray-900">Tax Pref:</Text>
+                                    <Text className="text-gray-700 font-medium ml-2">{items.taxPref}</Text>
+                                </View>
+                                {/* Tax Type & Price Section */}
+                                <View className="flex-row items-center justify-between">
+
+                                    {/* Price Box */}
+                                    <View className="bg-blue-600 px-4 py-1 rounded-lg">
+                                        <Text className="text-white font-bold text-sm">₹ {items.price}</Text>
                                     </View>
-                                    <View className="bg-blue-500 px-4 py-2 rounded-lg">
-                                        <Text className="text-white font-bold">₹ {customer.receivables}</Text>
+                                    <View className="bg-blue-500 flex-row items-center justify-between  rounded-full px-2 py-1">
+                                        <Feather name="eye" size={18} color="#ffffff" />
+                                        <Text className="text-white">View</Text>
                                     </View>
                                 </View>
 
                                 {/* GST Type Section */}
-                                <View className="mt-2">
+                                <View className="mt-0">
                                     <View className="flex-row items-center">
-                                        <View className="bg-gray-100 px-3 py-1 rounded-full">
-                                            <Text className="text-sm font-medium"
-                                                style={{
-                                                    color: customer.gstType === 'consumer' ? '#16a34a' : '#4f46e5'
-                                                }}>
-                                                {customer.gstType.toUpperCase()}
-                                            </Text>
-                                        </View>
-                                        <View className="bg-blue-500 flex-row items-center justify-between  rounded-full px-2 py-1">
-                                            <Feather name="eye" size={18} color="#ffffff" />
-                                            <Text className="text-white">View</Text>
-                                        </View>
                                     </View>
                                 </View>
                             </View>

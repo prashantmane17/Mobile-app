@@ -44,11 +44,14 @@ export default function DrawerContent(props) {
                     <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Parties' ? 'text-indigo-600' : 'text-white'}`} >Customer</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'AddItemForm' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => props.navigation.navigate('AddItemForm')}
+                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'ItemScreen' ? 'bg-indigo-50' : ''}`}
+                    onPress={() => {
+                        props.navigation.navigate('ItemScreen')
+                        handleActiveScreen("ItemScreen")
+                    }}
                 >
-                    <Feather name="shopping-bag" size={20} color={`${activeScreen === 'AddItemForm' ? '#4F46E5' : '#ffffff'}`} />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'AddItemForm' ? 'text-indigo-600' : 'text-white'}`} >Items</Text>
+                    <Feather name="shopping-bag" size={20} color={`${activeScreen === 'ItemScreen' ? '#4F46E5' : '#ffffff'}`} />
+                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'ItemScreen' ? 'text-indigo-600' : 'text-white'}`} >Items</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Sales' ? 'bg-indigo-50' : ''}`}
@@ -64,34 +67,7 @@ export default function DrawerContent(props) {
                     <Feather name="truck" size={20} color={`${activeScreen === 'Expenses' ? '#4F46E5' : '#ffffff'}`} />
                     <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Expenses' ? 'text-indigo-600' : 'text-white'}`} >Expenses</Text>
                 </TouchableOpacity>
-                {/* <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Dashboard' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Settings')}
-                >
-                    <Feather name="dollar-sign" size={20} color="#ffffff" />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Dashboard' ? 'text-indigo-600' : 'text-white'}`} >Quick Billing</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Dashboard' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Settings')}
-                >
-                    <Feather name="bar-chart" size={20} color="#ffffff" />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Dashboard' ? 'text-indigo-600' : 'text-white'}`} >Expenses</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Dashboard' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Settings')}
-                >
-                    <Feather name="film" size={20} color="#ffffff" />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Dashboard' ? 'text-indigo-600' : 'text-white'}`} >Cash & Bank</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Dashboard' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Settings')}
-                >
-                    <Feather name="settings" size={20} color="#ffffff" />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Dashboard' ? 'text-indigo-600' : 'text-white'}`} >Report</Text>
-                </TouchableOpacity> */}
+
 
             </DrawerContentScrollView>
 
