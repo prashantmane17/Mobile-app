@@ -3,11 +3,12 @@ import { View, Text, TouchableOpacity, TouchableWithoutFeedback } from 'react-na
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { Bell, Plus } from 'lucide-react-native';
+import { useHeader } from '../../context/HeaderContext';
 
 export default function Header() {
     const navigation = useNavigation();
     const [showDropdown, setShowDropdown] = useState(false);
-
+    const { headerName } = useHeader();
     const toggleDropdown = () => {
         setShowDropdown(!showDropdown);
     };
@@ -32,7 +33,7 @@ export default function Header() {
                     <Feather name="menu" size={24} color="#4F46E5" />
                 </TouchableOpacity>
 
-                <Text className="text-xl font-bold text-indigo-600">Customers</Text>
+                <Text className="text-xl font-bold text-indigo-600">{headerName}</Text>
             </View>
 
             <View className="flex-row items-center gap-2">
