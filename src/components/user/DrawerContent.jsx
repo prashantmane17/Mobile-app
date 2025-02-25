@@ -47,11 +47,15 @@ export default function DrawerContent(props) {
                     <Text className={`ml-3 text-base font-semibold ${activeScreen === 'sales' ? 'text-indigo-600' : 'text-white'}`} >Sales</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'payment' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('payment')}
+                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Payment' ? 'bg-indigo-50' : ''}`}
+                    onPress={() => {
+                        props.navigation.navigate('Payment')
+                        handleActiveScreen("Payment")
+                        setHeaderName("Payments");
+                    }}
                 >
-                    <FontAwesome name="rupee" size={20} color={`${activeScreen === 'payment' ? '#4F46E5' : '#ffffff'}`} />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'payment' ? 'text-indigo-600' : 'text-white'}`} >Payment</Text>
+                    <FontAwesome name="rupee" size={20} color={`${activeScreen === 'Payment' ? '#4F46E5' : '#ffffff'}`} />
+                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Payment' ? 'text-indigo-600' : 'text-white'}`} >Payment</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Parties' ? 'bg-indigo-50' : ''}`}
@@ -78,8 +82,9 @@ export default function DrawerContent(props) {
                 <TouchableOpacity
                     className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Purchase' ? 'bg-indigo-50' : ''}`}
                     onPress={() => {
-                        navigation.navigate('Purchase')
-                        setHeaderName("Purchase");
+                        props.navigation.navigate('Purchase')
+                        handleActiveScreen("Purchase")
+                        setHeaderName("Purchases");
                     }}
                 >
                     <Feather name="truck" size={20} color={`${activeScreen === 'Purchase' ? '#4F46E5' : '#ffffff'}`} />
