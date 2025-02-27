@@ -93,7 +93,8 @@ export default function DrawerContent(props) {
                 <TouchableOpacity
                     className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Vendor' ? 'bg-indigo-50' : ''}`}
                     onPress={() => {
-                        navigation.navigate('Vendor')
+                        props.navigation.navigate('Vendor')
+                        handleActiveScreen("Vendor")
                         setHeaderName("Vendor");
                     }}
                 >
@@ -108,15 +109,23 @@ export default function DrawerContent(props) {
                     <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Pinvoice' ? 'text-indigo-600' : 'text-white'}`} >Proforma Invoice</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Expenses' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Expenses')}
+                    className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Expense' ? 'bg-indigo-50' : ''}`}
+                    onPress={() => {
+                        props.navigation.navigate('Expense')
+                        handleActiveScreen("Expense")
+                        setHeaderName("Expense");
+                    }}
                 >
-                    <Feather name="bar-chart" size={20} color={`${activeScreen === 'Expenses' ? '#4F46E5' : '#ffffff'}`} className="transform rotate-90" />
-                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Expenses' ? 'text-indigo-600' : 'text-white'}`} >Expenses</Text>
+                    <Feather name="bar-chart" size={20} color={`${activeScreen === 'Expense' ? '#4F46E5' : '#ffffff'}`} className="transform rotate-90" />
+                    <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Expense' ? 'text-indigo-600' : 'text-white'}`} >Expenses</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Bank' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Bank')}
+                    onPress={() => {
+                        props.navigation.navigate('Bank')
+                        handleActiveScreen("Bank")
+                        setHeaderName("Bank");
+                    }}
                 >
                     <FontAwesome name="university" size={20} color={`${activeScreen === 'Bank' ? '#4F46E5' : '#ffffff'}`} />
                     <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Bank' ? 'text-indigo-600' : 'text-white'}`} >Bank</Text>

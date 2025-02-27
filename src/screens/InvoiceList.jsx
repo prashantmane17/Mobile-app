@@ -59,7 +59,7 @@ export default function InvoiceCards() {
     return (
         <ScrollView className="flex-1 bg-gray-100">
             {/* Header */}
-            <View className="bg-white p-4 shadow-sm rounded-lg">
+            <View className="bg-white m-4 p-4 shadow-sm rounded-lg">
                 <View className="flex-1 flex-row items-center bg-gray-100 rounded-md px-3 py-1 mb-4">
                     <Feather name="search" size={20} color="#9CA3AF" />
                     <TextInput

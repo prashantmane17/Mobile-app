@@ -12,13 +12,13 @@ import { TextInput } from 'react-native-gesture-handler';
 // npm install @expo/vector-icons
 // npx tailwindcss init
 
-export default function CustomerList() {
+export default function VendorScreen() {
     const [customers, setCustomers] = useState([
         {
             id: '1',
-            name: 'Makarnd',
-            companyName: '--',
-            email: '--',
+            name: 'Amar M',
+            companyName: 'vivo',
+            email: 'amr@gmail.com',
             phone: '--',
             gstType: 'registered',
             totalPay: '0',
@@ -60,7 +60,7 @@ export default function CustomerList() {
                             <Feather name="search" size={20} color="#9CA3AF" />
                             <TextInput
                                 className="flex-1 ml-2 text-base"
-                                placeholder="Search customers..."
+                                placeholder="Search vendors..."
                                 value={searchQuery}
                                 onChangeText={setSearchQuery}
                             />
@@ -72,7 +72,7 @@ export default function CustomerList() {
                                     className="bg-blue-500 px-4 py-2 rounded-md"
                                     onPress={() => console.log('Add Customer')}
                                 >
-                                    <Text className="text-white font-medium">+ Create Customer</Text>
+                                    <Text className="text-white font-medium">+ Create Vendor</Text>
                                 </TouchableOpacity>
                                 <Text className="text-sm text-gray-600">
                                     Total:{filteredInvoices.length}
