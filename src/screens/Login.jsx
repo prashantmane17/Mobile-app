@@ -44,7 +44,7 @@ export default function LoginScreen() {
             const responseText = await response.text();
 
             console.log("res---", responseText);
-            if (response.ok && responseText.includes("User Created successfully")) {
+            if (response.ok && responseText.includes("Dashboard")) {
                 Alert.alert('Login Successful', 'You have logged in successfully!');
                 setFormData(intialData);
                 navigation.navigate('AdminDashboard');

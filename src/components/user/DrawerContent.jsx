@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, BackHandler, ToastAndroid } from 'react-native';
 import { Feather, FontAwesome } from '@expo/vector-icons';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { useNavigation } from '@react-navigation/native';
@@ -7,8 +7,31 @@ import { useHeader } from '../../context/HeaderContext';
 
 export default function DrawerContent(props) {
     const navigation = useNavigation();
+
     const [activeScreen, setActiveScreen] = useState('Dashboard');
     const { setHeaderName } = useHeader();
+    const [exitApp, setExitApp] = useState(false);
+
+    useEffect(() => {
+        const backAction = () => {
+            if (activeScreen === "Dashboard") {
+                if (exitApp) {
+                    BackHandler.exitApp();
+                    return true;
+                } else {
+                    setExitApp(true);
+                    ToastAndroid.show("Press back again to exit", ToastAndroid.SHORT);
+                    setTimeout(() => setExitApp(false), 1000);
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => backHandler.remove();
+    }, [exitApp, activeScreen]);
     const handleLogout = () => {
 
         navigation.reset({
@@ -103,7 +126,11 @@ export default function DrawerContent(props) {
                 </TouchableOpacity>
                 <TouchableOpacity
                     className={`flex-row items-center rounded px-4 py-3 ${activeScreen === 'Pinvoice' ? 'bg-indigo-50' : ''}`}
-                    onPress={() => navigation.navigate('Pinvoice')}
+                    onPress={() => {
+                        props.navigation.navigate('Pinvoice')
+                        handleActiveScreen("Pinvoice")
+                        setHeaderName("Profoma Invoice");
+                    }}
                 >
                     <Feather name="file-text" size={20} color={`${activeScreen === 'Pinvoice' ? '#4F46E5' : '#ffffff'}`} />
                     <Text className={`ml-3 text-base font-semibold ${activeScreen === 'Pinvoice' ? 'text-indigo-600' : 'text-white'}`} >Proforma Invoice</Text>

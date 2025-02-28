@@ -34,7 +34,7 @@ export default function AddItemForm() {
 
                     {/* Name */}
                     <View className="space-y-2">
-                        <Text className="text-sm font-medium text-gray-600">Name</Text>
+                        <Text className="text-sm font-medium text-gray-600">Name<Text className="text-red-500">*</Text></Text>
                         <TextInput
                             className="p-3 border border-gray-200 rounded-lg bg-white"
                             placeholder="Enter item name"
@@ -43,10 +43,10 @@ export default function AddItemForm() {
 
                     {/* SKU */}
                     <View className="space-y-2">
-                        <Text className="text-sm font-medium text-gray-600">SKU</Text>
+                        <Text className="text-sm font-medium text-gray-600">Quantity<Text className="text-red-500">*</Text></Text>
                         <TextInput
                             className="p-3 border border-gray-200 rounded-lg bg-white"
-                            placeholder="Enter SKU"
+                            placeholder="Enter Quantity"
                         />
                     </View>
 
@@ -79,7 +79,7 @@ export default function AddItemForm() {
 
                     {/* Tax Preference */}
                     <View className="space-y-2">
-                        <Text className="text-sm font-medium text-gray-600">Tax Preference</Text>
+                        <Text className="text-sm font-medium text-gray-600">Tax Preference<Text className="text-red-500">*</Text></Text>
                         <TouchableOpacity className="p-3 border border-gray-200 rounded-lg bg-white">
                             <Text className="text-gray-700">Taxable</Text>
                         </TouchableOpacity>
@@ -87,7 +87,7 @@ export default function AddItemForm() {
 
                     {/* Selling Price */}
                     <View className="space-y-2">
-                        <Text className="text-sm font-medium text-gray-600">Selling Price</Text>
+                        <Text className="text-sm font-medium text-gray-600">Selling Price<Text className="text-red-500">*</Text></Text>
                         <TextInput
                             className="p-3 border border-gray-200 rounded-lg bg-white"
                             placeholder="Enter selling price"
@@ -123,18 +123,6 @@ export default function AddItemForm() {
                         />
                     </View>
 
-
-                    {/* Description */}
-                    <View className="space-y-2 mb-8">
-                        <Text className="text-sm font-medium text-gray-600">Description</Text>
-                        <TextInput
-                            className="p-3 border border-gray-200 rounded-lg bg-white h-40"
-                            placeholder="Enter item description"
-                            multiline
-                            numberOfLines={4}
-                            textAlignVertical="top"
-                        />
-                    </View>
                 </View>
             </ScrollView>
 

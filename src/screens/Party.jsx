@@ -4,6 +4,7 @@ import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar } fro
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { TextInput } from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
 
 // Ensure you have these dependencies installed:
 // npm install nativewind
@@ -13,6 +14,7 @@ import { TextInput } from 'react-native-gesture-handler';
 // npx tailwindcss init
 
 export default function CustomerList() {
+    const navigation = useNavigation();
     const [customers, setCustomers] = useState([
         {
             id: '1',
@@ -70,7 +72,7 @@ export default function CustomerList() {
                             <View className="flex-row items-center justify-between gap-3">
                                 <TouchableOpacity
                                     className="bg-blue-500 px-4 py-2 rounded-md"
-                                    onPress={() => console.log('Add Customer')}
+                                    onPress={() => navigation.navigate('AddCustomerForm')}
                                 >
                                     <Text className="text-white font-medium">+ Create Customer</Text>
                                 </TouchableOpacity>
@@ -121,7 +123,7 @@ export default function CustomerList() {
                                 <View className="flex-row items-center">
                                     <TouchableOpacity
                                         className="mr-4 bg-blue-100 p-2 rounded-full"
-                                        onPress={() => {/* Edit functionality */ }}
+                                        onPress={() => navigation.navigate('AddCustomerForm')}
                                     >
                                         <MaterialCommunityIcons name="pencil" size={18} color="#3b82f6" />
                                     </TouchableOpacity>
