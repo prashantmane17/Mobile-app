@@ -7,15 +7,28 @@ import {
     ScrollView,
     SafeAreaView,
     Platform,
+    Modal,
     KeyboardAvoidingView,
+    FlatList,
 } from 'react-native';
 import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Plus, Trash } from 'react-native-feather';
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function InvoiceForm() {
+    const users = ["John Doe", "Jane Smith", "Alice Johnson", "Bob Brown"];
+    const itemsList = [
+        { name: "Item A", price: 100, tax: 10 },
+        { name: "Item B", price: 200, tax: 5 },
+        { name: "Item C", price: 150, tax: 8 },
+    ];
     const [showInvoicePicker, setShowInvoicePicker] = useState(false);
     const [showDuePicker, setShowDuePicker] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [filteredUsers, setFilteredUsers] = useState(users);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [filteredItems, setFilteredItems] = useState([]);
+    const [itemModalVisible, setItemModalVisible] = useState(false);
     const [invoiceData, setInvoiceData] = useState({
         customerName: '',
         invoiceNo: 'INV/2025/00003',
@@ -39,7 +52,6 @@ export default function InvoiceForm() {
         subTotal: '0.00',
         discount: '0',
         adjustment: '0',
-        total: '0.00',
     });
 
     const addItem = () => {
@@ -66,6 +78,21 @@ export default function InvoiceForm() {
             items: updatedItems,
         });
     };
+    const handleSearch = (text) => {
+        setInvoiceData({ ...invoiceData, customerName: text });
+        if (text.length > 0) {
+            const filtered = users.filter((user) =>
+                user.toLowerCase().includes(text.toLowerCase())
+            );
+            setFilteredUsers(filtered);
+        } else {
+            setFilteredUsers(users);
+        }
+    };
+    const handleSelect = (selectedName) => {
+        setInvoiceData({ ...invoiceData, customerName: selectedName });
+        setModalVisible(false);
+    };
     const handleDateChange = (event, date, type) => {
         if (date) {
             const formattedDate =
@@ -85,26 +112,50 @@ export default function InvoiceForm() {
             setShowDuePicker(false);
         }
     };
-    const renderQuantityControl = (value, index, field) => {
+
+    const handleOpenDropdown = (index) => {
+        setSelectedIndex(index);
+        setFilteredItems(itemsList);
+        setItemModalVisible(true);
+    };
+    const handleSelectItem = (selectedItem) => {
+        const updatedItems = [...invoiceData.items];
+        updatedItems[selectedIndex] = {
+            details: selectedItem.name,
+            quantity: 1,
+            price: selectedItem.price,
+            tax: selectedItem.tax,
+            amount: selectedItem.price * 1,
+        };
+
+        setInvoiceData({ ...invoiceData, items: updatedItems });
+        setItemModalVisible(false);
+    };
+
+    const handleInputChange = (index, field, value) => {
+        const updatedItems = [...invoiceData.items];
+        updatedItems[index][field] = value ? parseFloat(value) : 0;
+
+        updatedItems[index].amount = updatedItems[index].quantity * updatedItems[index].price;
+
+        setInvoiceData({ ...invoiceData, items: updatedItems });
+    };
+
+    const renderQuantityControl = (value, index, item) => {
         return (
             <View className="flex-row items-center border border-gray-300 rounded-md">
                 <TextInput
                     className="flex-1 py-1 px-2 text-center"
-                    value={value}
+                    value={item.quantity.toString()}
                     keyboardType="numeric"
-                    onChangeText={(text) => {
-                        const updatedItems = [...invoiceData.items];
-                        updatedItems[index][field] = text;
-                        setInvoiceData({ ...invoiceData, items: updatedItems });
-                    }}
+                    onChangeText={(value) => handleInputChange(index, "quantity", value)}
                 />
                 <View className="flex-col border-l border-gray-300">
                     <TouchableOpacity
                         className="p-0.5 items-center justify-center"
                         onPress={() => {
-                            const updatedItems = [...invoiceData.items];
-                            updatedItems[index][field] = String(Number(value) + 1);
-                            setInvoiceData({ ...invoiceData, items: updatedItems });
+                            const updatedValue = String(Number(value) + 1);
+                            handleInputChange(index, "quantity", updatedValue);
                         }}
                     >
                         <ChevronUp width={12} height={12} color="#666" />
@@ -114,9 +165,8 @@ export default function InvoiceForm() {
                         className="p-0.5 items-center justify-center"
                         onPress={() => {
                             if (Number(value) > 1) {
-                                const updatedItems = [...invoiceData.items];
-                                updatedItems[index][field] = String(Number(value) - 1);
-                                setInvoiceData({ ...invoiceData, items: updatedItems });
+                                const updatedValue = String(Number(value) - 1);
+                                handleInputChange(index, "quantity", updatedValue);
                             }
                         }}
                     >
@@ -150,12 +200,51 @@ export default function InvoiceForm() {
                                 <Text className="text-gray-700 mb-1">
                                     Customer Name<Text className="text-red-500">*</Text>
                                 </Text>
-                                <TextInput
+                                <TouchableOpacity
                                     className="border border-gray-300 rounded-md p-3 bg-white"
-                                    placeholder="Search Or Select A Customer"
-                                    value={invoiceData.customerName}
-                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, customerName: text })}
-                                />
+                                    onPress={() => setModalVisible(true)}
+                                >
+                                    <Text>{invoiceData.customerName || "Search Or Select A Customer"}</Text>
+                                </TouchableOpacity>
+                                <Modal visible={modalVisible} animationType="fade" transparent>
+                                    <View className="flex-1 justify-center items-center bg-black/50">
+                                        <View className="bg-white w-80 p-4 rounded-md">
+                                            {/* Search Input */}
+                                            <TextInput
+                                                className="border border-gray-300 rounded-md p-3 mb-3"
+                                                placeholder="Search Customers..."
+                                                value={invoiceData.customerName}
+                                                onChangeText={handleSearch}
+                                            />
+
+                                            {/* Dropdown List */}
+                                            <View className="h-52">
+                                                <FlatList
+                                                    data={filteredUsers}
+                                                    keyExtractor={(item, index) => index.toString()}
+                                                    renderItem={({ item }) => (
+                                                        <TouchableOpacity
+                                                            className="p-3 border-b border-gray-200"
+                                                            onPress={() => handleSelect(item)}
+                                                        >
+                                                            <Text>{item}</Text>
+                                                        </TouchableOpacity>
+                                                    )}
+                                                    keyboardShouldPersistTaps="handled"
+                                                />
+                                            </View>
+
+
+                                            {/* Close Button */}
+                                            <TouchableOpacity
+                                                className="mt-3 p-3 bg-red-500 rounded-md"
+                                                onPress={() => setModalVisible(false)}
+                                            >
+                                                <Text className="text-white text-center">Close</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                </Modal>
                             </View>
 
                             <View>
@@ -287,46 +376,58 @@ export default function InvoiceForm() {
 
                             {invoiceData.items.map((item, index) => (
                                 <View key={index} className="border border-gray-200 p-3 mb-2 rounded-md">
+                                    {/* Search Box */}
                                     <View className="mb-3 flex-row items-center gap-2">
-                                        <TextInput
-                                            className="border border-gray-300 rounded-md p-3 bg-white mb-2 w-72"
-                                            placeholder="Search or select an item"
-                                            value={item.details}
-                                            onChangeText={(text) => {
-                                                const updatedItems = [...invoiceData.items];
-                                                updatedItems[index].details = text;
-                                                setInvoiceData({ ...invoiceData, items: updatedItems });
-                                            }}
-                                        />
                                         <TouchableOpacity
-                                            className=" bg-red-100 p-3 rounded-lg mb-2 "
+                                            className="border border-gray-300 rounded-md p-3 bg-white mb-2 w-72"
+                                            onPress={() => handleOpenDropdown(index)}
+                                        >
+                                            <Text>{item.details || "Search or select an item"}</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            className="bg-red-100 p-3 rounded-lg mb-2"
                                             onPress={() => deleteItem(index)}
                                         >
                                             <Trash width={20} height={20} color="red" />
                                         </TouchableOpacity>
                                     </View>
 
+                                    {/* Quantity, Price, Tax, Total */}
                                     <View className="flex-row items-center justify-between">
+                                        {/* Quantity */}
                                         <View className="w-24 mr-2">
-                                            {renderQuantityControl(item.quantity, index, 'quantity')}
+                                            {/* <TextInput
+                                                className="border border-gray-300 rounded-md p-2 text-center"
+                                                keyboardType="numeric"
+                                                value={item.quantity.toString()}
+                                                onChangeText={(value) => handleInputChange(index, "quantity", value)}
+                                            /> */}
+                                            {renderQuantityControl(item.quantity, index, item)}
                                         </View>
-
+                                        {/* Price */}
                                         <View className="flex-row items-center w-24 mr-2">
                                             <Text className="mr-1">₹</Text>
-                                            {renderQuantityControl(item.price, index, 'price')}
+                                            <TextInput
+                                                className="border flex-1 border-gray-300 rounded-md p-2 text-center"
+                                                keyboardType="numeric"
+                                                value={item.price.toString()}
+                                                onChangeText={(value) => handleInputChange(index, "price", value)}
+                                            />
                                         </View>
 
-                                        <View className="flex-row items-center w-16 mr-2">
-                                            <Text className="flex-1  text-right">{item.amount}</Text>
+                                        {/* Tax */}
+                                        <View className="flex-row items-start w-16 ml-2">
+                                            <Text className=" text-left">{item.tax}</Text>
                                             <Text className="ml-1">%</Text>
                                         </View>
 
-                                        <View className="flex-row items-center w-20 ml-2">
+                                        {/* Total Amount */}
+                                        <View className="flex-row items-center w-20 ">
                                             <Text className="mr-1">₹</Text>
-                                            <Text className=" text-center">{item.amount}</Text>
+                                            <Text className="text-center">{Number(item.amount)?.toFixed(2) || "0.00"}</Text>
+
                                         </View>
-
-
                                     </View>
                                 </View>
                             ))}
@@ -338,6 +439,48 @@ export default function InvoiceForm() {
                                 <Plus width={20} height={20} color="#4f46e5" />
                                 <Text className="ml-2 text-indigo-600 font-medium">Add another Item</Text>
                             </TouchableOpacity>
+
+                            <Modal visible={itemModalVisible} animationType="fade" transparent>
+                                <View className="flex-1 justify-center items-center bg-black/50">
+                                    <View className="bg-white w-80 p-4 rounded-md">
+                                        {/* Search Input */}
+                                        <TextInput
+                                            className="border border-gray-300 rounded-md p-3 mb-3"
+                                            placeholder="Search items..."
+                                            onChangeText={(text) => {
+                                                setFilteredItems(
+                                                    itemsList.filter((item) =>
+                                                        item.name.toLowerCase().includes(text.toLowerCase())
+                                                    )
+                                                );
+                                            }}
+                                        />
+
+                                        {/* Dropdown List */}
+                                        <FlatList
+                                            data={filteredItems}
+                                            keyExtractor={(item, index) => index.toString()}
+                                            renderItem={({ item }) => (
+                                                <TouchableOpacity
+                                                    className="p-3 border-b border-gray-200"
+                                                    onPress={() => handleSelectItem(item)}
+                                                >
+                                                    <Text>{item.name}</Text>
+                                                </TouchableOpacity>
+                                            )}
+                                            keyboardShouldPersistTaps="handled"
+                                        />
+
+                                        {/* Close Button */}
+                                        <TouchableOpacity
+                                            className="mt-3 p-3 bg-red-500 rounded-md"
+                                            onPress={() => setItemModalVisible(false)}
+                                        >
+                                            <Text className="text-white text-center">Close</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </Modal>
                         </View>
 
                         {/* Terms & Conditions */}

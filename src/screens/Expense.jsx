@@ -4,6 +4,7 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-nativ
 // import { Checkbox } from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 
 // Sample transaction data
@@ -15,6 +16,7 @@ const transactions = [
 ];
 
 const TransactionCard = ({ transaction, onToggleSelect }) => {
+
     return (
         <View className="bg-white rounded-xl shadow-md mb-4 overflow-hidden">
             <View className="flex-row items-center p-4 border-b border-gray-100">
@@ -60,7 +62,7 @@ const TransactionCard = ({ transaction, onToggleSelect }) => {
 
 const Expense = () => {
     const [transactionData, setTransactionData] = React.useState(transactions);
-
+    const navigation = useNavigation();
     const handleToggleSelect = (id) => {
         setTransactionData(transactionData.map(item =>
             item.id === id ? { ...item, selected: !item.selected } : item
@@ -99,7 +101,7 @@ const Expense = () => {
                         <View className="flex-row items-center justify-between gap-3">
                             <TouchableOpacity
                                 className="bg-blue-500 px-4 py-2 rounded-md"
-                                onPress={() => console.log('Add Customer')}
+                                onPress={() => navigation.navigate('ExpenseForm')}
                             >
                                 <Text className="text-white font-medium">+ Create Expense</Text>
                             </TouchableOpacity>

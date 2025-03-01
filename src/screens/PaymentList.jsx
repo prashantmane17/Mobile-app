@@ -4,8 +4,10 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { useNavigation } from '@react-navigation/native';
 
 const PaymentList = () => {
+    const navigation = useNavigation();
     const payments = [
         {
             date: '2025-02-28',
@@ -66,7 +68,7 @@ const PaymentList = () => {
                             <View className="flex-row items-center justify-between gap-3">
                                 <TouchableOpacity
                                     className="bg-blue-500 px-4 py-2 rounded-md"
-                                    onPress={() => console.log('Add Customer')}
+                                    onPress={() => navigation.navigate('PaymentForm')}
                                 >
                                     <Text className="text-white font-medium">+ Create Payment</Text>
                                 </TouchableOpacity>

@@ -4,6 +4,7 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-nativ
 // import { Checkbox } from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 
 // Sample transaction data
@@ -44,6 +45,7 @@ const TransactionCard = ({ transaction, onToggleSelect }) => {
 };
 
 const BankScreen = () => {
+    const navigation = useNavigation();
     const [transactionData, setTransactionData] = React.useState(transactions);
 
     const handleToggleSelect = (id) => {
@@ -76,9 +78,9 @@ const BankScreen = () => {
                         <View className="flex-row items-center justify-between gap-3">
                             <TouchableOpacity
                                 className="bg-blue-500 px-4 py-2 rounded-md"
-                                onPress={() => console.log('Add Customer')}
+                                onPress={() => navigation.navigate('BankForm')}
                             >
-                                <Text className="text-white font-medium">+ Create Expense</Text>
+                                <Text className="text-white font-medium">+ Create Entry</Text>
                             </TouchableOpacity>
                             <Text className="text-sm text-gray-600">
                                 Total:{filteredInvoices.length}
