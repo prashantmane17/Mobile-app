@@ -52,7 +52,7 @@ function AppWithBackHandler() {
   }, [exitApp, currentScreen]);
 
   return (
-    <Stack.Navigator initialRouteName="UserDashboard">
+    <Stack.Navigator initialRouteName="Signup">
       <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Signup" component={SignUpScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />

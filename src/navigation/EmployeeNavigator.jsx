@@ -42,8 +42,8 @@ export default function EmployeeNavigator() {
                 <Drawer.Screen name="Dashboard" component={UsersDashboardScreen} />
                 <Drawer.Screen name="Parties" component={CustomerList} />
                 <Drawer.Screen name="sales" component={InvoiceList} />
-                {/* <Drawer.Screen name="InvoiceForm" component={InvoiceForm} /> */}
-                <Drawer.Screen name="InvoiceForm" component={InvoiceTemp} />
+                <Drawer.Screen name="InvoiceForm" component={InvoiceForm} />
+                {/* <Drawer.Screen name="InvoiceForm" component={InvoiceTemp} /> */}
                 <Drawer.Screen name="PaymentForm" component={PaymentForm} />
                 <Drawer.Screen name="Payment" component={PaymentList} />
                 <Drawer.Screen name="ItemScreen" component={ItemScreen} />

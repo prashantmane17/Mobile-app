@@ -25,34 +25,36 @@ export default function LoginScreen() {
             Alert.alert('Validation Error', 'Please enter both email and password.');
             return;
         }
-        setIsLoading(true); // Show loading indicator
+        setIsLoading(true);
         try {
             const formBody = new URLSearchParams({
                 email: formData.email,
                 password: formData.password,
             }).toString();
 
-            const response = await fetch('http://192.168.1.25:8080/validate-login', {
+            const response = await fetch('http://192.168.1.25:8080/validateuserMobileApp', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: formBody,
             });
-
-
             const responseText = await response.text();
-
-            console.log("res---", responseText);
-            if (response.ok && responseText.includes("Dashboard")) {
+            if (response.ok) {
                 Alert.alert('Login Successful', 'You have logged in successfully!');
-                setFormData(intialData);
-                navigation.navigate('AdminDashboard');
+                if (responseText === "AdminDashboard") {
+                    navigation.navigate('AdminDashboard');
+                    setFormData(intialData);
+                } else if (responseText === "Dashboard") {
+                    navigation.navigate('UserDashboard');
+                    setFormData(intialData);
+                }
             } else if (responseText.includes("Incorrect Email/Password")) {
                 Alert.alert('Login Failed', 'Incorrect Email/Password');
             } else {
                 Alert.alert('Login Failed', 'An unexpected error occurred.');
             }
+
         } catch (error) {
             Alert.alert('Error', 'Something went wrong. Please try again later.');
             console.error(error);
@@ -75,7 +77,7 @@ export default function LoginScreen() {
                         <Feather name="user" size={24} color="#4F46E5" />
                         <TextInput
                             placeholder="Enter your email"
-                            className="flex-1 ml-2 text-base"
+                            className="flex-1 ml-2 text-base lowercase"
                             value={formData.email}
                             onChangeText={value => handleChange('email', value)}
                         />
