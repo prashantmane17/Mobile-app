@@ -1,40 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useNavigation } from '@react-navigation/native';
+import { getAllInvoices } from '../api/user/invoice';
 
-const invoices = [
-    {
-        id: 'INV/2025/00003',
-        date: '24 Feb 2025',
-        customer: 'Amar M',
-        email: '- -',
-        dueDate: '24 Feb 2025',
-        amount: '₹ 268',
-        status: 'Pending'
-    },
-    {
-        id: 'INV/2025/00002',
-        date: '24 Feb 2025',
-        customer: 'Raju M',
-        email: '- -',
-        dueDate: '24 Feb 2025',
-        amount: '₹ 180',
-        status: 'Pending'
-    },
-    {
-        id: 'INV/2025/00001',
-        date: '24 Feb 2025',
-        customer: 'Ganesh k',
-        email: '- -',
-        dueDate: '24 Feb 2025',
-        amount: '₹ 12000',
-        status: 'Pending'
-    },
-];
+
 export default function InvoiceCards() {
+    const [invoices, setInvoices] = useState([])
     const navigation = useNavigation();
     const [searchQuery, setSearchQuery] = useState('');
     const [itemsPerPage, setItemsPerPage] = useState(25);
@@ -47,9 +21,21 @@ export default function InvoiceCards() {
         { label: '100', value: 100 }
     ]);
 
-    const filteredInvoices = invoices.filter(invoice =>
-        invoice.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        invoice.customer.toLowerCase().includes(searchQuery.toLowerCase())
+    const invoiceData = async () => {
+        try {
+            const response = await getAllInvoices();
+            setInvoices(response.invoices)
+        } catch (error) {
+            console.error("Error fetching invoices:", error);
+        }
+    };
+
+
+    useEffect(() => {
+        invoiceData();
+    }, []);
+    const filteredInvoices = invoices?.filter(invoice =>
+        invoice.customer.displayName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const totalPages = Math.ceil(filteredInvoices.length / value);
@@ -57,6 +43,24 @@ export default function InvoiceCards() {
         (currentPage - 1) * value,
         currentPage * value
     );
+
+    const formatDate = (timestamp) => {
+        const date = new Date(Number(timestamp)); // Convert to Date object
+        return date.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        }).toUpperCase(); // Convert month to uppercase
+    };
+    const getStatusLabel = (status) => {
+        if (!status) return "Pending"; // Default if status is undefined
+        const normalizedStatus = status.toLowerCase();
+
+        if (normalizedStatus === "paid") return { label: "Paid", color: "text-green-600", bg: "bg-green-100" };
+        if (normalizedStatus === "void") return { label: "Cancelled", color: "text-red-600", bg: "bg-red-100" };
+        return { label: "Pending", color: "text-orange-600", bg: "bg-orange-100" };
+    };
+
 
     return (
         <View className="flex-1 bg-gray-100">
@@ -119,8 +123,9 @@ export default function InvoiceCards() {
                 {/* Invoice Cards */}
                 <View className="px-4 py-4">
                     <View className="flex-row flex-wrap -mx-2">
-                        {paginatedInvoices.map((invoice) => (
-                            <View key={invoice.id} className="w-full px-2 mb-4">
+                        {paginatedInvoices.map((invoice) => {
+                            const { label, color, bg } = getStatusLabel(invoice.invoiceStatus);
+                            return (<View key={invoice.id} className="w-full px-2 mb-4">
                                 <TouchableOpacity
                                     className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
                                     activeOpacity={0.7}
@@ -131,12 +136,12 @@ export default function InvoiceCards() {
                                             <View className="flex-row items-center">
                                                 <Feather name="file-text" size={20} color="#60A5FA" />
                                                 <Text className="ml-2 text-sm font-medium text-gray-900">
-                                                    {invoice.id}
+                                                    {invoice.invoiceNumber}
                                                 </Text>
                                             </View>
-                                            <View className="bg-orange-100 px-3 py-1 rounded-full">
-                                                <Text className="text-orange-600 text-xs font-medium">
-                                                    {invoice.status}
+                                            <View className={`${bg} px-3 py-1 rounded-full`}>
+                                                <Text className={`${color} text-xs font-medium`}>
+                                                    {label}
                                                 </Text>
                                             </View>
                                         </View>
@@ -148,28 +153,29 @@ export default function InvoiceCards() {
                                             {/* Customer Info */}
                                             <View className="flex-row items-center">
                                                 <Feather name="user" size={16} color="#60A5FA" />
-                                                <Text className="ml-2 text-sm text-gray-600">
-                                                    {invoice.customer}
+                                                <Text className="ml-2 text-sm text-gray-600 capitalize">
+                                                    {invoice.customer.displayName}
                                                 </Text>
                                             </View>
 
                                             {/* Email */}
                                             <View className="flex-row items-center">
                                                 <Feather name="mail" size={16} color="#60A5FA" />
-                                                <Text className="ml-2 text-sm text-gray-600">
-                                                    {invoice.email}
+                                                <Text className="ml-2 text-sm text-gray-900">
+                                                    {invoice?.customer?.emailAddress ?? "--"}
                                                 </Text>
+
                                             </View>
 
                                             {/* Dates */}
                                             <View className="flex-row justify-between items-center">
                                                 <View>
                                                     <Text className="text-xs text-gray-500">Invoice Date</Text>
-                                                    <Text className="text-sm text-gray-900">{invoice.date}</Text>
+                                                    <Text className="text-sm text-gray-900">{formatDate(invoice.createdAt)}</Text>
                                                 </View>
                                                 <View>
                                                     <Text className="text-xs text-gray-500">Due Date</Text>
-                                                    <Text className="text-sm text-gray-900">{invoice.dueDate}</Text>
+                                                    <Text className="text-sm text-gray-900">{formatDate(invoice.dueDate)}</Text>
                                                 </View>
                                             </View>
                                         </View>
@@ -180,13 +186,14 @@ export default function InvoiceCards() {
                                         <View className="flex-row justify-between items-center">
                                             <Text className="text-sm text-gray-500">Total Amount</Text>
                                             <Text className="text-lg font-semibold text-gray-900">
-                                                {invoice.amount}
+                                                {invoice.totalAmount}
                                             </Text>
                                         </View>
                                     </View>
                                 </TouchableOpacity>
                             </View>
-                        ))}
+                            )
+                        })}
                     </View>
                 </View>
 

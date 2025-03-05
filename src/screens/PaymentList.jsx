@@ -1,39 +1,15 @@
 // import { PlusIcon } from 'lucide-react-native';
 import { FilterIcon, PlusIcon, Search } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useNavigation } from '@react-navigation/native';
+import { getAllPayments } from '../api/user/payment';
 
 const PaymentList = () => {
     const navigation = useNavigation();
-    const payments = [
-        {
-            date: '2025-02-28',
-            paymentId: '--',
-            customerName: 'gukesh',
-            paymentMode: 'Bank Transfer',
-            amount: '14160.0',
-            status: 'Paid'
-        },
-        {
-            date: '2025-02-20',
-            paymentId: '--',
-            customerName: 'makarndesh',
-            paymentMode: 'Credit Card',
-            amount: '1006641.48',
-            status: 'Paid'
-        },
-        {
-            date: '2025-02-20',
-            paymentId: '--',
-            customerName: 'mahesh Babu',
-            paymentMode: 'Bank Transfer',
-            amount: '3299.28',
-            status: 'Paid'
-        },
-    ];
+    const [payment, setPayments] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(25);
@@ -42,12 +18,26 @@ const PaymentList = () => {
         { label: '50', value: 50 },
         { label: '100', value: 100 }
     ]);
-    const filteredInvoices = payments.filter(invoice =>
+    const paymentData = async () => {
+        try {
+            const response = await getAllPayments();
+            console.log("rs--------", response)
+            setPayments(response.payments)
+        } catch (error) {
+            console.error("Error fetching payment:", error);
+        }
+    };
+
+
+    useEffect(() => {
+        paymentData();
+    }, []);
+    const filteredInvoices = payment.filter(invoice =>
         invoice.customerName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-100">
+        <SafeAreaView className="flex-1 bg-gray-100"> 
             <View className="p-4">
                 {/* Header */}
 
@@ -109,10 +99,10 @@ const PaymentList = () => {
                             <View className="flex-row justify-between items-start mb-3">
                                 <View>
                                     <Text className="text-lg font-semibold text-gray-900 capitalize">{payment.customerName}</Text>
-                                    <Text className="text-gray-500 text-sm">{payment.date}</Text>
+                                    <Text className="text-gray-500 text-sm">{payment.paymentDate}</Text>
                                 </View>
                                 <View className="bg-green-100 px-3 py-1 rounded-full">
-                                    <Text className="text-green-600 font-medium">{payment.status}</Text>
+                                    <Text className="text-green-600 font-medium">Paid</Text>
                                 </View>
                             </View>
 
@@ -123,7 +113,7 @@ const PaymentList = () => {
                                 </View>
                                 <View className="mt-2 pt-3 border-t border-gray-100 flex-row justify-between items-center">
                                     <Text className="text-gray-500 font-medium">Amount:</Text>
-                                    <Text className="text-xl font-bold text-gray-600">₹{payment.amount}</Text>
+                                    <Text className="text-xl font-bold text-gray-600">₹{payment.amountReceived}</Text>
                                 </View>
                             </View>
                         </View>
