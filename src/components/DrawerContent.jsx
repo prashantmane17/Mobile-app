@@ -28,7 +28,7 @@ export default function DrawerContent(props) {
 
                 <TouchableOpacity
                     className="flex-row items-center px-4 py-3"
-                    onPress={() => navigation.navigate('Settings')}
+                    onPress={() => props.navigation.navigate('Settings')}
                 >
                     <Feather name="settings" size={20} color="#666" />
                     <Text className="ml-3 text-base text-gray-600">Settings</Text>

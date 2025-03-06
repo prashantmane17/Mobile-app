@@ -32,7 +32,7 @@ function AppWithBackHandler() {
 
   useEffect(() => {
     const backAction = () => {
-      if (currentScreen === "Login" || currentScreen === "Signup") {
+      if (currentScreen === "Login" || currentScreen === "Signup" || currentScreen === "AdminDashboard") {
         if (exitApp) {
           BackHandler.exitApp();
           return true;

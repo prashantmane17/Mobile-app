@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, RefreshControl } from "react-native";
+import { View, ScrollView, RefreshControl, Text, TouchableOpacity } from "react-native";
 import Header from "../components/Header";
 import UserCard from "../components/UserCard";
-
-
+import { Ionicons } from '@expo/vector-icons';
+import TimeZoneForm from "../components/timeZoneSetting";
 
 export default function UsersScreen() {
+    const [modalVisible, setModalVisible] = useState(false);
     const [users, setUsers] = useState([]);
+    const [isTimeZoneSet, setIsTimeZoneSet] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
     const fetchAdminDashboard = async () => {
@@ -18,6 +20,15 @@ export default function UsersScreen() {
 
             if (response.ok) {
                 const data = await response.json([]);
+                console.log("data------", data.timeZoneSettings);
+                if (data.timeZoneSettings.length === 0) {
+                    setIsTimeZoneSet(true);
+                    setModalVisible(true)
+                } else {
+                    setIsTimeZoneSet(false);
+                    setModalVisible(false)
+                }
+
                 setUsers(data.users)
             } else {
                 console.error("Failed to load dashboard:", response.status);
@@ -31,20 +42,37 @@ export default function UsersScreen() {
         fetchAdminDashboard();
     }, []);
 
-    // Handle pull-to-refresh
     const onRefresh = () => {
         setRefreshing(true);
-        fetchAdminDashboard(); // Fetch new data
+        fetchAdminDashboard();
 
-        // Simulate data reload (if needed)
+
         setTimeout(() => {
             setRefreshing(false);
         }, 2000);
     };
 
+
     return (
-        <View className="flex-1 bg-gray-100">
+        <View className="flex-1 bg-gray-100 relative">
             <Header />
+            {isTimeZoneSet && modalVisible && (
+                <View className="absolute top-0 left-0 z-40 flex-1 w-full h-screen">
+                    <View className="flex-1 bg-gray-100 ">
+                        <View className="flex-1  justify-center items-center bg-black/50">
+                            <View className="w-11/12 bg-white rounded-lg p-5 ">
+                                {/* Header with close button */}
+                                <View className="flex-row justify-between items-center mb-6">
+                                    <Text className="text-2xl font-bold text-center text-gray-800">Set Time Zone</Text>
+                                    <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                        <Ionicons name="close" size={24} color="#6b7280" />
+                                    </TouchableOpacity>
+                                </View>
+                                <TimeZoneForm onClose={() => setModalVisible(false)} />
+                            </View>
+                        </View>
+                    </View>
+                </View>)}
             <ScrollView
                 className="flex-1"
                 contentContainerClassName="py-4"
