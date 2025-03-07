@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, RefreshControl, Text, TouchableOpacity } from "react-native";
-import Header from "../components/Header";
 import UserCard from "../components/UserCard";
 import { Ionicons } from '@expo/vector-icons';
 import TimeZoneForm from "../components/timeZoneSetting";
+import { getSession } from "../api/admin/adminApi";
 
 export default function UsersScreen() {
     const [modalVisible, setModalVisible] = useState(false);
@@ -20,7 +20,6 @@ export default function UsersScreen() {
 
             if (response.ok) {
                 const data = await response.json([]);
-                console.log("data------", data.timeZoneSettings);
                 if (data.timeZoneSettings.length === 0) {
                     setIsTimeZoneSet(true);
                     setModalVisible(true)
@@ -42,6 +41,7 @@ export default function UsersScreen() {
         fetchAdminDashboard();
     }, []);
 
+
     const onRefresh = () => {
         setRefreshing(true);
         fetchAdminDashboard();
@@ -55,7 +55,6 @@ export default function UsersScreen() {
 
     return (
         <View className="flex-1 bg-gray-100 relative">
-            <Header />
             {isTimeZoneSet && modalVisible && (
                 <View className="absolute top-0 left-0 z-40 flex-1 w-full h-screen">
                     <View className="flex-1 bg-gray-100 ">

@@ -20,7 +20,7 @@ export default function DrawerContent(props) {
             <DrawerContentScrollView {...props}>
                 <TouchableOpacity
                     className="flex-row items-center rounded px-4 py-3 bg-indigo-50"
-                    onPress={() => navigation.navigate('Users')}
+                    onPress={() => props.navigation.navigate('Users')}
                 >
                     <Feather name="users" size={20} color="#4F46E5" />
                     <Text className="ml-3 text-base font-semibold text-indigo-600">Users</Text>

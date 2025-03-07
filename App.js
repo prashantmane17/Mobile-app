@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import { NavigationContainer, useNavigationState } from "@react-navigation/native";
+import { NavigationContainer, useNavigation, useNavigationState } from "@react-navigation/native";
 import { SafeAreaView, StatusBar, BackHandler, ToastAndroid } from "react-native";
 import LoginScreen from "./src/screens/Login";
 import SignUpScreen from "./src/screens/SignUpScreen";
@@ -8,11 +8,12 @@ import HomeScreen from "./src/screens/HomeScreen";
 import ForgetPassword from "./src/screens/ForgetPassword";
 import AppNavigator from "./src/navigation/AppNavigator";
 import EmployeeNavigator from "./src/navigation/EmployeeNavigator";
+import { getSession } from "./src/api/admin/adminApi";
 
 const Stack = createStackNavigator();
 
 export default function App() {
-  const [exitApp, setExitApp] = useState(false);
+
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -24,15 +25,36 @@ export default function App() {
   );
 }
 
-// Separate component to handle back button
+
 function AppWithBackHandler() {
-  const navigationState = useNavigationState((state) => state);
-  const currentScreen = navigationState?.routes[navigationState.index]?.name || "Login";
+  const navigation = useNavigation();
   const [exitApp, setExitApp] = useState(false);
 
   useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const data = await getSession();
+        console.log("datt---", data)
+        if (data?.orgId && data?.userId) {
+          navigation.navigate("UserDashboard");
+        } else if (data?.orgId && data?.userId === null) {
+          navigation.navigate("AdminDashboard");
+        } else {
+          navigation.navigate("Login");
+        }
+      } catch (error) {
+        navigation.navigate("Login");
+      }
+    };
+
+    checkSession();
+  }, [navigation]);
+
+  useEffect(() => {
     const backAction = () => {
-      if (currentScreen === "Login" || currentScreen === "Signup" || currentScreen === "AdminDashboard") {
+      const currentScreen = navigation.getCurrentRoute()?.name || "Login";
+
+      if (["Login", "Signup", "AdminDashboard"].includes(currentScreen)) {
         if (exitApp) {
           BackHandler.exitApp();
           return true;
@@ -49,10 +71,10 @@ function AppWithBackHandler() {
     const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
 
     return () => backHandler.remove();
-  }, [exitApp, currentScreen]);
+  }, [exitApp, navigation]);
 
   return (
-    <Stack.Navigator initialRouteName="Signup">
+    <Stack.Navigator initialRouteName="Login">
       <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Signup" component={SignUpScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
@@ -62,3 +84,4 @@ function AppWithBackHandler() {
     </Stack.Navigator>
   );
 }
+

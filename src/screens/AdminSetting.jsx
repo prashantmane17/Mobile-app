@@ -155,7 +155,38 @@ export default function AdminSetting() {
                         </StyledTouchableOpacity>
                     </StyledView>
 
-                    {/* Main content */}
+                    {/* Main content */}<StyledView className="bg-white rounded-xl shadow-sm p-4 mb-4">
+                        <StyledText className="text-lg font-semibold text-gray-800 mb-2">Organization Logo</StyledText>
+                        <StyledText className="text-gray-500 mb-4">Used in invoices and communications</StyledText>
+
+                        <StyledView className="items-center">
+                            {businessInfo.logo ? (
+                                <StyledView className="relative">
+                                    <StyledImage
+                                        source={{ uri: businessInfo.logo }}
+                                        className="w-40 h-40 rounded-lg"
+                                    />
+                                    {isEditing && (
+                                        <StyledTouchableOpacity
+                                            className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-2"
+                                            onPress={pickImage}
+                                        >
+                                            <Ionicons name="camera" size={20} color="white" />
+                                        </StyledTouchableOpacity>
+                                    )}
+                                </StyledView>
+                            ) : (
+                                <StyledTouchableOpacity
+                                    className="bg-gray-200 rounded-lg w-40 h-40 items-center justify-center"
+                                    onPress={isEditing ? pickImage : null}
+                                    disabled={!isEditing}
+                                >
+                                    <Ionicons name="image-outline" size={40} color="#6b7280" />
+                                    <StyledText className="text-gray-600 mt-2">Upload Image</StyledText>
+                                </StyledTouchableOpacity>
+                            )}
+                        </StyledView>
+                    </StyledView>
                     <StyledView className="flex-row flex-wrap">
                         {/* Left column */}
                         <StyledView className="w-full lg:w-1/2 pr-0 lg:pr-2">
@@ -300,38 +331,7 @@ export default function AdminSetting() {
                         {/* Right column */}
                         <StyledView className="w-full lg:w-1/2 pl-0 lg:pl-2">
                             {/* Logo Upload */}
-                            <StyledView className="bg-white rounded-xl shadow-sm p-4 mb-4">
-                                <StyledText className="text-lg font-semibold text-gray-800 mb-2">Organization Logo</StyledText>
-                                <StyledText className="text-gray-500 mb-4">Used in invoices and communications</StyledText>
 
-                                <StyledView className="items-center">
-                                    {businessInfo.logo ? (
-                                        <StyledView className="relative">
-                                            <StyledImage
-                                                source={{ uri: businessInfo.logo }}
-                                                className="w-40 h-40 rounded-lg"
-                                            />
-                                            {isEditing && (
-                                                <StyledTouchableOpacity
-                                                    className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-2"
-                                                    onPress={pickImage}
-                                                >
-                                                    <Ionicons name="camera" size={20} color="white" />
-                                                </StyledTouchableOpacity>
-                                            )}
-                                        </StyledView>
-                                    ) : (
-                                        <StyledTouchableOpacity
-                                            className="bg-gray-200 rounded-lg w-40 h-40 items-center justify-center"
-                                            onPress={isEditing ? pickImage : null}
-                                            disabled={!isEditing}
-                                        >
-                                            <Ionicons name="image-outline" size={40} color="#6b7280" />
-                                            <StyledText className="text-gray-600 mt-2">Upload Image</StyledText>
-                                        </StyledTouchableOpacity>
-                                    )}
-                                </StyledView>
-                            </StyledView>
 
                             {/* Time Zone & Currency */}
                             <StyledView className="bg-white rounded-xl shadow-sm p-4 mb-4">

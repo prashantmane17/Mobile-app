@@ -1,16 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
-// import { Checkbox } from 'react-native-paper';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { TextInput } from 'react-native-gesture-handler';
+import { getAllVendors } from '../api/user/vendor';
 
-// Ensure you have these dependencies installed:
-// npm install nativewind
-// npm install tailwindcss --save-dev
-// npm install react-native-paper
-// npm install @expo/vector-icons
-// npx tailwindcss init
 
 export default function VendorScreen() {
     const [customers, setCustomers] = useState([
@@ -43,6 +37,22 @@ export default function VendorScreen() {
         { label: '50', value: 50 },
         { label: '100', value: 100 }
     ]);
+    const vendorData = async () => {
+        try {
+            const response = await getAllVendors();
+            console.log("rs--------", response)
+            setPayments(response)
+        } catch (error) {
+            console.error("Error fetching payment:", error);
+        }
+    };
+
+
+    useEffect(() => {
+        vendorData();
+    }, []);
+
+
     const filteredInvoices = customers.filter(invoice =>
         invoice.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         invoice.name.toLowerCase().includes(searchQuery.toLowerCase())

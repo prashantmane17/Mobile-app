@@ -19,10 +19,10 @@ export const setTimeZone = async (data) => {
         throw error.response?.data || "Failed to delete user";
     }
 };
-export const getSession = async (data) => {
+export const getSession = async () => {
     try {
-        const response = await api.post(`/saveOrgSettins`, data);
-        return response;
+        const response = await api.get(`/mobile-session`);
+        return response.data;
     } catch (error) {
         throw error.response?.data || "Failed to delete user";
     }

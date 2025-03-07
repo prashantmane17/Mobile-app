@@ -12,7 +12,7 @@ export default function AppNavigator() {
         <Drawer.Navigator
             drawerContent={(props) => <DrawerContent {...props} />}
             screenOptions={{
-                headerShown: false,
+                headerShown: true,
                 drawerStyle: {
                     width: '60%',
                     borderCurve: "continuous"

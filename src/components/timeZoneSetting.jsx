@@ -84,8 +84,6 @@ export default function TimeZoneForm({ onClose }) {
             const response = await setTimeZone(formData);
             console.log("Response status:", response.ok);
 
-            // If setTimeZone uses fetch, you may need to parse the JSON response
-            console.log("Response data:", data);
         } catch (error) {
             console.error("Error setting time zone:", error);
         }
