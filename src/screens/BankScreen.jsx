@@ -1,32 +1,34 @@
-// TransactionCard.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 // import { Checkbox } from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { getAllBankData } from '../api/user/bank_Expense';
 
 
-// Sample transaction data
-const transactions = [
-    { id: '1', date: '27 Feb 2025', transType: 'Credit', description: 'Luncha  with team', amount: '₹4000.0', selected: false },
-    { id: '2', date: '26 Feb 2025', transType: 'Debit', description: 'Uber ride', amount: '₹350.0', selected: false },
-    { id: '3', date: '25 Feb 2025', transType: 'Debit', description: 'New headphones', amount: '₹2500.0', selected: false },
-    { id: '4', date: '24 Feb 2025', transType: 'Credit', description: 'Electricity  bill', amount: '₹1200.0', selected: false },
-];
+
 
 const TransactionCard = ({ transaction, onToggleSelect }) => {
+    const formatDate = (timestamp) => {
+        const date = new Date(Number(timestamp)); // Convert to Date object
+        return date.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        }).toUpperCase(); // Convert month to uppercase
+    };
     return (
         <View className="bg-white rounded-xl shadow-md mb-4 overflow-hidden">
             <View className="flex-row items-center p-4 border-b border-gray-100">
                 <View className="ml-2 flex-1">
-                    <Text className="text-lg font-semibold">{transaction.date}</Text>
+                    <Text className="text-lg font-semibold">{formatDate(transaction.createdAt)}</Text>
                 </View>
                 <Text
-                    className={` font-semibold rounded-full px-3 text-sm ${transaction.transType === "Credit" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                    className={`font-semibold capitalize rounded-full px-3 w-16 text-center text-sm ${transaction.transactionType === "credit" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
                         }`}
                 >
-                    {transaction.transType}
+                    {transaction.transactionType}
                 </Text>
             </View>
 
@@ -38,7 +40,7 @@ const TransactionCard = ({ transaction, onToggleSelect }) => {
 
             <View className="mx-2 p-3 flex-row justify-between">
                 <Text className="text-lg font-bold text-gray-600">Amount</Text>
-                <Text className="text-lg font-bold text-blue-600">{transaction.amount}</Text>
+                <Text className="text-lg font-bold text-blue-600">₹ {transaction.amount}</Text>
             </View>
         </View>
     );
@@ -46,8 +48,19 @@ const TransactionCard = ({ transaction, onToggleSelect }) => {
 
 const BankScreen = () => {
     const navigation = useNavigation();
-    const [transactionData, setTransactionData] = React.useState(transactions);
+    const [transactionData, setTransactionData] = React.useState([]);
+    const bankData = async () => {
+        try {
+            const response = await getAllBankData();
+            setTransactionData(response.payments)
+        } catch (error) {
+            // console.error("Error fetching Customer:", error);
+        }
+    };
 
+    useEffect(() => {
+        bankData();
+    }, []);
     const handleToggleSelect = (id) => {
         setTransactionData(transactionData.map(item =>
             item.id === id ? { ...item, selected: !item.selected } : item

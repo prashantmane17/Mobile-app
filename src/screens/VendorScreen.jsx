@@ -29,6 +29,8 @@ export default function VendorScreen() {
             selected: false,
         },
     ]);
+    const [vendors, setVendors] = useState([])
+    const [invoices, setInvoices] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(25);
@@ -40,22 +42,20 @@ export default function VendorScreen() {
     const vendorData = async () => {
         try {
             const response = await getAllVendors();
-            console.log("rs--------", response)
-            setPayments(response)
+            setVendors(response.vendors)
+            setInvoices(response.invoices)
         } catch (error) {
-            console.error("Error fetching payment:", error);
+            console.error("Error fetching Vendors:", error);
         }
     };
-
 
     useEffect(() => {
         vendorData();
     }, []);
 
 
-    const filteredInvoices = customers.filter(invoice =>
-        invoice.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        invoice.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredInvoices = vendors.filter(invoice =>
+        invoice.displayName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
 
@@ -117,8 +117,16 @@ export default function VendorScreen() {
                         </View>
                     </View>
 
-                    {filteredInvoices.map((customer) => (
-                        <View
+                    {filteredInvoices.map((customer) => {
+                        const totalAmount = invoices.reduce((total, invoice) => {
+                            if (invoice.vendor.id === customer.id) {
+                                total += invoice.totalAmount;
+                            }
+                            return total;
+                        }, 0);
+
+
+                        return (<View
                             key={customer.id}
                             className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden border border-gray-100"
                         >
@@ -126,7 +134,7 @@ export default function VendorScreen() {
                             <View className="flex-row justify-between items-center p-4  border-b border-gray-100">
                                 <View className="flex-row items-center">
                                     <MaterialCommunityIcons name="account" size={20} color="#3b82f6" />
-                                    <Text className="ml-2 text-lg font-semibold text-blue-600">{customer.name}</Text>
+                                    <Text className="ml-2 text-lg font-semibold text-blue-600 capitalize">{customer.displayName}</Text>
                                 </View>
                                 <View className="flex-row items-center">
                                     <TouchableOpacity
@@ -149,8 +157,8 @@ export default function VendorScreen() {
                                 <View className="flex-row justify-between items-center mb-3">
 
                                     <View className="bg-blue-50 px-3 py-1 rounded-full">
-                                        <Text className="text-blue-700 font-medium">
-                                            GST: {customer.gstType}
+                                        <Text className="text-blue-700 font-medium w-full">
+                                            GST: <Text className="capitalize">{customer.gstTreatment}</Text>
                                         </Text>
                                     </View>
                                 </View>
@@ -165,24 +173,24 @@ export default function VendorScreen() {
                                     <View className="flex-row items-center mb-2">
                                         <MaterialCommunityIcons name="email" size={18} color="#6b7280" />
                                         <Text className="ml-2 text-gray-500 font-medium">Email:</Text>
-                                        <Text className="ml-2 text-gray-700">{customer.email}</Text>
+                                        <Text className="ml-2 text-gray-700">{customer.emailAddress ? customer.emailAddress : "--"}</Text>
                                     </View>
 
                                     <View className="flex-row items-center mb-2">
                                         <MaterialCommunityIcons name="phone" size={18} color="#6b7280" />
                                         <Text className="ml-2 text-gray-500 font-medium">Phone:</Text>
-                                        <Text className="ml-2 text-gray-700">{customer.phone}</Text>
+                                        <Text className="ml-2 text-gray-700">{customer.phone ? customer.phone : "--"}</Text>
                                     </View>
                                 </View>
 
-                                {/* Card Footer */}
                                 <View className="mt-2 pt-3 border-t border-gray-100 flex-row justify-between items-center">
                                     <Text className="text-gray-500 font-medium">Total Pay:</Text>
-                                    <Text className="text-xl font-bold text-green-600">₹ {customer.totalPay}</Text>
+                                    <Text className="text-xl font-bold text-green-600">₹ {totalAmount ? totalAmount : "0"}</Text>
                                 </View>
                             </View>
                         </View>
-                    ))}
+                        )
+                    })}
 
                     {customers.length === 0 && (
                         <View className="flex-1 justify-center items-center py-20">

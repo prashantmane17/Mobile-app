@@ -1,22 +1,21 @@
 // TransactionCard.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 // import { Checkbox } from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-
-
-// Sample transaction data
-const transactions = [
-    { id: '1', date: '27 Feb 2025', name: 'Food & Beverages', description: 'Luncha  with team', amount: '₹4000.0', selected: false },
-    { id: '2', date: '26 Feb 2025', name: 'Transportation', description: 'Uber ride', amount: '₹350.0', selected: false },
-    { id: '3', date: '25 Feb 2025', name: 'Shopping', description: 'New headphones', amount: '₹2500.0', selected: false },
-    { id: '4', date: '24 Feb 2025', name: 'Utilities', description: 'Electricity  bill', amount: '₹1200.0', selected: false },
-];
+import { getAllExpenses } from '../api/user/bank_Expense';
 
 const TransactionCard = ({ transaction, onToggleSelect }) => {
-
+    const formatDate = (timestamp) => {
+        const date = new Date(Number(timestamp)); // Convert to Date object
+        return date.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        }).toUpperCase(); // Convert month to uppercase
+    };
     return (
         <View className="bg-white rounded-xl shadow-md mb-4 overflow-hidden">
             <View className="flex-row items-center p-4 border-b border-gray-100">
@@ -26,8 +25,8 @@ const TransactionCard = ({ transaction, onToggleSelect }) => {
                     color="#3b82f6"
                 /> */}
                 <View className="ml-2 flex-1">
-                    <Text className="text-lg font-semibold text-gray-800">{transaction.name}</Text>
-                    <Text className="text-sm text-gray-500">{transaction.date}</Text>
+                    <Text className="text-lg font-semibold text-gray-800">{transaction.category}</Text>
+                    <Text className="text-sm text-gray-500">{formatDate(transaction.createdAt)}</Text>
                 </View>
                 <View className="flex-row items-center">
                     <TouchableOpacity
@@ -54,15 +53,27 @@ const TransactionCard = ({ transaction, onToggleSelect }) => {
 
             <View className="mx-2 p-3 flex-row justify-between">
                 <Text className="text-lg font-bold text-gray-600">Amount</Text>
-                <Text className="text-lg font-bold text-blue-600">{transaction.amount}</Text>
+                <Text className="text-lg font-bold text-blue-600">₹ {transaction.amount}</Text>
             </View>
         </View>
     );
 };
 
 const Expense = () => {
-    const [transactionData, setTransactionData] = React.useState(transactions);
+    const [transactionData, setTransactionData] = React.useState([]);
     const navigation = useNavigation();
+    const expenseData = async () => {
+        try {
+            const response = await getAllExpenses();
+            setTransactionData(response.payments)
+        } catch (error) {
+            console.error("Error fetching Customer:", error);
+        }
+    };
+
+    useEffect(() => {
+        expenseData();
+    }, []);
     const handleToggleSelect = (id) => {
         setTransactionData(transactionData.map(item =>
             item.id === id ? { ...item, selected: !item.selected } : item
@@ -77,10 +88,12 @@ const Expense = () => {
         { label: '50', value: 50 },
         { label: '100', value: 100 }
     ]);
+
     const filteredInvoices = transactionData.filter(invoice =>
         invoice.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         invoice.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
 
     return (
         <View className="flex-1 bg-gray-100">

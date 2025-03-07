@@ -34,7 +34,6 @@ function AppWithBackHandler() {
     const checkSession = async () => {
       try {
         const data = await getSession();
-        console.log("datt---", data)
         if (data?.orgId && data?.userId) {
           navigation.navigate("UserDashboard");
         } else if (data?.orgId && data?.userId === null) {

@@ -3,7 +3,6 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import UsersDashboardScreen from '../screens/UsersDashboardScreen';
 import Party from '../screens/Party';
 import DrawerContent from '../components/user/DrawerContent';
-import { View } from 'react-native';
 import Header from '../components/user/Header';
 import CustomerList from '../screens/Party';
 import AddCustomerForm from '../screens/AddCustomerForm';

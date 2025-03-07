@@ -4,6 +4,7 @@ import { Feather, FontAwesome } from '@expo/vector-icons';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { useNavigation } from '@react-navigation/native';
 import { useHeader } from '../../context/HeaderContext';
+import { getSession } from '../../api/admin/adminApi';
 
 export default function DrawerContent(props) {
     const navigation = useNavigation();
@@ -32,6 +33,24 @@ export default function DrawerContent(props) {
 
         return () => backHandler.remove();
     }, [exitApp, activeScreen]);
+
+    useEffect(() => {
+        const checkSession = async () => {
+            try {
+                const data = await getSession();
+                if (data?.orgId && data?.userId) {
+                } else {
+                    Alert.alert('Session Expired', 'Your App Session Expired Login to Continue');
+                    navigation.navigate("Login");
+                }
+            } catch (error) {
+                Alert.alert('Session Expired', 'Your App Session Expired Login to Continue');
+                navigation.navigate("Login");
+            }
+        };
+
+        checkSession();
+    }, [navigation, props]);
     const handleLogout = () => {
 
         navigation.reset({
