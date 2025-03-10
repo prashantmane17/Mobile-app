@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -10,37 +10,22 @@ import {
     KeyboardAvoidingView,
     Alert
 } from 'react-native';
-import { styled } from 'nativewind';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-// Styled components
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTextInput = styled(TextInput);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledScrollView = styled(ScrollView);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledImage = styled(Image);
+import { getOrgProfie, updateOrgProfie } from "../api/admin/adminApi";
 
 export default function AdminSetting() {
-    const [businessInfo, setBusinessInfo] = useState({
-        businessName: 'HP',
-        email: 'yu@g.com',
-        phoneNumber: '25484879',
-        businessAddress: 'Tyu',
-        industryType: '',
-        gstRegistration: 'Not Registered',
-        bankAccountNumber: 'N/A',
-        ifscCode: 'N/A',
-        logo: null,
-        timeZone: '',
-        financialPeriod: '-',
-        currency: 'USD'
-    });
-
+    const [businessInfo, setBusinessInfo] = useState([]);
+    const profileData = async () => {
+        const response = await getOrgProfie();
+        const data = response.organizationList[0];
+        setBusinessInfo(data)
+    }
+    useEffect(() => {
+        profileData();
+    }, [])
     const [isEditing, setIsEditing] = useState(false);
 
     const gstOptions = [
@@ -101,7 +86,7 @@ export default function AdminSetting() {
     };
 
     // Handle form submission
-    const handleSave = () => {
+    const handleSave = async () => {
         // Validate form
         if (!businessInfo.businessName.trim()) {
             Alert.alert('Error', 'Business name is required');
@@ -113,8 +98,11 @@ export default function AdminSetting() {
             return;
         }
 
-        // Save changes
-        console.log('Saving business information:', businessInfo);
+        try {
+            const response = await updateOrgProfie(businessInfo.id)
+        } catch (e) {
+            console.log("errro")
+        }
         Alert.alert('Success', 'Business information updated successfully');
         setIsEditing(false);
     };
@@ -131,83 +119,83 @@ export default function AdminSetting() {
     };
 
     return (
-        <StyledSafeAreaView className="flex-1 bg-gray-50">
+        <SafeAreaView className="flex-1 bg-gray-50">
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
             >
-                <StyledScrollView className="flex-1 px-4 py-2">
+                <ScrollView className="flex-1 px-4 py-2">
                     {/* Header */}
-                    <StyledView className="flex-row justify-between items-center mb-4">
-                        <StyledView>
-                            <StyledText className="text-2xl font-bold text-gray-800">Business Information</StyledText>
-                            <StyledText className="text-gray-500">Update your business details</StyledText>
-                        </StyledView>
-                        <StyledTouchableOpacity
+                    <View className="flex-row justify-between items-center mb-4">
+                        <View>
+                            <Text className="text-2xl font-bold text-gray-800">Business Information</Text>
+                            <Text className="text-gray-500">Update your business details</Text>
+                        </View>
+                        {!isEditing && <TouchableOpacity
                             onPress={toggleEditMode}
                             className="p-2 rounded-full bg-blue-50"
                         >
                             <MaterialIcons
-                                name={isEditing ? "check" : "edit"}
+                                name="edit"
                                 size={24}
                                 color="#3b82f6"
                             />
-                        </StyledTouchableOpacity>
-                    </StyledView>
+                        </TouchableOpacity>}
+                    </View>
 
-                    {/* Main content */}<StyledView className="bg-white rounded-xl shadow-sm p-4 mb-4">
-                        <StyledText className="text-lg font-semibold text-gray-800 mb-2">Organization Logo</StyledText>
-                        <StyledText className="text-gray-500 mb-4">Used in invoices and communications</StyledText>
+                    {/* Main content */}<View className="bg-white rounded-xl shadow-sm p-4 mb-4">
+                        <Text className="text-lg font-semibold text-gray-800 mb-2">Organization Logo</Text>
+                        <Text className="text-gray-500 mb-4">Used in invoices and communications</Text>
 
-                        <StyledView className="items-center">
+                        <View className="items-center">
                             {businessInfo.logo ? (
-                                <StyledView className="relative">
-                                    <StyledImage
+                                <View className="relative">
+                                    <Image
                                         source={{ uri: businessInfo.logo }}
                                         className="w-40 h-40 rounded-lg"
                                     />
                                     {isEditing && (
-                                        <StyledTouchableOpacity
+                                        <TouchableOpacity
                                             className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-2"
                                             onPress={pickImage}
                                         >
                                             <Ionicons name="camera" size={20} color="white" />
-                                        </StyledTouchableOpacity>
+                                        </TouchableOpacity>
                                     )}
-                                </StyledView>
+                                </View>
                             ) : (
-                                <StyledTouchableOpacity
+                                <TouchableOpacity
                                     className="bg-gray-200 rounded-lg w-40 h-40 items-center justify-center"
                                     onPress={isEditing ? pickImage : null}
                                     disabled={!isEditing}
                                 >
                                     <Ionicons name="image-outline" size={40} color="#6b7280" />
-                                    <StyledText className="text-gray-600 mt-2">Upload Image</StyledText>
-                                </StyledTouchableOpacity>
+                                    <Text className="text-gray-600 mt-2">Upload Image</Text>
+                                </TouchableOpacity>
                             )}
-                        </StyledView>
-                    </StyledView>
-                    <StyledView className="flex-row flex-wrap">
+                        </View>
+                    </View>
+                    <View className="flex-row flex-wrap">
                         {/* Left column */}
-                        <StyledView className="w-full lg:w-1/2 pr-0 lg:pr-2">
-                            <StyledView className="bg-white rounded-xl shadow-sm p-4 mb-4">
+                        <View className="w-full lg:w-1/2 pr-0 lg:pr-2">
+                            <View className="bg-white rounded-xl shadow-sm p-4 mb-4">
                                 {/* Business Name */}
-                                <StyledView className="mb-4">
-                                    <StyledText className="text-gray-700 font-medium mb-1">Business Name</StyledText>
-                                    <StyledTextInput
+                                <View className="mb-4">
+                                    <Text className="text-gray-700 font-medium mb-1">Business Name</Text>
+                                    <TextInput
                                         className={`border rounded-lg p-3 ${isEditing ? 'border-blue-300 bg-white' : 'border-gray-200 bg-gray-50'}`}
                                         value={businessInfo.businessName}
                                         onChangeText={(text) => handleChange('businessName', text)}
                                         editable={isEditing}
                                         placeholder="Enter business name"
                                     />
-                                </StyledView>
+                                </View>
 
                                 {/* Email and Phone in a row */}
-                                <StyledView className="flex-row mb-4">
-                                    <StyledView className="flex-1 mr-2">
-                                        <StyledText className="text-gray-700 font-medium mb-1">Email Address</StyledText>
-                                        <StyledTextInput
+                                <View className="flex-row mb-4">
+                                    <View className="flex-1 mr-2">
+                                        <Text className="text-gray-700 font-medium mb-1">Email Address</Text>
+                                        <TextInput
                                             className={`border rounded-lg p-3 ${isEditing ? 'border-blue-300 bg-white' : 'border-gray-200 bg-gray-50'}`}
                                             value={businessInfo.email}
                                             onChangeText={(text) => handleChange('email', text)}
@@ -215,10 +203,10 @@ export default function AdminSetting() {
                                             keyboardType="email-address"
                                             placeholder="Enter email"
                                         />
-                                    </StyledView>
-                                    <StyledView className="flex-1">
-                                        <StyledText className="text-gray-700 font-medium mb-1">Phone Number</StyledText>
-                                        <StyledTextInput
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-gray-700 font-medium mb-1">Phone Number</Text>
+                                        <TextInput
                                             className={`border rounded-lg p-3 ${isEditing ? 'border-blue-300 bg-white' : 'border-gray-200 bg-gray-50'}`}
                                             value={businessInfo.phoneNumber}
                                             onChangeText={(text) => handleChange('phoneNumber', text)}
@@ -226,139 +214,138 @@ export default function AdminSetting() {
                                             keyboardType="phone-pad"
                                             placeholder="Enter phone number"
                                         />
-                                    </StyledView>
-                                </StyledView>
+                                    </View>
+                                </View>
 
                                 {/* Business Address */}
-                                <StyledView className="mb-4">
-                                    <StyledText className="text-gray-700 font-medium mb-1">Business Address</StyledText>
-                                    <StyledTextInput
+                                <View className="mb-4">
+                                    <Text className="text-gray-700 font-medium mb-1">Business Address</Text>
+                                    <TextInput
                                         className={`border rounded-lg p-3 ${isEditing ? 'border-blue-300 bg-white' : 'border-gray-200 bg-gray-50'}`}
-                                        value={businessInfo.businessAddress}
-                                        onChangeText={(text) => handleChange('businessAddress', text)}
+                                        value={businessInfo.address}
+                                        onChangeText={(text) => handleChange('address', text)}
                                         editable={isEditing}
                                         multiline
                                         numberOfLines={2}
                                         placeholder="Enter business address"
                                     />
-                                </StyledView>
+                                </View>
 
                                 {/* Industry Type and GST Registration */}
-                                <StyledView className="flex-row mb-4">
-                                    <StyledView className="flex-1 mr-2">
-                                        <StyledText className="text-gray-700 font-medium mb-1">Industry Type</StyledText>
+                                <View className="flex-row mb-4">
+                                    <View className="flex-1 mr-2">
+                                        <Text className="text-gray-700 font-medium mb-1">Industry Type</Text>
                                         {isEditing ? (
-                                            <StyledView className="border border-blue-300 rounded-lg overflow-hidden">
+                                            <View className="border border-blue-300 rounded-lg overflow-hidden">
                                                 <Picker
                                                     selectedValue={businessInfo.industryType}
                                                     onValueChange={(value) => handleChange('industryType', value)}
-                                                    style={{ height: 50 }}
-                                                >
+                                                    style={{ height: 50 }}                                                >
                                                     <Picker.Item label="Select Industry" value="" />
                                                     {industryOptions.map((option, index) => (
                                                         <Picker.Item key={index} label={option} value={option} />
                                                     ))}
                                                 </Picker>
-                                            </StyledView>
+                                            </View>
                                         ) : (
-                                            <StyledTextInput
+                                            <TextInput
                                                 className="border border-gray-200 rounded-lg p-3 bg-gray-50"
                                                 value={businessInfo.industryType || 'Not specified'}
                                                 editable={false}
                                             />
                                         )}
-                                    </StyledView>
-                                    <StyledView className="flex-1">
-                                        <StyledText className="text-gray-700 font-medium mb-1">GST Registration</StyledText>
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-gray-700 font-medium mb-1">GST Registration</Text>
                                         {isEditing ? (
-                                            <StyledView className="border border-blue-300 rounded-lg overflow-hidden">
+                                            <View className="border border-blue-300 rounded-lg overflow-hidden">
                                                 <Picker
-                                                    selectedValue={businessInfo.gstRegistration}
-                                                    onValueChange={(value) => handleChange('gstRegistration', value)}
+                                                    selectedValue={businessInfo.gstRegistered}
+                                                    onValueChange={(value) => handleChange('gstRegistered', value)}
                                                     style={{ height: 50 }}
                                                 >
                                                     {gstOptions.map((option, index) => (
                                                         <Picker.Item key={index} label={option} value={option} />
                                                     ))}
                                                 </Picker>
-                                            </StyledView>
+                                            </View>
                                         ) : (
-                                            <StyledTextInput
+                                            <TextInput
                                                 className="border border-gray-200 rounded-lg p-3 bg-gray-50"
-                                                value={businessInfo.gstRegistration}
+                                                value={businessInfo.gstRegistered}
                                                 editable={false}
                                             />
                                         )}
-                                    </StyledView>
-                                </StyledView>
+                                    </View>
+                                </View>
 
                                 {/* Bank Account and IFSC */}
-                                <StyledView className="flex-row mb-4">
-                                    <StyledView className="flex-1 mr-2">
-                                        <StyledText className="text-gray-700 font-medium mb-1">Bank Account Number</StyledText>
-                                        <StyledTextInput
+                                <View className="flex-row mb-4">
+                                    <View className="flex-1 mr-2">
+                                        <Text className="text-gray-700 font-medium mb-1">Bank Account Number</Text>
+                                        <TextInput
                                             className={`border rounded-lg p-3 ${isEditing ? 'border-blue-300 bg-white' : 'border-gray-200 bg-gray-50'}`}
                                             value={businessInfo.bankAccountNumber}
                                             onChangeText={(text) => handleChange('bankAccountNumber', text)}
                                             editable={isEditing}
                                             placeholder="Enter account number"
                                         />
-                                    </StyledView>
-                                    <StyledView className="flex-1">
-                                        <StyledText className="text-gray-700 font-medium mb-1">IFSC Code</StyledText>
-                                        <StyledTextInput
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-gray-700 font-medium mb-1">IFSC Code</Text>
+                                        <TextInput
                                             className={`border rounded-lg p-3 ${isEditing ? 'border-blue-300 bg-white' : 'border-gray-200 bg-gray-50'}`}
                                             value={businessInfo.ifscCode}
                                             onChangeText={(text) => handleChange('ifscCode', text)}
                                             editable={isEditing}
                                             placeholder="Enter IFSC code"
                                         />
-                                    </StyledView>
-                                </StyledView>
+                                    </View>
+                                </View>
 
                                 {/* Save Button */}
                                 {isEditing && (
-                                    <StyledTouchableOpacity
+                                    <TouchableOpacity
                                         className="bg-blue-500 rounded-lg py-3 mt-2"
                                         onPress={handleSave}
                                     >
-                                        <StyledText className="text-white font-semibold text-center">Save Changes</StyledText>
-                                    </StyledTouchableOpacity>
+                                        <Text className="text-white font-semibold text-center">Save Changes</Text>
+                                    </TouchableOpacity>
                                 )}
-                            </StyledView>
-                        </StyledView>
+                            </View>
+                        </View>
 
                         {/* Right column */}
-                        <StyledView className="w-full lg:w-1/2 pl-0 lg:pl-2">
+                        <View className="w-full lg:w-1/2 pl-0 lg:pl-2">
                             {/* Logo Upload */}
 
 
                             {/* Time Zone & Currency */}
-                            <StyledView className="bg-white rounded-xl shadow-sm p-4 mb-4">
-                                <StyledView className="flex-row items-center mb-4">
-                                    <StyledView className="w-10 h-10 rounded-full bg-purple-100 items-center justify-center mr-3">
+                            <View className="bg-white rounded-xl shadow-sm p-4 mb-4">
+                                <View className="flex-row items-center mb-4">
+                                    <View className="w-10 h-10 rounded-full bg-purple-100 items-center justify-center mr-3">
                                         <Ionicons name="time-outline" size={24} color="#8b5cf6" />
-                                    </StyledView>
-                                    <StyledText className="text-lg font-semibold text-gray-800">Time Zone & Currency</StyledText>
-                                </StyledView>
+                                    </View>
+                                    <Text className="text-lg font-semibold text-gray-800">Time Zone & Currency</Text>
+                                </View>
 
                                 {/* Financial Period */}
-                                <StyledView className="mb-4">
-                                    <StyledText className="text-gray-700 font-medium mb-1">Financial Period</StyledText>
-                                    <StyledTextInput
+                                <View className="mb-4">
+                                    <Text className="text-gray-700 font-medium mb-1">Financial Period</Text>
+                                    <TextInput
                                         className={`border rounded-lg p-3 ${isEditing ? 'border-blue-300 bg-white' : 'border-gray-200 bg-gray-50'}`}
                                         value={businessInfo.financialPeriod}
                                         onChangeText={(text) => handleChange('financialPeriod', text)}
                                         editable={isEditing}
                                         placeholder="e.g., April - March"
                                     />
-                                </StyledView>
+                                </View>
 
                                 {/* Currency */}
-                                <StyledView className="mb-2">
-                                    <StyledText className="text-gray-700 font-medium mb-1">Currency</StyledText>
+                                <View className="mb-2">
+                                    <Text className="text-gray-700 font-medium mb-1">Currency</Text>
                                     {isEditing ? (
-                                        <StyledView className="border border-blue-300 rounded-lg overflow-hidden">
+                                        <View className="border border-blue-300 rounded-lg overflow-hidden">
                                             <Picker
                                                 selectedValue={businessInfo.currency}
                                                 onValueChange={(value) => handleChange('currency', value)}
@@ -368,20 +355,20 @@ export default function AdminSetting() {
                                                     <Picker.Item key={index} label={option.label} value={option.value} />
                                                 ))}
                                             </Picker>
-                                        </StyledView>
+                                        </View>
                                     ) : (
-                                        <StyledTextInput
+                                        <TextInput
                                             className="border border-gray-200 rounded-lg p-3 bg-gray-50"
                                             value={currencyOptions.find(c => c.value === businessInfo.currency)?.label || businessInfo.currency}
                                             editable={false}
                                         />
                                     )}
-                                </StyledView>
-                            </StyledView>
-                        </StyledView>
-                    </StyledView>
-                </StyledScrollView>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                </ScrollView>
             </KeyboardAvoidingView>
-        </StyledSafeAreaView>
+        </SafeAreaView>
     );
 }

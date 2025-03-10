@@ -22,10 +22,8 @@ export default function ForgetPassword() {
                 },
                 body: JSON.stringify({ email }), // Ensure correct formatting
             });
-            console.log('res----', response)
             if (response.ok) {
                 const result = await response.json();
-                console.log("result----", result)
                 if (result.success) {
                     Alert.alert("OTP Sent", "Please check your email for the OTP");
                     setStep(2);

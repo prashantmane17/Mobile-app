@@ -122,7 +122,6 @@ const InvoiceTemp = () => {
             const { status } = await MediaLibrary.requestPermissionsAsync();
 
             if (status === 'granted') {
-                console.log("✅ Storage permission granted!");
                 return true;
             } else {
                 Alert.alert('Permission Required', 'Please enable storage permissions in settings.');
@@ -137,8 +136,6 @@ const InvoiceTemp = () => {
     const generatePDF = async () => {
         try {
             setLoading(true);
-            console.log("📄 Generating PDF...");
-
             // Generate PDF
             const { uri } = await Print.printToFileAsync({
                 html: generateHTML(),
@@ -148,7 +145,6 @@ const InvoiceTemp = () => {
             console.log("✅ PDF Generated at:", uri);
 
             if (Platform.OS === 'android') {
-                console.log("📂 Attempting to move file to Downloads...");
 
                 // ✅ Directly move to the Downloads folder
                 const downloadsFolder = FileSystem.documentDirectory.replace('files/', 'downloads/'); // ✅ Get actual Downloads folder
@@ -158,8 +154,6 @@ const InvoiceTemp = () => {
                     from: uri,
                     to: newFilePath,
                 });
-
-                console.log("✅ PDF saved to:", newFilePath);
                 Alert.alert('Success', 'PDF saved to Downloads folder');
 
                 setLoading(false);
@@ -179,12 +173,9 @@ const InvoiceTemp = () => {
     const sharePDF = async () => {
         try {
             setLoading(true);
-            console.log("📤 Preparing to share PDF...");
-
             const filePath = await generatePDF();
             if (filePath && (await Sharing.isAvailableAsync())) {
                 await Sharing.shareAsync(filePath);
-                console.log("✅ PDF shared successfully.");
             } else {
                 Alert.alert('Error', 'Sharing is not available on this device');
             }

@@ -232,7 +232,6 @@ export default function SignUpScreen() {
                 },
                 body: formBody,
             })
-            console.log("response---", response)
 
             if (response.ok) {
                 Alert.alert("Success", "Account created successfully!")

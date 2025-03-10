@@ -22,7 +22,6 @@ export default function CustomerList() {
     const customerData = async () => {
         try {
             const response = await getAllCustomers();
-            // console.log("res-----", response.invoices)
             setCustomers(response.parties)
             setInvoices(response.invoices)
         } catch (error) {

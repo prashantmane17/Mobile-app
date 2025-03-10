@@ -21,7 +21,6 @@ const PaymentList = () => {
     const paymentData = async () => {
         try {
             const response = await getAllPayments();
-            console.log("rs--------", response)
             setPayments(response.payments)
         } catch (error) {
             console.error("Error fetching payment:", error);
@@ -37,7 +36,7 @@ const PaymentList = () => {
     );
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-100"> 
+        <SafeAreaView className="flex-1 bg-gray-100">
             <View className="p-4">
                 {/* Header */}
 

@@ -36,7 +36,6 @@ export default function UsersScreen() {
             console.error("Error fetching dashboard:", error);
         }
     };
-
     useEffect(() => {
         fetchAdminDashboard();
     }, []);

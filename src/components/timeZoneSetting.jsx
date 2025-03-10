@@ -82,7 +82,6 @@ export default function TimeZoneForm({ onClose }) {
 
         try {
             const response = await setTimeZone(formData);
-            console.log("Response status:", response.ok);
 
         } catch (error) {
             console.error("Error setting time zone:", error);

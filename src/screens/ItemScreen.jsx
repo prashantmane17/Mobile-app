@@ -30,7 +30,6 @@ export default function ItemScreen() {
         setLoading(true)
         try {
             const response = await getAllItems()
-            console.log("Items response:", response.items)
             if (response && response.items && response.items.length > 0) {
                 setItems(response.items)
             } else {

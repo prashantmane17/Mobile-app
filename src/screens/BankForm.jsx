@@ -5,12 +5,12 @@ import { Picker } from '@react-native-picker/picker';
 import { Calendar, ChevronLeft } from 'lucide-react-native';
 
 export default function BankForm() {
+    const [formcloseForm, setformcloseForm] = useState(true)
     const [formData, setFormData] = useState({
         transactionId: '',
         transactionDate: '03/02/2025',
         transactionType: 'credit',
-        amount: '',
-        description: ''
+        amount: '', description: ''
     });
 
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -139,14 +139,16 @@ export default function BankForm() {
                     <TouchableOpacity className="bg-blue-500 rounded-md py-3 px-6 mr-2">
                         <Text className="text-white font-medium">Save</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity className="border border-gray-300 rounded-md py-3 px-6">
+                    {/* {isformcloseForm */}
+                    < TouchableOpacity className="border border-gray-300 rounded-md py-3 px-6">
                         <Text className="text-gray-700 font-medium">Close</Text>
                     </TouchableOpacity>
+                    {/* } */}
                 </View>
-            </ScrollView>
+            </ScrollView >
 
             {/* Transaction Type Picker Modal */}
 
-        </View>
+        </View >
     );
 }

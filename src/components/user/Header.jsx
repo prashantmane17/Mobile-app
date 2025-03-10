@@ -19,7 +19,6 @@ export default function Header() {
         }
     };
     const handleOptionSelect = (option) => {
-        console.log(`Selected option: ${option}`);
         setShowDropdown(false); // Close dropdown after selection
     };
 

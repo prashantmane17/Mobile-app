@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ScrollView, SafeAreaView, Platform, StatusBar, Dimensions } from 'react-native';
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Feather, FontAwesome } from '@expo/vector-icons';
+import { getAllInvoices } from '../api/user/invoice';
 
 // Metric Card Component
 function MetricCard({ title, value, icon, iconColor, iconBgColor }) {
@@ -23,10 +24,16 @@ function MetricCard({ title, value, icon, iconColor, iconBgColor }) {
 // Dashboard Screen Component
 export default function UsersDashboardScreen() {
     const screenWidth = Dimensions.get('window').width;
+    const allInvoiceData = async () => {
+        const response = await getAllInvoices();
+        console.log("response---", response);
+    }
+    useEffect(() => {
+        allInvoiceData();
+    }, [])
 
-    // Revenue data for line chart
     const revenueData = {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        labels: ["Jans", "Feb", "Mar", "Apr", "May", "Jun"],
         datasets: [{
             data: [4500, 5200, 4800, 5900, 6400, 7200]
         }]

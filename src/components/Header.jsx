@@ -18,8 +18,6 @@ export default function Header() {
 
     const handleCreateUser = async () => {
         try {
-            console.log('User Data:', formData);
-
             // Prepare the form data as a URL-encoded string
             const formBody = new URLSearchParams(formData).toString();
 
@@ -34,7 +32,6 @@ export default function Header() {
             });
 
             const responseText = await response.text(); // Get the response text from the backend
-            console.log("res---", responseText)
             if (response.ok) {
                 if (response.status === 201) {
                     Alert.alert('Success', responseText);
