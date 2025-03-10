@@ -27,4 +27,20 @@ export const getSession = async () => {
         throw error.response?.data || "Failed to delete user";
     }
 };
+export const getOrgProfie = async () => {
+    try {
+        const response = await api.get(`/get-org-profile-data`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || "Failed to delete user";
+    }
+};
+export const updateOrgProfie = async (orgId) => {
+    try {
+        const response = await api.put(`/editOrgitembyid/${orgId}`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || "Failed to delete user";
+    }
+};
 

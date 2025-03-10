@@ -37,6 +37,7 @@
     },
     "plugins": [
       "expo-asset"
-    ]
+    ],
+    "owner": "prashantmn17"
   }
 }
