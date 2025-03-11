@@ -5,13 +5,14 @@ import { Picker } from '@react-native-picker/picker';
 import { Calendar, ChevronLeft } from 'lucide-react-native';
 
 export default function BankForm() {
-    const [formData, setFormData] = useState({
+    const intialData = {
         transactionId: '',
         transactionDate: '03/02/2025',
         transactionType: 'credit',
         amount: '',
         description: ''
-    });
+    }
+    const [formData, setFormData] = useState(intialData);
 
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date(2025, 2, 2));
@@ -31,9 +32,8 @@ export default function BankForm() {
     };
 
     const handleSubmit = async () => {
+        // setFormData({ ...formData, transactionDate: formattedDate });
         const data = new FormData();
-
-        // Add basic party fields
         Object.keys(formData).forEach((key) => {
             if (typeof formData[key] !== "object" || formData[key] === null) {
                 data.append(key, formData[key]);
@@ -46,11 +46,11 @@ export default function BankForm() {
                 credentials: "include",
                 headers: {},
             });
-            console.log("response-----", response)
             const result = await response.json();
 
             if (response.ok) {
                 Alert.alert('Success', 'Transaction saved successfully');
+                setFormData(intialData)
             } else {
                 Alert.alert('Error', result || 'Something went wrong');
             }

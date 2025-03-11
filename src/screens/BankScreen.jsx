@@ -11,12 +11,12 @@ import { getAllBankData } from '../api/user/bank_Expense';
 
 const TransactionCard = ({ transaction, onToggleSelect }) => {
     const formatDate = (timestamp) => {
-        const date = new Date(Number(timestamp)); // Convert to Date object
+        const date = new Date(Number(timestamp));
         return date.toLocaleDateString("en-GB", {
             day: "2-digit",
             month: "short",
             year: "numeric",
-        }).toUpperCase(); // Convert month to uppercase
+        }).toUpperCase();
     };
     return (
         <View className="bg-white rounded-xl shadow-md mb-4 overflow-hidden">
@@ -54,7 +54,7 @@ const BankScreen = () => {
             const response = await getAllBankData();
             setTransactionData(response.payments)
         } catch (error) {
-            // console.error("Error fetching Customer:", error);
+
         }
     };
 

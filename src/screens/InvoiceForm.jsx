@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -13,22 +13,54 @@ import {
 } from 'react-native';
 import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Plus, Trash } from 'react-native-feather';
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { getAllCustomers } from '../api/user/customer';
+import { getAllItems } from '../api/user/items';
 
 export default function InvoiceForm() {
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [customers, setCustomers] = useState([])
+    const [isLoading, setISLoading] = useState(false)
+    const [invoices, setInvoices] = useState([])
+    const [inoiceItems, setInvoiceItems] = useState([])
+    const getCustomer = async () => {
+        setISLoading(true);
+        try {
+            const response = await getAllCustomers();
+            const itemResponse = await getAllItems();
+            setCustomers(response.parties)
+            setInvoices(response.invoices)
+            setInvoiceItems(itemResponse.items)
+            setFilteredUsers(response.parties)
+        } catch (error) {
+
+        } finally {
+            setISLoading(false);
+        }
+    }
+    useEffect(() => {
+        getCustomer();
+    }, [])
+    // if (isLoading) {
+    //     return <View><Text>Loading......</Text></View>
+    // }
     const users = ["John Doe", "Jane Smith", "Alice Johnson", "Bob Brown"];
     const itemsList = [
         { name: "Item A", price: 100, tax: 10 },
         { name: "Item B", price: 200, tax: 5 },
         { name: "Item C", price: 150, tax: 8 },
     ];
+
     const [showInvoicePicker, setShowInvoicePicker] = useState(false);
     const [showDuePicker, setShowDuePicker] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [filteredUsers, setFilteredUsers] = useState(users);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [filteredItems, setFilteredItems] = useState([]);
     const [itemModalVisible, setItemModalVisible] = useState(false);
+    useEffect(() => {
+
+        console.log("kii----")
+    }, [filteredUsers])
     const [invoiceData, setInvoiceData] = useState({
         customerName: '',
         invoiceNo: 'INV/2025/00003',
@@ -81,16 +113,18 @@ export default function InvoiceForm() {
     const handleSearch = (text) => {
         setInvoiceData({ ...invoiceData, customerName: text });
         if (text.length > 0) {
-            const filtered = users.filter((user) =>
-                user.toLowerCase().includes(text.toLowerCase())
+            const filtered = customers.filter((user) =>
+                user.displayName?.toLowerCase().includes(text.toLowerCase())
             );
+
             setFilteredUsers(filtered);
         } else {
-            setFilteredUsers(users);
+            setFilteredUsers(customers);
         }
     };
     const handleSelect = (selectedName) => {
-        setInvoiceData({ ...invoiceData, customerName: selectedName });
+        console.log("selectedName---", selectedName)
+        setInvoiceData({ ...invoiceData, customerName: selectedName.displayName });
         setModalVisible(false);
     };
     const handleDateChange = (event, date, type) => {
@@ -115,17 +149,17 @@ export default function InvoiceForm() {
 
     const handleOpenDropdown = (index) => {
         setSelectedIndex(index);
-        setFilteredItems(itemsList);
+        setFilteredItems(inoiceItems);
         setItemModalVisible(true);
     };
     const handleSelectItem = (selectedItem) => {
         const updatedItems = [...invoiceData.items];
         updatedItems[selectedIndex] = {
-            details: selectedItem.name,
+            details: selectedItem.itemName,
             quantity: 1,
-            price: selectedItem.price,
-            tax: selectedItem.tax,
-            amount: selectedItem.price * 1,
+            price: selectedItem.sellingPrice,
+            tax: selectedItem.intraStateTax || 0,
+            amount: Number(selectedItem.sellingPrice) * 1,
         };
 
         setInvoiceData({ ...invoiceData, items: updatedItems });
@@ -146,7 +180,7 @@ export default function InvoiceForm() {
             <View className="flex-row items-center border border-gray-300 rounded-md">
                 <TextInput
                     className="flex-1 py-1 px-2 text-center"
-                    value={item.quantity.toString()}
+                    value={item.quantity?.toString()}
                     keyboardType="numeric"
                     onChangeText={(value) => handleInputChange(index, "quantity", value)}
                 />
@@ -227,7 +261,7 @@ export default function InvoiceForm() {
                                                             className="p-3 border-b border-gray-200"
                                                             onPress={() => handleSelect(item)}
                                                         >
-                                                            <Text>{item}</Text>
+                                                            <Text>{item.displayName}</Text>
                                                         </TouchableOpacity>
                                                     )}
                                                     keyboardShouldPersistTaps="handled"
@@ -411,7 +445,7 @@ export default function InvoiceForm() {
                                             <TextInput
                                                 className="border flex-1 border-gray-300 rounded-md p-2 text-center"
                                                 keyboardType="numeric"
-                                                value={item.price.toString()}
+                                                value={item.price?.toString()}
                                                 onChangeText={(value) => handleInputChange(index, "price", value)}
                                             />
                                         </View>
@@ -449,8 +483,8 @@ export default function InvoiceForm() {
                                             placeholder="Search items..."
                                             onChangeText={(text) => {
                                                 setFilteredItems(
-                                                    itemsList.filter((item) =>
-                                                        item.name.toLowerCase().includes(text.toLowerCase())
+                                                    inoiceItems.filter((item) =>
+                                                        item.itemName.toLowerCase().includes(text.toLowerCase())
                                                     )
                                                 );
                                             }}
@@ -465,7 +499,7 @@ export default function InvoiceForm() {
                                                     className="p-3 border-b border-gray-200"
                                                     onPress={() => handleSelectItem(item)}
                                                 >
-                                                    <Text>{item.name}</Text>
+                                                    <Text>{item.itemName}</Text>
                                                 </TouchableOpacity>
                                             )}
                                             keyboardShouldPersistTaps="handled"
