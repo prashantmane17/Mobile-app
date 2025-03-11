@@ -137,8 +137,8 @@ export default function ItemScreen() {
                                             <View className="flex-row items-center flex-1">
                                                 <MaterialCommunityIcons name={getIconForItemType(item.type)} size={20} color="#3b82f6" />
                                                 <Text className="ml-2 text-lg font-semibold text-blue-600 flex-1">{item.itemName}</Text>
-                                                <View className="bg-blue-100 px-3 py-1 rounded-full">
-                                                    <Text className="text-blue-700 font-medium">{item.type}</Text>
+                                                <View className="bg-green-100 px-3 py-1 rounded-full">
+                                                    <Text className="text-green-700 font-medium">{item.type}</Text>
                                                 </View>
                                             </View>
                                             <View className="flex-row items-center ml-2">
@@ -160,7 +160,7 @@ export default function ItemScreen() {
                                         <View className="p-4">
                                             <View className="grid grid-cols-2 gap-3">
                                                 <View className="bg-blue-100 px-3 py-1 rounded-full w-1/3">
-                                                    <Text className="text-blue-700 font-medium text">{item.taxPreference}</Text>
+                                                    <Text className="text-blue-700 font-medium text-center">{item.taxPreference}</Text>
                                                 </View>
                                                 <View className="mb-1 flex-row w-full gap-2">
                                                     <Text className="text-gray-500 font-medium">Item Code:</Text>

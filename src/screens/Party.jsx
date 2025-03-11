@@ -34,8 +34,8 @@ export default function CustomerList() {
     }, []);
 
 
-    const filteredInvoices = customers.filter(invoice =>
-        invoice.displayName.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredInvoices = customers?.filter(invoice =>
+        invoice?.displayName?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
 
