@@ -138,7 +138,7 @@ export default function ItemScreen() {
                                                 <MaterialCommunityIcons name={getIconForItemType(item.type)} size={20} color="#3b82f6" />
                                                 <Text className="ml-2 text-lg font-semibold text-blue-600 flex-1">{item.itemName}</Text>
                                                 <View className="bg-blue-100 px-3 py-1 rounded-full">
-                                                    <Text className="text-blue-700 font-medium">{item.taxPreference}</Text>
+                                                    <Text className="text-blue-700 font-medium">{item.type}</Text>
                                                 </View>
                                             </View>
                                             <View className="flex-row items-center ml-2">
@@ -159,42 +159,45 @@ export default function ItemScreen() {
                                         {/* Card Body */}
                                         <View className="p-4">
                                             <View className="grid grid-cols-2 gap-3">
-                                                <View className="mb-2 flex-row w-full gap-2">
+                                                <View className="bg-blue-100 px-3 py-1 rounded-full w-1/3">
+                                                    <Text className="text-blue-700 font-medium text">{item.taxPreference}</Text>
+                                                </View>
+                                                <View className="mb-1 flex-row w-full gap-2">
                                                     <Text className="text-gray-500 font-medium">Item Code:</Text>
-                                                    <Text className="text-gray-800">{item.itemCode}</Text>
+                                                    <Text className="text-gray-800">{item.itemCode ? item.itemCode : "--"}</Text>
                                                 </View>
 
-                                                <View className="mb-2 flex-row w-full gap-2">
+                                                <View className="mb-1 flex-row w-full gap-2">
                                                     <Text className="text-gray-500 font-medium">Quantity:</Text>
                                                     <Text className="text-gray-800">{item.quantity}</Text>
                                                 </View>
 
                                                 <View className="mb-2 flex-row w-full gap-2">
-                                                    <Text className="text-gray-500 font-medium">Type:</Text>
-                                                    <Text className="text-gray-800">{item.type}</Text>
+                                                    <Text className="text-gray-500 font-medium">Account:</Text>
+                                                    <Text className="text-gray-800">{item.account ? item.account : "--"}</Text>
                                                 </View>
 
-                                                <View className="mb-2 flex-row w-full gap-2">
+                                                <View className="mb-1 flex-row w-full gap-2">
                                                     <Text className="text-gray-500 font-medium">Selling Price:</Text>
                                                     <Text className="text-gray-800 font-bold">{item.sellingPrice}</Text>
                                                 </View>
 
-                                                <View className="mb-2">
+                                                <View className="mb-1 flex-row w-full gap-2">
                                                     <Text className="text-gray-500 font-medium">Purchase Price:</Text>
-                                                    <Text className="text-gray-800">{item.purchasePrice}</Text>
+                                                    <Text className="text-gray-800">{item.purchasePrice ? item.purchasePrice : "--"}</Text>
                                                 </View>
                                             </View>
 
                                             {/* Tax Information */}
                                             <View className="mt-3 pt-3 border-t border-gray-100">
                                                 <View className="flex-row justify-between items-center">
-                                                    <View>
+                                                    <View className="w-1/2 flex-row items-center justify-start border border-transparent">
                                                         <Text className="text-gray-500 font-medium">Within State Tax:</Text>
-                                                        <Text className="text-gray-800">{item.withinStateTax}</Text>
+                                                        <Text className="text-gray-800 ml-2">{item.intraStateTax}%</Text>
                                                     </View>
-                                                    <View>
+                                                    <View className="w-1/2 flex-row items-center justify-start border border-transparent">
                                                         <Text className="text-gray-500 font-medium">Out of State Tax:</Text>
-                                                        <Text className="text-gray-800">{item.outOfStateTax}</Text>
+                                                        <Text className="text-gray-800 ml-2">{item.interStateTax}%</Text>
                                                     </View>
                                                 </View>
                                             </View>

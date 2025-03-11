@@ -1,14 +1,63 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, TextInput, TouchableOpacity, SafeAreaView, Image } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
+import { saveItems } from '../api/user/items';
 
 
 export default function AddItemForm() {
     const navigation = useNavigation();
+    const intialData = {
+        type: "Product",
+        itemName: "",
+        unit: "",
+        itemHsn: "",
+        taxPreference: "",
+        sellingPrice: 0,
+        account: "",
+        intraStateTax: 0,
+        interStateTax: 0,
+        itemCode: "",
+        Quantity: "",
+        discount: "",
+    }
+    const [formData, setFormData] = useState(intialData);
+    const handleSaveItems = async () => {
+        const data = new FormData();
 
+        // Add basic party fields
+        Object.keys(formData).forEach((key) => {
+            // Don't include nested objects like billingAddress or shippingAddress directly
+            if (typeof formData[key] !== "object" || formData[key] === null) {
+                data.append(key, formData[key]);
+            }
+        });
+        try {
+            const response = await fetch("http://192.168.1.25:8080/save-items", {
+                method: "POST",
+                credentials: "include",
+                body: data,
+                headers: {}
+            });
+
+            console.log("Response status:", response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const savedItem = await response.json();
+            console.log("Item saved successfully:", savedItem);
+        } catch (error) {
+            console.error("Error saving item:", error);
+        }
+    };
+
+
+    const taxBreakdown = ["0", "5", "12", "18", "28"]
+    const accountsName = ["Inventory", "Raw Materials", "Finished Goods", "Other"]
+    const unitsName = ["Units", "Kilogram (kg)", "Liter (L)", "Meter (m)", "Box", "Bag", "Packet", "Piece", "Dozen", "Ounce (oz)", "Pound (lb)"]
     return (
         <SafeAreaView className="flex-1 bg-gray-50">
             {/* Header */}
@@ -23,13 +72,21 @@ export default function AddItemForm() {
 
             {/* Form */}
             <ScrollView className="flex-1 p-4">
-                <View className="space-y-4">
+                <View className="space-y-4 mb-9">
                     {/* Type Selection */}
                     <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Type</Text>
-                        <TouchableOpacity className="p-3 border border-gray-200 rounded-lg bg-white">
-                            <Text className="text-gray-700">Product</Text>
-                        </TouchableOpacity>
+                        <View className="border border-gray-300 rounded-lg bg-white">
+                            <Picker
+                                selectedValue={formData.type}
+                                onValueChange={(itemValue) => setFormData({ ...formData, type: itemValue })}
+                                style={{ height: 50 }}
+                            >
+                                <Picker.Item label="Product" value="Product" />
+                                <Picker.Item label="Service" value="Service" />
+
+                            </Picker>
+                        </View>
                     </View>
 
                     {/* Name */}
@@ -38,25 +95,37 @@ export default function AddItemForm() {
                         <TextInput
                             className="p-3 border border-gray-200 rounded-lg bg-white"
                             placeholder="Enter item name"
+                            value={formData.itemName}
+                            onChangeText={(text) => setFormData({ ...formData, itemName: text })}
                         />
                     </View>
 
                     {/* SKU */}
-                    <View className="space-y-2">
+                    {formData.type === "Product" && <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Quantity<Text className="text-red-500">*</Text></Text>
                         <TextInput
                             className="p-3 border border-gray-200 rounded-lg bg-white"
                             placeholder="Enter Quantity"
+                            keyboardType='numeric'
+                            value={formData.Quantity}
+                            onChangeText={(text) => setFormData({ ...formData, Quantity: text })}
                         />
-                    </View>
+                    </View>}
 
                     {/* Unit */}
                     <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Unit</Text>
-                        <TextInput
-                            className="p-3 border border-gray-200 rounded-lg bg-white"
-                            placeholder="Enter unit"
-                        />
+                        <View className="border border-gray-300 rounded-lg bg-white">
+                            <Picker
+                                selectedValue={formData.unit}
+                                onValueChange={(itemValue) => setFormData({ ...formData, unit: itemValue })}
+                                style={{ height: 50 }}
+                            >
+                                {formData.type !== "Service" ? (unitsName.map((month, index) => (
+                                    <Picker.Item key={index} label={month} value={month} />
+                                ))) : (<Picker.Item label="Service" value="Service" />)}
+                            </Picker>
+                        </View>
                     </View>
 
                     {/* HSN Code */}
@@ -65,6 +134,9 @@ export default function AddItemForm() {
                         <TextInput
                             className="p-3 border border-gray-200 rounded-lg bg-white"
                             placeholder="Enter HSN Code"
+                            keyboardType='numeric'
+                            value={formData.itemHsn}
+                            onChangeText={(text) => setFormData({ ...formData, itemHsn: text })}
                         />
                     </View>
 
@@ -74,54 +146,88 @@ export default function AddItemForm() {
                         <TextInput
                             className="p-3 border border-gray-200 rounded-lg bg-white"
                             placeholder="Enter Item Code"
+                            keyboardType='numeric'
+                            value={formData.itemCode}
+                            onChangeText={(text) => setFormData({ ...formData, itemCode: text })}
                         />
                     </View>
 
                     {/* Tax Preference */}
                     <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Tax Preference<Text className="text-red-500">*</Text></Text>
-                        <TouchableOpacity className="p-3 border border-gray-200 rounded-lg bg-white">
-                            <Text className="text-gray-700">Taxable</Text>
-                        </TouchableOpacity>
+                        <View className="border border-gray-300 rounded-lg bg-white">
+                            <Picker
+                                selectedValue={formData.taxPreference}
+                                onValueChange={(itemValue) => setFormData({ ...formData, taxPreference: itemValue })}
+                                style={{ height: 50 }}
+                            >
+                                <Picker.Item label="Taxable" value="Taxable" />
+                                <Picker.Item label="Non Taxable" value="Non Taxable" />
+
+                            </Picker>
+                        </View>
                     </View>
 
                     {/* Selling Price */}
-                    <View className="space-y-2">
+                    {formData.type === "Product" && <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Selling Price<Text className="text-red-500">*</Text></Text>
                         <TextInput
                             className="p-3 border border-gray-200 rounded-lg bg-white"
                             placeholder="Enter selling price"
-                            keyboardType="numeric"
+                            keyboardType='numeric'
+                            value={formData.sellingPrice}
+                            onChangeText={(text) => setFormData({ ...formData, sellingPrice: Number(text) })}
                         />
-                    </View>
+                    </View>}
 
                     {/* Account */}
-                    <View className="space-y-2">
+                    {formData.type === "Product" && <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Account</Text>
-                        <TouchableOpacity className="p-3 border border-gray-200 rounded-lg bg-white">
-                            <Text className="text-gray-700">Account 1</Text>
-                        </TouchableOpacity>
-                    </View>
+                        <View className="border border-gray-300 rounded-lg bg-white">
+                            <Picker
+                                selectedValue={formData.account}
+                                onValueChange={(itemValue) => setFormData({ ...formData, account: itemValue })}
+                                style={{ height: 50 }}
+                            >
+                                {accountsName.map((month, index) => (
+                                    <Picker.Item key={index} label={month} value={month} />
+                                ))}
+                            </Picker>
+                        </View>
+                    </View>}
 
                     {/* Intra State Tax */}
-                    <View className="space-y-2">
+                    {formData.type === "Product" && <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Intra State Tax (%)</Text>
-                        <TextInput
-                            className="p-3 border border-gray-200 rounded-lg bg-white"
-                            placeholder="Enter intra state tax"
-                            keyboardType="numeric"
-                        />
-                    </View>
+                        <View className="border border-gray-300 rounded-lg bg-white">
+                            <Picker
+                                selectedValue={formData.intraStateTax}
+                                onValueChange={(itemValue) => setFormData({ ...formData, intraStateTax: itemValue })}
+                                style={{ height: 50 }}
+                            >
+                                {taxBreakdown.map((month, index) => (
+                                    <Picker.Item key={index} label={`${month}%`} value={Number(month)} />
+                                ))}
+                            </Picker>
+                        </View>
+                    </View>}
 
                     {/* Inter State Tax */}
-                    <View className="space-y-2">
+                    {formData.type === "Product" && <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Inter State Tax (%)</Text>
-                        <TextInput
-                            className="p-3 border border-gray-200 rounded-lg bg-white"
-                            placeholder="Enter inter state tax"
-                            keyboardType="numeric"
-                        />
+                        <View className="border border-gray-300 rounded-lg bg-white">
+                            <Picker
+                                selectedValue={formData.interStateTax}
+                                onValueChange={(itemValue) => setFormData({ ...formData, interStateTax: itemValue })}
+                                style={{ height: 50 }}
+                            >
+                                {taxBreakdown.map((month, index) => (
+                                    <Picker.Item key={index} label={`${month}%`} value={Number(month)} />
+                                ))}
+                            </Picker>
+                        </View>
                     </View>
+                    }
 
                 </View>
             </ScrollView>
@@ -131,7 +237,7 @@ export default function AddItemForm() {
                 <TouchableOpacity className="px-6 py-2 rounded-lg border border-gray-300">
                     <Text className="text-gray-700 font-medium">Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity className="px-6 py-2 rounded-lg bg-blue-500">
+                <TouchableOpacity className="px-6 py-2 rounded-lg bg-blue-500" onPress={handleSaveItems}>
                     <Text className="text-white font-medium">Save</Text>
                 </TouchableOpacity>
             </View>

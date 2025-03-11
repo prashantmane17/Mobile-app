@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Platform, ScrollView, Modal, FlatList } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Platform, ScrollView, Modal, FlatList, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar, ChevronLeft, ChevronDown } from 'lucide-react-native';
 
@@ -17,6 +17,7 @@ export default function ExpenseForm() {
     const [selectedDate, setSelectedDate] = useState(new Date(2025, 2, 1)); // March 1, 2025
 
     // For dropdowns
+    const [ShowCatForm, setShowCatForm] = useState(false);
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
 
@@ -47,6 +48,45 @@ export default function ExpenseForm() {
                 "/" +
                 date.getFullYear();
             setFormData({ ...formData, date: formattedDate });
+        }
+    };
+
+
+    const saveExpense = async () => {
+        console.log("Click")
+        if (!formData.category || !formData.amount || !formData.paymentMethod) {
+            Alert.alert("Validation Error", "Please fill in all required fields.");
+            return;
+        }
+
+        const requestBody = {
+            date: selectedDate.toISOString().split('T')[0], // Format date as "YYYY-MM-DD"
+            category: formData.category,
+            amount: parseFloat(formData.amount),
+            paymentMethod: formData.paymentMethod,
+            description: formData.description,
+            invoiceId: formData.invoiceId || null
+        };
+
+        try {
+            console.log("Click2")
+            const response = await fetch('http://192.168.1.25:8080/save-Expenses-mobileApp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            console.log("Click3", response)
+            const data = await response.json();
+            if (response.ok) {
+                Alert.alert("Success", "Expense saved successfully!");
+                setFormData({ date: formData.date, category: '', amount: '', paymentMethod: '', description: '', invoiceId: '' });
+            } else {
+                Alert.alert("Error", data.message || "Failed to save expense.");
+            }
+        } catch (error) {
+            Alert.alert("Network Error", "Something went wrong. Please try again later.");
         }
     };
 
@@ -119,7 +159,6 @@ export default function ExpenseForm() {
                     </TouchableOpacity>
                 </View>
 
-                {/* Amount */}
                 <View className="mb-4">
                     <Text className="text-gray-700 mb-1">
                         Amount<Text className="text-red-500">*</Text>
@@ -179,7 +218,7 @@ export default function ExpenseForm() {
 
                 {/* Buttons */}
                 <View className="flex-row justify-end mb-4">
-                    <TouchableOpacity className="bg-blue-500 rounded-md py-3 px-6 mr-2">
+                    <TouchableOpacity className="bg-blue-500 rounded-md py-3 px-6 mr-2" onPress={saveExpense}>
                         <Text className="text-white font-medium">Save</Text>
                     </TouchableOpacity>
                     <TouchableOpacity className="border border-gray-300 rounded-md py-3 px-6">

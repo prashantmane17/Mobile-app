@@ -8,19 +8,37 @@ import { Picker } from '@react-native-picker/picker';
 
 export default function EnhancedAddCustomerForm() {
     const navigation = useNavigation();
+    const intialData = {
+        firstName: '',
+        lastName: '',
+        companyName: '',
+        displayName: '',
+        emailAddress: '',
+        phone: '',
+        gstTreatment: '',
+        gstin: '',
+        placeOfSupply: '',
+        taxPreference: '',
+        contactPersonName: '',
+        billingAddress: {},
+        shippingAddress: {},
+        contactPersonEmail: '',
+        contactPersonPhone: '',
+    }
+    const [formData, setFormData] = useState(intialData);
     const [activeTab, setActiveTab] = useState('details');
     const [customerType, setCustomerType] = useState('Business');
     const [taxPreference, setTaxPreference] = useState('Taxable');
     const [gstType, setGstType] = useState("");
     const [selectedState, setSelectedState] = useState("");
     const [billingAddress, setBillingAddress] = useState({
-        addressLine1: '',
-        addressLine2: '',
-        city: '',
-        state: '',
-        country: '',
-        pinCode: '',
-        phone: ''
+        AddressLine1: '',
+        AddressLine2: '',
+        City: '',
+        State: '',
+        Country: '',
+        ZipCode: '',
+        Phone: ''
     });
 
     const states = [
@@ -64,17 +82,66 @@ export default function EnhancedAddCustomerForm() {
     ];
 
     const [shippingAddress, setShippingAddress] = useState({
-        addressLine1: '',
-        addressLine2: '',
-        city: '',
-        state: '',
-        country: '',
-        pinCode: '',
-        phone: ''
+        AddressLine1: '',
+        AddressLine2: '',
+        City: '',
+        State: '',
+        Country: '',
+        ZipCode: '',
+        Phone: ''
     });
 
     const copyFromBilling = () => {
         setShippingAddress({ ...billingAddress });
+        setFormData({ ...formData, shippingAddress: shippingAddress })
+    };
+    const handleSubmit = async () => {
+        const data = new FormData();
+
+        // Add basic party fields
+        Object.keys(formData).forEach((key) => {
+            // Don't include nested objects like billingAddress or shippingAddress directly
+            if (typeof formData[key] !== "object" || formData[key] === null) {
+                data.append(key, formData[key]);
+            }
+        });
+
+        // Add billing address fields individually
+        Object.keys(billingAddress).forEach((key) => {
+            if (typeof billingAddress[key] !== "object" || billingAddress[key] === null) {
+                data.append(`billing${key}`, billingAddress[key]);
+            }
+        });
+
+        // Add shipping address fields individually
+        Object.keys(shippingAddress).forEach((key) => {
+            if (typeof shippingAddress[key] !== "object" || shippingAddress[key] === null) {
+                data.append(`shipping${key}`, shippingAddress[key]);
+            }
+        });
+
+        try {
+            const response = await fetch("http://192.168.1.25:8080/save-party-mobileApp", {
+                method: "POST",
+                credentials: "include",
+                body: data,
+                headers: {}
+            });
+
+            console.log("Response status:", response.status);
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log("Party saved:", result);
+                setFormData(intialData)
+                Alert.alert('Success', "Customer Created Successfully");
+            } else {
+                const errorText = await response.text();
+                console.error("Error saving party:", errorText);
+            }
+        } catch (error) {
+            console.error("Request failed:", error);
+        }
     };
 
 
@@ -88,8 +155,8 @@ export default function EnhancedAddCustomerForm() {
                             <Text className="text-sm font-medium text-gray-600">GST Type <Text className="text-red-500">*</Text></Text>
                             <View className="border border-gray-200 rounded-lg bg-white overflow-hidden h-11 flex">
                                 <Picker
-                                    selectedValue={gstType}
-                                    onValueChange={(itemValue) => setGstType(itemValue)}
+                                    selectedValue={formData.gstTreatment}
+                                    onValueChange={(itemValue) => setFormData({ ...formData, gstTreatment: itemValue })}
                                     className="h-5 w-full text-gray-700 "
                                 >
                                     <Picker.Item label="Select GST Type" value="" enabled={gstType !== ""} />
@@ -105,7 +172,10 @@ export default function EnhancedAddCustomerForm() {
                                 <Text className="text-sm font-medium text-gray-600">GSTIN <Text className="text-red-500">*</Text></Text>
                                 <TouchableOpacity className="px-1 p-1 border border-gray-200 rounded-lg bg-white flex-row justify-between items-center">
                                     <TextInput className="text-gray-700 text-[12px]" keyboardType=""
-                                        placeholder="ENTER YOUR GSTIN/UIN"></TextInput>
+                                        placeholder="Enter your GSTIN/UIN"
+                                        value={formData.gstin}
+                                        onChangeText={(text) => setFormData({ ...formData, gstin: text })}
+                                    />
                                 </TouchableOpacity>
                             </View>
                         )}
@@ -114,8 +184,8 @@ export default function EnhancedAddCustomerForm() {
                             <Text className="text-sm font-medium text-gray-600">Place of Supply <Text className="text-red-500">*</Text></Text>
                             <View className="border border-gray-200 rounded-lg bg-white h-11 ">
                                 <Picker
-                                    selectedValue={selectedState}
-                                    onValueChange={(itemValue) => setSelectedState(itemValue)}
+                                    selectedValue={formData.placeOfSupply}
+                                    onValueChange={(itemValue) => setFormData({ ...formData, placeOfSupply: itemValue })}
                                     className="h-5 w-full text-gray-700 p-[0px] "
                                 >
                                     {states.map((state, index) => (
@@ -132,6 +202,8 @@ export default function EnhancedAddCustomerForm() {
                                 placeholder="Enter PAN number"
                                 autoCapitalize="characters"
                                 maxLength={10}
+                                value={formData.pan}
+                                onChangeText={(text) => setFormData({ ...formData, pan: text })}
                             />
                         </View>
 
@@ -140,7 +212,10 @@ export default function EnhancedAddCustomerForm() {
                             <View className="flex-row space-x-4">
                                 <TouchableOpacity
                                     className="flex-row items-center"
-                                    onPress={() => setTaxPreference('Taxable')}
+                                    onPress={() => {
+                                        setTaxPreference('Taxable')
+                                        setFormData({ ...formData, taxPreference: 'Taxable' })
+                                    }}
                                 >
                                     <View className={`h-5 w-5 rounded-full border-2 ${taxPreference === 'Taxable' ? 'border-blue-500' : 'border-gray-300'} mr-2 items-center justify-center`}>
                                         {taxPreference === 'Taxable' && <View className="h-3 w-3 rounded-full bg-blue-500" />}
@@ -149,7 +224,10 @@ export default function EnhancedAddCustomerForm() {
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     className="flex-row items-center"
-                                    onPress={() => setTaxPreference('Tax Exempt')}
+                                    onPress={() => {
+                                        setTaxPreference('Tax Exempt')
+                                        setFormData({ ...formData, taxPreference: 'Tax Exempt' })
+                                    }}
                                 >
                                     <View className={`h-5 w-5 rounded-full border-2 ${taxPreference === 'Tax Exempt' ? 'border-blue-500' : 'border-gray-300'} mr-2 items-center justify-center`}>
                                         {taxPreference === 'Tax Exempt' && <View className="h-3 w-3 rounded-full bg-blue-500" />}
@@ -165,7 +243,6 @@ export default function EnhancedAddCustomerForm() {
             case 'address':
                 return (
                     <View className="space-y-6">
-                        {/* Billing Address Section */}
                         <View className="space-y-4">
                             <Text className="text-lg font-semibold text-gray-800">Billing Address</Text>
                             <View className="space-y-4">
@@ -174,8 +251,8 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter address line 1"
-                                        value={billingAddress.addressLine1}
-                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, addressLine1: text })}
+                                        value={billingAddress.AddressLine1}
+                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, AddressLine1: text })}
                                     />
                                 </View>
 
@@ -184,8 +261,8 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter address line 2"
-                                        value={billingAddress.addressLine2}
-                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, addressLine2: text })}
+                                        value={billingAddress.AddressLine2}
+                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, AddressLine2: text })}
                                     />
                                 </View>
 
@@ -194,8 +271,8 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter city"
-                                        value={billingAddress.city}
-                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, city: text })}
+                                        value={billingAddress.City}
+                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, City: text })}
                                     />
                                 </View>
 
@@ -205,8 +282,8 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter State"
-                                        value={billingAddress.state}
-                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, state: text })}
+                                        value={billingAddress.State}
+                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, State: text })}
                                     />
                                 </View>
 
@@ -215,8 +292,8 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter Country"
-                                        value={billingAddress.country}
-                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, country: text })}
+                                        value={billingAddress.Country}
+                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, Country: text })}
                                     />
                                 </View>
 
@@ -226,8 +303,8 @@ export default function EnhancedAddCustomerForm() {
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter ZIP code"
                                         keyboardType="numeric"
-                                        value={billingAddress.pinCode}
-                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, pinCode: text })}
+                                        value={billingAddress.ZipCode}
+                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, ZipCode: text })}
                                     />
                                 </View>
 
@@ -237,8 +314,8 @@ export default function EnhancedAddCustomerForm() {
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter phone number"
                                         keyboardType="phone-pad"
-                                        value={billingAddress.phone}
-                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, phone: text })}
+                                        value={billingAddress.Phone}
+                                        onChangeText={(text) => setBillingAddress({ ...billingAddress, Phone: text })}
                                     />
                                 </View>
                             </View>
@@ -263,8 +340,8 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter address line 1"
-                                        value={shippingAddress.addressLine1}
-                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, addressLine1: text })}
+                                        value={shippingAddress.AddressLine1}
+                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, AddressLine1: text })}
                                     />
                                 </View>
 
@@ -273,8 +350,8 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter address line 2"
-                                        value={shippingAddress.addressLine2}
-                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, addressLine2: text })}
+                                        value={shippingAddress.AddressLine2}
+                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, AddressLine2: text })}
                                     />
                                 </View>
 
@@ -283,8 +360,8 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter city"
-                                        value={shippingAddress.city}
-                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, city: text })}
+                                        value={shippingAddress.City}
+                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, City: text })}
                                     />
                                 </View>
 
@@ -296,23 +373,19 @@ export default function EnhancedAddCustomerForm() {
                                     </TouchableOpacity> */}
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
-                                        placeholder="Enter city"
-                                        value={shippingAddress.state}
-                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, state: text })}
+                                        placeholder="Enter state"
+                                        value={shippingAddress.State}
+                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, State: text })}
                                     />
                                 </View>
 
                                 <View className="space-y-2">
-                                    {/* <Text className="text-sm font-medium text-gray-600">Country</Text>
-                                     <TouchableOpacity className="p-3 border border-gray-200 rounded-lg bg-white flex-row justify-between items-center">
-                                        < Text className="text-gray-700">{shippingAddress.country || 'Select Country'}</Text>
-                                <ChevronDown className="w-5 h-5 text-gray-400" />
-                            </TouchableOpacity>  */}
+                                    <Text className="text-sm font-medium text-gray-600">Country</Text>
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
-                                        placeholder="Enter city"
-                                        value={shippingAddress.country}
-                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, country: text })}
+                                        placeholder="Enter country"
+                                        value={shippingAddress.Country}
+                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, Country: text })}
                                     />
                                 </View>
 
@@ -322,8 +395,8 @@ export default function EnhancedAddCustomerForm() {
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter ZIP code"
                                         keyboardType="numeric"
-                                        value={shippingAddress.pinCode}
-                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, pinCode: text })}
+                                        value={shippingAddress.ZipCode}
+                                        onChangeText={(text) => setShippingAddress({ ...shippingAddress, ZipCode: text })}
                                     />
                                 </View>
 
@@ -333,9 +406,9 @@ export default function EnhancedAddCustomerForm() {
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter phone number"
                                         keyboardType="phone-pad"
-                                        value={shippingAddress.phone}
+                                        value={shippingAddress.Phone}
                                         onChangeText={(text) => setShippingAddress({
-                                            ...shippingAddress, phone: text
+                                            ...shippingAddress, Phone: text
                                         })}
                                     />
                                 </View>
@@ -353,14 +426,19 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter contact name"
+                                        value={formData.contactPersonName}
+                                        onChangeText={(text) => setFormData({ ...formData, contactPersonName: text })}
                                     />
                                 </View>
 
                                 <View className="space-y-2">
-                                    <Text className="text-sm font-medium text-gray-600">Designation</Text>
+                                    <Text className="text-sm font-medium text-gray-600">Email</Text>
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
-                                        placeholder="Enter designation"
+                                        placeholder="Enter Email"
+                                        keyboardType="email-address"
+                                        value={formData.contactPersonEmail}
+                                        onChangeText={(text) => setFormData({ ...formData, contactPersonEmail: text })}
                                     />
                                 </View>
 
@@ -370,6 +448,8 @@ export default function EnhancedAddCustomerForm() {
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter phone number"
                                         keyboardType="phone-pad"
+                                        value={formData.contactPersonPhone}
+                                        onChangeText={(text) => setFormData({ ...formData, contactPersonPhone: text })}
                                     />
                                 </View>
 
@@ -403,6 +483,8 @@ export default function EnhancedAddCustomerForm() {
                             <TextInput
                                 className="p-3 border border-gray-200 rounded-lg bg-white"
                                 placeholder="Enter display name"
+                                value={formData.displayName}
+                                onChangeText={(text) => setFormData({ ...formData, displayName: text })}
                             />
                         </View>
                         <View className="space-y-2">
@@ -410,6 +492,8 @@ export default function EnhancedAddCustomerForm() {
                             <TextInput
                                 className="p-3 border border-gray-200 rounded-lg bg-white"
                                 placeholder="Enter company name"
+                                value={formData.companyName}
+                                onChangeText={(text) => setFormData({ ...formData, companyName: text })}
                             />
                         </View>
 
@@ -421,6 +505,8 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter first name"
+                                        value={formData.firstName}
+                                        onChangeText={(text) => setFormData({ ...formData, firstName: text })}
                                     />
                                 </View>
                                 <View className="flex-1 space-y-2">
@@ -428,6 +514,8 @@ export default function EnhancedAddCustomerForm() {
                                     <TextInput
                                         className="p-3 border border-gray-200 rounded-lg bg-white"
                                         placeholder="Enter last name"
+                                        value={formData.lastName}
+                                        onChangeText={(text) => setFormData({ ...formData, lastName: text })}
                                     />
                                 </View>
                             </View>
@@ -438,6 +526,8 @@ export default function EnhancedAddCustomerForm() {
                                 className="p-3 border border-gray-200 rounded-lg bg-white"
                                 placeholder="Enter email address"
                                 keyboardType="email-address"
+                                value={formData.emailAddress}
+                                onChangeText={(text) => setFormData({ ...formData, emailAddress: text })}
                             />
                         </View>
 
@@ -447,6 +537,8 @@ export default function EnhancedAddCustomerForm() {
                                 className="p-3 border border-gray-200 rounded-lg bg-white"
                                 placeholder="Enter phone number"
                                 keyboardType="phone-pad"
+                                value={formData.phone}
+                                onChangeText={(text) => setFormData({ ...formData, phone: text })}
                             />
                         </View>
                     </View>
@@ -486,7 +578,7 @@ export default function EnhancedAddCustomerForm() {
 
                 {/* Footer */}
                 <View className="p-4 bg-white border-t border-gray-200">
-                    <TouchableOpacity className="bg-blue-500 p-4 rounded-lg">
+                    <TouchableOpacity className="bg-blue-500 p-4 rounded-lg" onPress={handleSubmit}>
                         <Text className="text-white font-medium text-center">Save Customer</Text>
                     </TouchableOpacity>
                 </View>

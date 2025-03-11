@@ -73,7 +73,7 @@ const Expense = () => {
 
     useEffect(() => {
         expenseData();
-    }, []);
+    }, [expenseData]);
     const handleToggleSelect = (id) => {
         setTransactionData(transactionData.map(item =>
             item.id === id ? { ...item, selected: !item.selected } : item

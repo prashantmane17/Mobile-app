@@ -8,9 +8,9 @@ export const getAllItems = async () => {
         throw error.response?.data || "Failed to delete user";
     }
 };
-export const saveItems = async () => {
+export const saveItems = async (data) => {
     try {
-        const response = await api.post('/save-items');
+        const response = await api.post('/save-items-mobileApp', data);
         return response.data;
     } catch (error) {
         throw error.response?.data || "Failed to delete user";
