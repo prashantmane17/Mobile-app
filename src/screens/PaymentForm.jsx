@@ -1,31 +1,74 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Platform, ScrollView, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Platform, ScrollView, Alert, Modal, FlatList } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
 import { savePayments } from '../api/user/payment';
+import { getAllCustomers } from '../api/user/customer';
 
 export default function PaymentForm() {
+    const [customers, setCustomers] = useState([])
+    const [modalVisible, setModalVisible] = useState(false);
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [filteredInvoices, setFilteredInvoices] = useState([]);
+    const [loading, setLoading] = useState(false)
+    const [invoices, setInvoices] = useState([])
+
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date(2025, 2, 1));
     const initialFormData = {
         customerName: '',
         outstandingAmount: '',
         bankCharges: '',
         paymentDate: '03/01/2025',
         paymentMode: '',
-        paymentNumber: 'PAY-250301112203',
+        paymentNumber: '',
         referenceNumber: '',
         notes: ''
     };
-
     const [formData, setFormData] = useState(initialFormData);
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(new Date(2025, 2, 1)); // March 1, 2025
+    const customerData = async () => {
+        setLoading(true)
+        try {
+            const response = await getAllCustomers();
+            setCustomers(response.parties)
+            setFilteredUsers(response.parties)
+            setInvoices(response.invoices)
+        } catch (error) {
+            console.error("Error fetching Customer:", error);
+        }
+        finally {
+            setLoading(false)
+        }
+    };
+    useEffect(() => {
+        customerData();
+    }, []);
+    // March 1, 2025
 
     const handleChange = (name, value) => {
         setFormData({ ...formData, [name]: value });
     };
+    const handleSearch = (text) => {
 
-    // Handles date selection
+        if (text.length > 0) {
+            const filtered = customers.filter((user) =>
+                user.displayName?.toLowerCase().includes(text.toLowerCase())
+            );
+
+            setFilteredUsers(filtered);
+        } else {
+            setFilteredUsers(customers);
+        }
+    };
+
+    const handleSelect = (selectedName) => {
+        setFormData({ ...formData, customerName: selectedName.displayName });
+        const filteredIn = invoices.filter((invoice) => invoice.customer.id === selectedName.id);
+        setFilteredInvoices(filteredIn);
+        console.log(filteredIn)
+        setModalVisible(false);
+    };
     const handleDateChange = (event, date) => {
         setShowDatePicker(Platform.OS === 'ios');
         if (date) {
@@ -40,25 +83,32 @@ export default function PaymentForm() {
         }
     };
 
-    // Handles form submission
     const handleSubmit = async () => {
+        const data = new FormData();
+
+        Object.keys(formData).forEach((key) => {
+            if (typeof formData[key] !== "object" || formData[key] === null) {
+                data.append(key, formData[key]);
+            }
+        });
         try {
-            const response = await fetch("http://192.168.1.25:8080/save-payment-mobileApp", {
+            const response = await fetch("http://192.168.1.25:8080/save-payment", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formData),
+                body: data,
+                credentials: "include",
+                headers: {},
             });
 
-            const data = await response.json();
+
+            console.log("res----", response)
 
             if (response.ok) {
-                console.log("Payment saved successfully:", data);
+                console.log("Payment saved successfully:");
+                setFormData(initialFormData)
                 Alert.alert("Success", "Payment details saved successfully!");
             } else {
-                console.error("Error saving payment:", data);
-                Alert.alert("Error", data.message || "Failed to save payment details.");
+                console.error("Error saving payment:");
+                Alert.alert("Error");
             }
         } catch (error) {
             console.error("Network error:", error);
@@ -75,14 +125,56 @@ export default function PaymentForm() {
     return (
         <ScrollView className="flex-1 bg-white p-4">
             {/* Customer Name */}
+
             <View className="mb-4">
-                <Text className="text-gray-700 mb-1">Customer Name<Text className="text-red-500">*</Text></Text>
-                <TextInput
+                <Text className="text-gray-700 mb-1">
+                    Customer Name<Text className="text-red-500">*</Text>
+                </Text>
+                <TouchableOpacity
                     className="border border-gray-300 rounded-md p-3 bg-white"
-                    placeholder="Search Customers"
-                    value={formData.customerName}
-                    onChangeText={(text) => handleChange('customerName', text)}
-                />
+                    onPress={() => setModalVisible(true)}
+                >
+                    <Text>{formData.customerName || "Search Or Select A Customer"}</Text>
+                </TouchableOpacity>
+                <Modal visible={modalVisible} animationType="fade" transparent>
+                    <View className="flex-1 justify-center items-center bg-black/50">
+                        <View className="bg-white w-80 p-4 rounded-md">
+                            {/* Search Input */}
+                            <TextInput
+                                className="border border-gray-300 rounded-md p-3 mb-3"
+                                placeholder="Search Customers..."
+                                value={formData.customerName}
+                                onChangeText={handleSearch}
+                            />
+
+                            {/* Dropdown List */}
+                            <View className="h-52">
+                                <FlatList
+                                    data={filteredUsers}
+                                    keyExtractor={(item, index) => index.toString()}
+                                    renderItem={({ item }) => (
+                                        <TouchableOpacity
+                                            className="p-3 border-b border-gray-200"
+                                            onPress={() => handleSelect(item)}
+                                        >
+                                            <Text>{item.displayName}</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    keyboardShouldPersistTaps="handled"
+                                />
+                            </View>
+
+
+                            {/* Close Button */}
+                            <TouchableOpacity
+                                className="mt-3 p-3 bg-red-500 rounded-md"
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Text className="text-white text-center">Close</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
             </View>
 
             {/* Outstanding Amount */}
@@ -95,7 +187,15 @@ export default function PaymentForm() {
                     onChangeText={(text) => handleChange('outstandingAmount', text)}
                     keyboardType="numeric"
                 />
+
+                {filteredInvoices?.map((invoice) => (
+                    <View key={invoice.id} className="flex-row items-center gap-2">
+                        <Text>{invoice.invoiceNumber}</Text>
+                        <Text>{invoice.totalAmount}</Text>
+                    </View>
+                ))}
             </View>
+
 
             {/* Bank Charges */}
             <View className="mb-4">

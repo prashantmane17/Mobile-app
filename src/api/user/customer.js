@@ -12,7 +12,7 @@ export const getAllCustomers = async () => {
 export const deleteCustomer = async (partyId) => {
     try {
         const response = await api.delete(`/delete-partiesby-id/${partyId}`);
-        return response.data;
+        return response;
     } catch (error) {
         throw error.response?.data || "Failed to delete user";
     }

@@ -186,7 +186,7 @@ export default function InvoiceCards() {
                                         <View className="flex-row justify-between items-center">
                                             <Text className="text-sm text-gray-500">Total Amount</Text>
                                             <Text className="text-lg font-semibold text-gray-900">
-                                                {invoice.totalAmount}
+                                                ₹ {invoice.totalAmount}
                                             </Text>
                                         </View>
                                     </View>
@@ -197,7 +197,6 @@ export default function InvoiceCards() {
                     </View>
                 </View>
 
-                {/* Pagination */}
                 <View className="flex-row justify-center items-center p-4">
                     <TouchableOpacity
                         className="mr-2 px-3 py-1 bg-gray-200 rounded-md"
