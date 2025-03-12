@@ -1,36 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { TextInput } from 'react-native-gesture-handler';
-import { getAllVendors } from '../api/user/vendor';
+import { deleteVendor, getAllVendors } from '../api/user/vendor';
 import { useNavigation } from '@react-navigation/native';
 
 
 export default function VendorScreen() {
     const navigation = useNavigation();
-    const [customers, setCustomers] = useState([
-        {
-            id: '1',
-            name: 'Amar M',
-            companyName: 'vivo',
-            email: 'amr@gmail.com',
-            phone: '--',
-            gstType: 'registered',
-            totalPay: '0',
-            selected: false,
-        },
-        {
-            id: '2',
-            name: 'Sham',
-            companyName: '--',
-            email: '--',
-            phone: '--',
-            gstType: 'registered',
-            totalPay: '67200',
-            selected: false,
-        },
-    ]);
+
     const [vendors, setVendors] = useState([])
     const [invoices, setInvoices] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
@@ -59,6 +38,28 @@ export default function VendorScreen() {
     const filteredInvoices = vendors.filter(invoice =>
         invoice.displayName.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handleDelete = async (id) => {
+        Alert.alert(
+            "Confirm Delete", // Title
+            "Are you sure you want to delete this Vendor?", // Message
+            [
+                { text: "Cancel", style: "cancel" }, // Cancel button
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const response = await deleteVendor(id);
+                        } catch (error) {
+                            console.log("❌ Error deleting vendor", error);
+                        }
+                    },
+                },
+            ],
+            { cancelable: true }
+        );
+    };
 
 
     return (
@@ -147,7 +148,7 @@ export default function VendorScreen() {
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         className="bg-red-100 p-2 rounded-full"
-                                        onPress={() => deleteCustomer(customer.id)}
+                                        onPress={() => handleDelete(customer.id)}
                                     >
                                         <MaterialCommunityIcons name="delete" size={18} color="#ef4444" />
                                     </TouchableOpacity>
@@ -194,10 +195,10 @@ export default function VendorScreen() {
                         )
                     })}
 
-                    {customers.length === 0 && (
+                    {vendors.length === 0 && (
                         <View className="flex-1 justify-center items-center py-20">
                             <MaterialCommunityIcons name="account-off" size={64} color="#9ca3af" />
-                            <Text className="mt-4 text-gray-500 text-lg">No customers found</Text>
+                            <Text className="mt-4 text-gray-500 text-lg">Vendors not found</Text>
                         </View>
                     )}
                 </ScrollView>

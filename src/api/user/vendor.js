@@ -11,3 +11,12 @@ export const getAllVendors = async () => {
         throw error.response?.data || "Failed to delete user";
     }
 };
+
+export const deleteVendor = async (vendorId) => {
+    try {
+        const response = await api.delete(`/delete-vendorsby-id/${vendorId}`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || "Failed to delete user";
+    }
+};

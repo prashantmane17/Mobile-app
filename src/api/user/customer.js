@@ -8,3 +8,12 @@ export const getAllCustomers = async () => {
         throw error.response?.data || "Failed to delete user";
     }
 };
+
+export const deleteCustomer = async (partyId) => {
+    try {
+        const response = await api.delete(`/delete-partiesby-id/${partyId}`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || "Failed to delete user";
+    }
+};

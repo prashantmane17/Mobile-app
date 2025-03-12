@@ -1,12 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, ActivityIndicator } from "react-native"
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, ActivityIndicator, Alert } from "react-native"
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons"
 import DropDownPicker from "react-native-dropdown-picker"
 import { TextInput } from "react-native-gesture-handler"
 import { useNavigation } from "@react-navigation/native"
-import { getAllItems } from "../api/user/items"
+import { getAllItems, deleteItem } from "../api/user/items"
 
 
 
@@ -41,17 +41,36 @@ export default function ItemScreen() {
         }
     }
 
+    const filteredItems = items.filter((item) => item.itemName.toLowerCase().includes(searchQuery.toLowerCase()))
+
+    const handleDelete = async (id) => {
+        Alert.alert(
+            "Confirm Delete", // Title
+            "Are you sure you want to delete this Vendor?", // Message
+            [
+                { text: "Cancel", style: "cancel" }, // Cancel button
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const response = await deleteItem(id);
+                            if (response.status === 200) {
+                                console.log("resp---", response.data)
+                                fetchItems()
+                            }
+                        } catch (error) {
+                            console.log("❌ Error deleting vendor", error);
+                        }
+                    },
+                },
+            ],
+            { cancelable: true }
+        );
+    };
     useEffect(() => {
         fetchItems()
     }, [])
-
-    const filteredItems = items.filter((item) => item.itemName.toLowerCase().includes(searchQuery.toLowerCase()))
-
-    const deleteItem = (id) => {
-        // Implement delete functionality
-        setItems(items.filter((item) => item.id !== id))
-    }
-
     const getIconForItemType = (type) => {
         switch (type.toLowerCase()) {
             case "meter":
@@ -150,7 +169,7 @@ export default function ItemScreen() {
                                                 >
                                                     <MaterialCommunityIcons name="pencil" size={18} color="#3b82f6" />
                                                 </TouchableOpacity>
-                                                <TouchableOpacity className="bg-red-100 p-2 rounded-full" onPress={() => deleteItem(item.id)}>
+                                                <TouchableOpacity className="bg-red-100 p-2 rounded-full" onPress={() => handleDelete(item.id)}>
                                                     <MaterialCommunityIcons name="delete" size={18} color="#ef4444" />
                                                 </TouchableOpacity>
                                             </View>
@@ -207,7 +226,7 @@ export default function ItemScreen() {
                             ) : (
                                 <View className="flex-1 justify-center items-center py-20">
                                     <MaterialCommunityIcons name="package-variant-removed" size={64} color="#9ca3af" />
-                                    <Text className="mt-4 text-gray-500 text-lg">No items found</Text>
+                                    <Text className="mt-4 text-gray-500 text-lg">Items not found</Text>
                                 </View>
                             )}
                         </>

@@ -16,3 +16,12 @@ export const saveItems = async (data) => {
         throw error.response?.data || "Failed to delete user";
     }
 };
+export const deleteItem = async (itemId) => {
+    try {
+        const response = await api.delete(`/delete-itemsby-id/${itemId}`);
+        return response;
+    } catch (error) {
+        throw error.response?.data || "Failed to delete user";
+    }
+};
+
