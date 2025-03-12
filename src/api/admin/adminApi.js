@@ -35,9 +35,11 @@ export const getOrgProfie = async () => {
         throw error.response?.data || "Failed to delete user";
     }
 };
-export const updateOrgProfie = async (orgId) => {
+export const updateOrgProfie = async (orgId, orgData) => {
     try {
-        const response = await api.put(`/editOrgitembyid/${orgId}`);
+        const response = await api.put(`/editOrgitembyid/${orgId}`, orgData, {
+            headers: { "Content-Type": "application/json" }
+        });
         return response.data;
     } catch (error) {
         throw error.response?.data || "Failed to delete user";

@@ -4,9 +4,11 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { TextInput } from 'react-native-gesture-handler';
 import { getAllVendors } from '../api/user/vendor';
+import { useNavigation } from '@react-navigation/native';
 
 
 export default function VendorScreen() {
+    const navigation = useNavigation();
     const [customers, setCustomers] = useState([
         {
             id: '1',
@@ -51,7 +53,7 @@ export default function VendorScreen() {
 
     useEffect(() => {
         vendorData();
-    }, []);
+    }, [vendorData]);
 
 
     const filteredInvoices = vendors.filter(invoice =>
@@ -80,7 +82,7 @@ export default function VendorScreen() {
                             <View className="flex-row items-center justify-between gap-3">
                                 <TouchableOpacity
                                     className="bg-blue-500 px-4 py-2 rounded-md"
-                                    onPress={() => console.log('Add Customer')}
+                                    onPress={() => navigation.navigate('VendorForm')}
                                 >
                                     <Text className="text-white font-medium">+ Create Vendor</Text>
                                 </TouchableOpacity>

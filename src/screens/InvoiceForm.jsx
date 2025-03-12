@@ -39,16 +39,8 @@ export default function InvoiceForm() {
     }
     useEffect(() => {
         getCustomer();
+
     }, [])
-    // if (isLoading) {
-    //     return <View><Text>Loading......</Text></View>
-    // }
-    const users = ["John Doe", "Jane Smith", "Alice Johnson", "Bob Brown"];
-    const itemsList = [
-        { name: "Item A", price: 100, tax: 10 },
-        { name: "Item B", price: 200, tax: 5 },
-        { name: "Item C", price: 150, tax: 8 },
-    ];
 
     const [showInvoicePicker, setShowInvoicePicker] = useState(false);
     const [showDuePicker, setShowDuePicker] = useState(false);
@@ -63,13 +55,14 @@ export default function InvoiceForm() {
     }, [filteredUsers])
     const [invoiceData, setInvoiceData] = useState({
         customerName: '',
-        invoiceNo: 'INV/2025/00003',
+        invoiceNumber: 'INV/2025/00003',
         orderNumber: '',
         invoiceDate: '02/28/2025',
-        termsOfDelivery: '',
+        terms: '',
         dueDate: '02/28/2025',
         salesperson: 'Harish',
         subject: '',
+        customer: {},
         items: [
             {
                 details: '',
@@ -79,11 +72,12 @@ export default function InvoiceForm() {
                 amount: '0.00',
             },
         ],
-        termsAndConditions: '',
-        customerNotes: 'Thanks for your business.',
-        subTotal: '0.00',
-        discount: '0',
-        adjustment: '0',
+        termsandconditions: '',
+        customernote: 'Thanks for your business.',
+        totalAmount: '0.00',
+        discountInput: '0',
+        adjustmentInput: '0',
+        invoiceStatus: "VOID",
     });
 
     const addItem = () => {
@@ -124,11 +118,14 @@ export default function InvoiceForm() {
     };
     const handleSelect = (selectedName) => {
         console.log("selectedName---", selectedName)
+
         setInvoiceData({ ...invoiceData, customerName: selectedName.displayName });
+        setInvoiceData({ ...invoiceData, customer: selectedName })
         setModalVisible(false);
     };
     const handleDateChange = (event, date, type) => {
         if (date) {
+            console.log("date---", date)
             const formattedDate =
                 date.getDate().toString().padStart(2, "0") +
                 "/" +
@@ -136,7 +133,7 @@ export default function InvoiceForm() {
                 "/" +
                 date.getFullYear();
 
-            setInvoiceData({ ...invoiceData, [type]: formattedDate });
+            setInvoiceData({ ...invoiceData, [type]: date });
             setSelectedDate(date);
         }
 
@@ -174,6 +171,52 @@ export default function InvoiceForm() {
 
         setInvoiceData({ ...invoiceData, items: updatedItems });
     };
+
+    const handleSubmit = async () => {
+        // console.log("Button clicked", invoiceData.invoiceDate); // Check if function is called
+
+        // if (!invoiceData.invoiceDate || !invoiceData.dueDate) {
+        //     console.error("Error: invoiceDate or dueDate is missing");
+        //     return;
+        // }
+        // const updatedInvoiceData = {
+        //     ...invoiceData,
+        //     invoiceDate: new Date(invoiceData.invoiceDate).toISOString().split("T")[0],
+        //     dueDate: new Date(invoiceData.dueDate).toISOString().split("T")[0],
+        // };
+        console.log("jijii")
+        const data = new FormData();
+
+        // Append primitive values
+        Object.keys(invoiceData).forEach((key) => {
+            if (typeof invoiceData[key] !== "object" || invoiceData[key] === null) {
+                data.append(key, invoiceData[key]);
+            }
+        });
+
+        // Append nested objects as JSON strings
+        if (invoiceData.items) {
+            data.append("items", JSON.stringify(invoiceData.items));
+        }
+        if (invoiceData.customer) {
+            data.append("customer", JSON.stringify(invoiceData.customer));
+        }
+
+        try {
+            console.log("Invoice Date Before Sending:", invoiceData.invoiceDate);
+
+            const response = await fetch("http://192.168.1.25:8080/save-invoice", {
+                method: "POST",
+                body: data,
+                credentials: "include",
+            });
+
+            console.log("Response:", response);
+        } catch (error) {
+            console.error("Error submitting invoice:", error);
+        }
+    };
+
 
     const renderQuantityControl = (value, index, item) => {
         return (
@@ -287,8 +330,8 @@ export default function InvoiceForm() {
                                 </Text>
                                 <TextInput
                                     className="border border-gray-300 rounded-md p-3 bg-white"
-                                    value={invoiceData.invoiceNo}
-                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, invoiceNo: text })}
+                                    value={invoiceData.invoiceNumber}
+                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, invoiceNumber: text })}
                                 />
                             </View>
                         </View>
@@ -554,9 +597,9 @@ export default function InvoiceForm() {
                                     <View className="flex-row items-center border border-gray-300 rounded-md bg-white">
                                         <TextInput
                                             className="w-12 p-1 text-center"
-                                            value={invoiceData.discount}
+                                            value={invoiceData.discountInput}
                                             keyboardType="numeric"
-                                            onChangeText={(text) => setInvoiceData({ ...invoiceData, discount: text })}
+                                            onChangeText={(text) => setInvoiceData({ ...invoiceData, discountInput: text })}
                                         />
                                         <View className="border-l border-gray-300 p-1">
                                             <ChevronDown width={16} height={16} color="#666" />
@@ -573,9 +616,9 @@ export default function InvoiceForm() {
                                     <View className="flex-row items-center border border-gray-300 rounded-md bg-white">
                                         <TextInput
                                             className="w-12 p-1 text-center"
-                                            value={invoiceData.adjustment}
+                                            value={invoiceData.adjustmentInput}
                                             keyboardType="numeric"
-                                            onChangeText={(text) => setInvoiceData({ ...invoiceData, adjustment: text })}
+                                            onChangeText={(text) => setInvoiceData({ ...invoiceData, adjustmentInput: text })}
                                         />
                                         <View className="border-l border-gray-300 p-1">
                                             <ChevronDown width={16} height={16} color="#666" />
@@ -593,7 +636,7 @@ export default function InvoiceForm() {
 
                         {/* Action Buttons */}
                         <View className="flex-row justify-end space-x-3 mt-4 mb-8">
-                            <TouchableOpacity className="bg-blue-600 py-3 px-6 rounded-md">
+                            <TouchableOpacity className="bg-blue-600 py-3 px-6 rounded-md" onPress={handleSubmit}>
                                 <Text className="text-white font-medium">Create Invoice</Text>
                             </TouchableOpacity>
 

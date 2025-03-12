@@ -97,12 +97,27 @@ export default function AdminSetting() {
             Alert.alert('Error', 'Please enter a valid email address');
             return;
         }
+        console.log("businessInfo---------", businessInfo);
 
         try {
-            const response = await updateOrgProfie(businessInfo.id)
-        } catch (e) {
-            console.log("errro")
+            const response = await fetch(`http://192.168.1.25:8080/editOrgitembyid/${businessInfo.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(businessInfo),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Request failed with status: ${response.status}`);
+            }
+
+            const data = await response.text(); // or response.json() if the API returns JSON
+            console.log("Update Successful:", data);
+        } catch (error) {
+            console.log("Error updating organization profile:", error);
         }
+
         Alert.alert('Success', 'Business information updated successfully');
         setIsEditing(false);
     };
