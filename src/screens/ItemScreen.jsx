@@ -155,7 +155,8 @@ export default function ItemScreen() {
                                         <View className="flex-row justify-between items-center p-4 border-b border-gray-100 bg-blue-50">
                                             <View className="flex-row items-center flex-1">
                                                 <MaterialCommunityIcons name={getIconForItemType(item.type)} size={20} color="#3b82f6" />
-                                                <Text className="ml-2 text-lg font-semibold text-blue-600 flex-1">{item.itemName}</Text>
+                                                <Text className="ml-2 text-lg font-semibold text-blue-600 flex-1"
+                                                    onPress={() => navigation.navigate("ItemsDetail", { id: item.id })} >{item.itemName}</Text>
                                                 <View className="bg-green-100 px-3 py-1 rounded-full">
                                                     <Text className="text-green-700 font-medium">{item.type}</Text>
                                                 </View>

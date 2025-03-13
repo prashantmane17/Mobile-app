@@ -108,7 +108,7 @@ const PaymentList = () => {
                                     <View key={index} className="bg-white rounded-lg shadow-sm p-4 mb-2">
                                         <View className="flex-row justify-between items-start mb-3">
                                             <View>
-                                                <Text className="text-lg font-semibold text-gray-900 capitalize">{payment.customerName}</Text>
+                                                <Text className="text-lg font-semibold text-gray-900 capitalize" onPress={() => navigation.navigate("PaymentDetails", { id: payment.id })}>{payment.customerName}</Text>
                                                 <Text className="text-gray-500 text-sm">{payment.paymentDate}</Text>
                                             </View>
                                             <View className="bg-green-100 px-3 py-1 rounded-full">

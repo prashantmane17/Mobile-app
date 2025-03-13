@@ -123,19 +123,53 @@ export default function InvoiceForm() {
         setInvoiceData({ ...invoiceData, customer: selectedName })
         setModalVisible(false);
     };
-    const handleDateChange = (event, date, type) => {
-        if (date) {
-            console.log("date---", date)
-            const formattedDate =
-                date.getDate().toString().padStart(2, "0") +
-                "/" +
-                (date.getMonth() + 1).toString().padStart(2, "0") +
-                "/" +
-                date.getFullYear();
+    const parseDateToDDMMYYYY = (inputDate) => {
+        if (!inputDate) return ""; // Handle empty input
 
-            setInvoiceData({ ...invoiceData, [type]: date });
+        // Extract day, month (3-letter), and year
+        const dateParts = inputDate.match(/(\d{1,2}) (\w{3}), (\d{4})/);
+        if (!dateParts) return "Invalid Date"; // Handle invalid input format
+
+        const [, day, month, year] = dateParts;
+
+        // Convert month from short name to number
+        const monthMap = {
+            Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
+            Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12"
+        };
+
+        return `${day.padStart(2, "0")}/${monthMap[month]}/${year}`;
+    };
+
+    const handleDateChange = (event, date, type) => {
+        // if (date) {
+        //     console.log("date---", date)
+        //     const formattedDate =
+        //         date.getDate().toString().padStart(2, "0") +
+        //         "/" +
+        //         (date.getMonth() + 1).toString().padStart(2, "0") +
+        //         "/" +
+        //         date.getFullYear();
+
+        //     setInvoiceData({ ...invoiceData, [type]: date });
+        //     setSelectedDate(date);
+        // }
+        if (date) {
+            console.log("date---", date);
+
+            // Ensure time is set to 00:00:00
+            date.setHours(0, 0, 0, 0);
+
+            // Format date in "Thu Mar 13 00:00:00 IST 2025"
+            const formattedDate =
+                date.toDateString() + " 00:00:00 IST";
+
+            console.log("Formatted Date:", formattedDate);
+
+            setInvoiceData({ ...invoiceData, [type]: formattedDate });
             setSelectedDate(date);
         }
+
 
         if (type === "invoiceDate") {
             setShowInvoicePicker(false);
@@ -354,7 +388,7 @@ export default function InvoiceForm() {
                                 <View className="relative">
                                     <TextInput
                                         className="border border-gray-300 rounded-md p-3 bg-white"
-                                        value={invoiceData.invoiceDate}
+                                        value={parseDateToDDMMYYYY(invoiceData.invoiceDate)}
                                         editable={false} // Prevent manual typing
                                     />
                                     <TouchableOpacity
@@ -384,7 +418,7 @@ export default function InvoiceForm() {
                                 <View className="relative">
                                     <TextInput
                                         className="border border-gray-300 rounded-md p-3 bg-white"
-                                        value={invoiceData.dueDate}
+                                        value={parseDateToDDMMYYYY(invoiceData.dueDate)}
                                         editable={false} // Prevent manual typing
                                     />
                                     <TouchableOpacity

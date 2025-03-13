@@ -5,8 +5,13 @@ import { Calendar } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
 import { savePayments } from '../api/user/payment';
 import { getAllCustomers } from '../api/user/customer';
+import Checkbox from "expo-checkbox";
+import { useNavigation } from '@react-navigation/native';
+import { ArrowLeft } from 'react-native-feather';
 
 export default function PaymentForm() {
+    const navigation = useNavigation()
+    const [selectedInvoices, setSelectedInvoices] = useState([]);
     const [customers, setCustomers] = useState([])
     const [modalVisible, setModalVisible] = useState(false);
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -48,6 +53,7 @@ export default function PaymentForm() {
 
     const handleChange = (name, value) => {
         setFormData({ ...formData, [name]: value });
+        setSelectedInvoices([]);
     };
     const handleSearch = (text) => {
 
@@ -81,6 +87,23 @@ export default function PaymentForm() {
                 date.getFullYear();
             handleChange('paymentDate', formattedDate);
         }
+    };
+    const handleCheckboxSelect = (invoice) => {
+        setSelectedInvoices((prev) => {
+            const isAlreadySelected = prev.some((item) => item.id === invoice.id);
+
+            if (isAlreadySelected) {
+                const updatedSelection = prev.filter((item) => item.id !== invoice.id);
+                const newTotal = updatedSelection.reduce((sum, item) => sum + Number(item.totalAmount), 0);
+                setFormData({ ...formData, outstandingAmount: newTotal.toString() });
+                return updatedSelection;
+            } else {
+                const updatedSelection = [...prev, invoice];
+                const newTotal = updatedSelection.reduce((sum, item) => sum + Number(item.totalAmount), 0);
+                setFormData({ ...formData, outstandingAmount: newTotal.toString() });
+                return updatedSelection;
+            }
+        });
     };
 
     const handleSubmit = async () => {
@@ -125,7 +148,12 @@ export default function PaymentForm() {
     return (
         <ScrollView className="flex-1 bg-white p-4">
             {/* Customer Name */}
-
+            <View className="flex-row items-center pb-3">
+                <TouchableOpacity className="mr-3" onPress={() => navigation.navigate('Payment')}>
+                    <ArrowLeft className="w-6 h-6 text-blue-500" />
+                </TouchableOpacity>
+                <Text className="text-2xl  font-semibold">+ Create Payment</Text>
+            </View>
             <View className="mb-4">
                 <Text className="text-gray-700 mb-1">
                     Customer Name<Text className="text-red-500">*</Text>
@@ -179,23 +207,29 @@ export default function PaymentForm() {
 
             {/* Outstanding Amount */}
             <View className="mb-4">
-                <Text className="text-gray-700 mb-1">Outstanding Amount<Text className="text-red-500">*</Text></Text>
+                <Text className="text-gray-700 mb-1">
+                    Outstanding Amount<Text className="text-red-500">*</Text>
+                </Text>
                 <TextInput
                     className="border border-gray-300 rounded-md p-3 bg-white"
                     placeholder="Enter received amount"
                     value={formData.outstandingAmount}
-                    onChangeText={(text) => handleChange('outstandingAmount', text)}
+                    onChangeText={(text) => handleChange("outstandingAmount", text)}
                     keyboardType="numeric"
                 />
 
                 {filteredInvoices?.map((invoice) => (
-                    <View key={invoice.id} className="flex-row items-center gap-2">
+                    <View key={invoice.id} className="flex-row items-center gap-2 p-1">
                         <Text>{invoice.invoiceNumber}</Text>
                         <Text>{invoice.totalAmount}</Text>
+                        <Checkbox
+                            value={selectedInvoices.some((item) => item.id === invoice.id)}
+                            onValueChange={() => handleCheckboxSelect(invoice)}
+                            className="w-4 h-4"
+                        />
                     </View>
                 ))}
             </View>
-
 
             {/* Bank Charges */}
             <View className="mb-4">
