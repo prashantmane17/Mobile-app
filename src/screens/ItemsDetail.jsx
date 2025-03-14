@@ -202,7 +202,6 @@ export default function ItemDetails({ route }) {
         }
     };
 
-    // Download PDF
     const handleDownloadPDF = async () => {
         const pdfUri = await generatePDF();
         if (pdfUri) {
@@ -210,7 +209,6 @@ export default function ItemDetails({ route }) {
         }
     };
 
-    // Share PDF
     const handleSharePDF = async () => {
         const pdfUri = await generatePDF();
         if (pdfUri) {
@@ -218,7 +216,6 @@ export default function ItemDetails({ route }) {
         }
     };
 
-    // Reusable detail row component
     const DetailRow = ({ label, value, isLast = false }) => (
         <View className={`flex-row justify-between py-3 ${!isLast ? 'border-b border-gray-100' : ''}`}>
             <Text className="text-gray-500 font-medium">{label}</Text>

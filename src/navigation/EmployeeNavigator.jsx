@@ -24,6 +24,7 @@ import InvoiceTemp from '../screens/InvoiceTemp';
 import VendorForm from '../screens/VendorForm';
 import PaymentDetails from '../screens/PaymentDetails';
 import ItemsDetail from '../screens/ItemsDetail';
+import CustomerDetails from '../screens/CustomerDetails';
 
 const Drawer = createDrawerNavigator();
 
@@ -43,6 +44,7 @@ export default function EmployeeNavigator() {
             >
                 <Drawer.Screen name="Dashboard" component={UsersDashboardScreen} />
                 <Drawer.Screen name="Parties" component={CustomerList} />
+                <Drawer.Screen name="CustomerDetails" component={CustomerDetails} />
                 <Drawer.Screen name="sales" component={InvoiceList} />
                 <Drawer.Screen name="InvoiceForm" component={InvoiceForm} />
                 <Drawer.Screen name="InvoiceTemp" component={InvoiceTemp} />

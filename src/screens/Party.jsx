@@ -149,7 +149,8 @@ export default function CustomerList() {
                                     <View className="flex-row justify-between items-center p-4  border-b border-gray-100">
                                         <View className="flex-row items-center">
                                             <MaterialCommunityIcons name="account" size={20} color="#3b82f6" />
-                                            <Text className="ml-2 text-lg font-semibold text-blue-600 capitalize">{customer.displayName}</Text>
+                                            <Text className="ml-2 text-lg font-semibold text-blue-600 capitalize"
+                                                onPress={() => navigation.navigate("CustomerDetails", { id: customer.id })}>{customer.displayName}</Text>
                                         </View>
                                         <View className="flex-row items-center">
                                             <TouchableOpacity
