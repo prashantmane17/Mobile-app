@@ -1,458 +1,615 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { ArrowLeft, Download, Share2 } from 'react-native-feather';
-import * as FileSystem from 'expo-file-system';
 import { Platform } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
+import { ArrowLeft, Download, Share2 } from 'lucide-react-native';
+import { getAllInvoices } from '../api/user/invoice';
+import { useNavigation } from '@react-navigation/native';
+import { getOrgProfie } from '../api/admin/adminApi';
 
+// Sample invoice data - you can replace this with your actual data
 const invoiceData = {
-    company: {
-        name: 'NIGUS',
-        address: 'No-8, 20th Main Road, Koramangala, Block-5th',
-        city: 'Bangalore',
-        state: 'Karnataka',
-        country: 'India',
-        email: 'admin@taxcompany.com',
-        taxId: '29AADCN7222P1ZX'
-    },
-    invoice: {
-        number: 'INV/2025/00002',
-        date: '28 Feb 2025',
-        dueDate: '28 Feb 2025',
-    },
-    customer: {
-        name: 'Ganesh Popup',
-        address: 'No-4, Ganesh Street, Bejavada, AP',
-        city: 'Bejavada',
-        state: 'AP',
-        country: 'India',
-    },
-    items: [
-        { id: 1, description: 'Product 1', quantity: 2, price: 100, tax: 18, total: 236 },
-        { id: 2, description: 'Product 2', quantity: 1, price: 200, tax: 18, total: 236 },
-    ],
-    subtotal: 400,
-    taxTotal: 72,
-    total: 472
+  declaration: 'We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct',
 };
 
-const InvoiceTemp = () => {
-    const [loading, setLoading] = useState(false);
+const InvoiceTemp = ({ route }) => {
+  const [loading, setLoading] = useState(false);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const { id } = route.params;
+  const navigation = useNavigation();
+  const [invoices, setInvoices] = useState({})
+  const [orgData, setOrgData] = useState({})
+  const invoiceDatas = async () => {
+    setInvoiceLoading(true);
+    try {
+      const response = await getAllInvoices();
+      const orgResponse = await getOrgProfie();
+      const data = response.invoices.find((invoice) => invoice.id === id)
+      setInvoices(data);
+      setOrgData(orgResponse.organizationList[0]);
+      console.log("id-----", id)
+      console.log("data-----", orgResponse.organizationList[0])
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+    }
+    finally {
+      setInvoiceLoading(false);
+    }
+  };
 
-    const generatePDF = async () => {
-        const htmlContent = `
-    <html>
-      <head>
-        <style>
-          body {
-            font-family: 'Helvetica', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-            color: #333;
-          }
-          .container {
-            width: 800px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-          }
-          .header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #3b82f6;
-          }
-          .invoice-title {
-            font-size: 32px;
-            font-weight: bold;
-            color: #3b82f6;
-            letter-spacing: 1px;
-          }
-          .company-info {
-            text-align: right;
-            font-size: 14px;
-            color: #555;
-            line-height: 1.5;
-          }
-          .company-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-          }
-          .invoice-details {
-            background-color: #f0f7ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            border-left: 4px solid #3b82f6;
-          }
-          .invoice-details div {
-            margin-bottom: 5px;
-            font-size: 14px;
-          }
-          .invoice-details strong {
-            font-weight: 600;
-            margin-right: 5px;
-          }
-          .customer-section {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-          }
-          .bill-to, .ship-to {
-            flex: 1;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-          }
-          .section-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #3b82f6;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #e5e7eb;
-          }
-          .customer-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: #3b82f6;
-            margin-bottom: 5px;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-          }
-          thead th {
-            background-color: #3b82f6;
-            color: white;
-            text-align: left;
-            padding: 12px;
-            font-weight: 600;
-            font-size: 14px;
-          }
-          tbody tr:nth-child(even) {
-            background-color: #f8fafc;
-          }
-          tbody tr:hover {
-            background-color: #f0f7ff;
-          }
-          tbody td {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 14px;
-          }
-          .summary {
-            margin-left: auto;
-            width: 300px;
-            margin-top: 20px;
-          }
-          .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            font-size: 14px;
-          }
-          .summary-row.total {
-            font-size: 18px;
-            font-weight: bold;
-            color: #3b82f6;
-            border-top: 2px solid #e5e7eb;
-            padding-top: 10px;
-            margin-top: 5px;
-          }
-          .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            font-size: 12px;
-            color: #6b7280;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <div class="invoice-title">TAX INVOICE</div>
-            <div class="company-info">
-              <div class="company-name">${invoiceData.company.name}</div>
-              <div>${invoiceData.company.address}</div>
-              <div>${invoiceData.company.city}, ${invoiceData.company.state}</div>
-              <div>${invoiceData.company.country}</div>
-              <div>${invoiceData.company.email}</div>
-              <div><strong>GSTIN:</strong> ${invoiceData.company.taxId}</div>
+
+  useEffect(() => {
+    invoiceDatas();
+  }, [id]);
+  let subTotal = 0;
+  let totalQTY = 0;
+  const generateHTML = () => {
+    ActivityIndicator
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Invoice</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 10px 20px;
+              padding: 0;
+              font-size: 12px;
+            }
+            .invoice-container {
+              width: 100%;
+              max-width: 800px;
+              margin: 0 auto;
+              border: 1px solid #000;
+            }
+            .header {
+              text-align: center;
+              padding: 10px;
+              border-bottom: 1px solid #000;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 18px;
+            }
+            .company-details {
+              text-align: center;
+              margin-bottom: 5px;
+            }
+            .invoice-info {
+              display: flex;
+            }
+            .customer-info {
+              width: 50%;
+              padding: 10px;
+              border-right: 1px solid #000;
+            }
+            .invoice-meta {
+              width: 50%;
+
+            }
+            .meta-row {
+              display: flex;
+              padding: 10px;
+              border-bottom: 1px solid #000;
+            }
+            .meta-row:last-child {
+              border:none;
+            }
+            .meta-label {
+              width: 50%;
+              font-weight: bold;
+            }
+            .meta-value {
+              width: 50%;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              
+            }
+            th, td {
+              border: 1px solid #000;
+              padding: 5px;
+              text-align: left;
+            }
+            th {
+              background-color: #f2f2f2;
+            }
+            .text-right {
+              text-align: right;
+            }
+            .text-center {
+              text-align: center;
+            }
+            .totals {
+              display: flex;
+              justify-content: space-between;
+              
+            }
+            .total-quantity {
+              width: 50%;
+              padding: 10px;
+              // border-right: 1px solid #000;
+            }
+            .total-amount {
+              width: 50%;
+              padding: 10px;
+              text-align: right;
+            }
+            .amount-in-words {
+              padding: 10px;
+              border-top: 1px solid #000;
+              border-bottom: 1px solid #000;
+            }
+            .footer {
+              display: flex;
+            }
+            .declaration {
+              width: 50%;
+              padding: 10px;
+              border-right: 1px solid #000;
+            }
+            .bank-details {
+              width: 50%;
+              padding: 10px;
+            }
+            .signatures {
+              display: flex;
+              border-top: 1px solid #000;
+            }
+            .customer-signature {
+              width: 50%;
+              padding: 10px;
+              height: 80px;
+              border-right: 1px solid #000;
+            }
+            .company-signature {
+              width: 50%;
+              padding: 10px;
+              height: 80px;
+              text-align: right;
+            }
+            .page-footer {
+              text-align: center;
+              padding: 5px;
+              font-size: 10px;
+              border-top: 1px solid #000;
+            }
+            .gst_email{
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+              .emial_div{
+              text-align : right;
+              }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-container">
+            <!-- Header -->
+            <div class="header">
+              <h1>${orgData.businessName}</h1>
+              <div class="company-details">
+                ${orgData.city}
+              </div>
+              
+              <div class="company-details">
+                ${orgData.state}, ${orgData.country}
+              </div>
+              <div class="gst_email">
+                  <div class="gst_div">
+                    GSTIN: ${orgData.gstin}
+                  </div>
+                  <div class="email_div">
+                  Email: ${orgData.email}
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div class="invoice-details">
-            <div><strong>Invoice Number:</strong> ${invoiceData.invoice.number}</div>
-            <div><strong>Invoice Date:</strong> ${invoiceData.invoice.date}</div>
-            <div><strong>Due Date:</strong> ${invoiceData.invoice.dueDate}</div>
-            <div><strong>Terms of Delivery:</strong> 30 Days</div>
-            <div><strong>Place of Supply:</strong> Belagavi</div>
-          </div>
-          
-          <div class="customer-section">
-            <div class="bill-to">
-              <div class="section-title">Bill To</div>
-              <div class="customer-name">${invoiceData.customer.name}</div>
-              <div>${invoiceData.customer.address}</div>
-              <div>${invoiceData.customer.city}, ${invoiceData.customer.state}</div>
-              <div>${invoiceData.customer.country}</div>
+            <!-- Invoice Info -->
+            <div class="invoice-info">
+              <div class="customer-info">
+                <div><strong>Bill To</strong></div>
+                <div>${invoices.customer.displayName}</div>
+                <div>${invoices.customer.billingAddress.addressLine1}</div>
+                <div>Ph: ${invoices.customer.phone}</div>
+                <div>GSTIN: ${invoices.customer.gstin || ''}</div>
+                <div>PAN: ${invoices.customer.billingAddress || ''}</div>
+                <div>State: ${invoices.customer.billingAddress.state || '--'}</div>
+              </div>
+              <div class="invoice-meta">
+                <div class="meta-row">
+                  <div class="meta-label">Invoice No:</div>
+                  <div class="meta-value">${invoices.invoiceNumber}</div>
+                </div>
+                <div class="meta-row">
+                  <div class="meta-label">Invoice Date:</div>
+                  <div class="meta-value">${invoices.invoiceDate}</div>
+                </div>
+                <div class="meta-row">
+                  <div class="meta-label">Ship To:</div>
+                  <div class="meta-value">${invoices.customer.shippingAddress.addressLine1}</div>
+                </div>
+                <div class="meta-row">
+                  <div class="meta-label">Terms Of Delivery:</div>
+                  <div class="meta-value">${invoices.terms}</div>
+                </div>
+                
+              </div>
             </div>
             
-            <div class="ship-to">
-              <div class="section-title">Ship To</div>
-              <div>${invoiceData.customer.address}</div>
-              <div>${invoiceData.customer.city}, ${invoiceData.customer.state}</div>
-              <div>${invoiceData.customer.country}</div>
-            </div>
-          </div>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Description</th>
-                <th style="text-align: center;">Quantity</th>
-                <th style="text-align: right;">Price</th>
-                <th style="text-align: center;">Tax (%)</th>
-                <th style="text-align: right;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${invoiceData.items
-                .map(
-                    (item) => `
+            <!-- Items Table -->
+            <table>
+              <thead>
                 <tr>
-                  <td>${item.id}</td>
-                  <td>${item.description}</td>
-                  <td style="text-align: center;">${item.quantity}</td>
-                  <td style="text-align: right;">₹${item.price.toFixed(2)}</td>
-                  <td style="text-align: center;">${item.tax}%</td>
-                  <td style="text-align: right;">₹${item.total.toFixed(2)}</td>
+                  <th>S.NO</th>
+                  <th>Description of goods</th>
+                  <th>HSN/SAC</th>
+                  <th>Quantity</th>
+                  <th>Rate</th>
+                  <th>Amount</th>
                 </tr>
-              `
-                )
-                .join("")}
-            </tbody>
-          </table>
-          
-          <div class="summary">
-            <div class="summary-row">
-              <div>Subtotal:</div>
-              <div>₹${invoiceData.subtotal.toFixed(2)}</div>
+              </thead>
+              <tbody>
+                ${invoices.items.map((item, index) => {
+      const itemTotal = Number(item.sellingPrice) * Number(item.quantity)
+      return (`
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${item.itemName}</td>
+                    <td>${item.itemHsn}</td>
+                    <td>${item.quantity}</td>
+                    <td class="text-right">${item.sellingPrice.toFixed(2)}</td>
+                    <td class="text-right">${itemTotal.toFixed(2)}</td>
+                  </tr>
+                `)
+    }).join('')}
+                <tr>
+                  <td colspan="5" class="text-right">Sub Total</td>
+                  <td class="text-right">${subTotal.toFixed(2)}</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <!-- Totals -->
+            <div class="totals">
+              <div class="total-quantity">
+                Total Quantity : ${totalQTY}
+              </div>
+              <div class="total-amount">
+                Discount  : (-) ${invoices.discountInput}
+              </div>
+               <div class="total-amount">
+                <strong>Total Amount : ${subTotal.toFixed(2)}</strong>
+              </div>
             </div>
-            <div class="summary-row">
-              <div>Tax:</div>
-              <div>₹${invoiceData.taxTotal.toFixed(2)}</div>
+            
+            <!-- Amount in Words -->
+            <div class="amount-in-words">
+              <div><strong>Amount Chargeable (In Words)</strong></div>
+              <div>${numberToWords(subTotal)}</div>
             </div>
-            <div class="summary-row total">
-              <div>Total:</div>
-              <div>₹${invoiceData.total.toFixed(2)}</div>
+            
+            <!-- Footer -->
+            <div class="footer">
+              <div class="declaration">
+                <div><strong>Declaration:</strong></div>
+                <div>${invoiceData.declaration}</div>
+              </div>
+              <div class="bank-details">
+                <div><strong>Company's Bank Details:</strong></div>
+                <div>Account Holders Name : ${orgData.businessName}</div>
+                <div>Bank Name : ${orgData.businessName}</div>
+                <div>A/c No : ${orgData.accountNumber}</div>
+                <div>IFSC Code : ${orgData.ifscCode}</div>
+                <div>Branch : ${orgData.city}</div>
+              </div>
             </div>
+            
+            <!-- Signatures -->
+            <div class="signatures">
+              <div class="customer-signature">
+                <div>Customer Signature and Seal</div>
+              </div>
+              <div class="company-signature">
+                <div style="margin-top: 60px;">Authorized Signature</div>
+              </div>
+            </div>
+            
+            <!-- Page Footer -->
+            <!-- <div class="page-footer">
+              Powered By Portstay
+            </div>-->
           </div>
-          
-          <div class="footer">
-            <p>Thank you for your business! This is a computer-generated invoice and does not require a signature.</p>
-          </div>
-        </div>
-      </body>
-    </html>
-   `;
+        </body>
+      </html>
+    `;
+  };
 
+  const generatePDF = async () => {
+    try {
+      setLoading(true);
+      const { uri } = await Print.printToFileAsync({
+        html: generateHTML(),
+        base64: false
+      });
+
+      setLoading(false);
+      return uri;
+    } catch (error) {
+      setLoading(false);
+      console.error('Error generating PDF:', error);
+      Alert.alert('Error', 'Failed to generate PDF');
+      return null;
+    }
+  };
+
+  const savePDF = async (uri) => {
+    if (Platform.OS === 'android') {
+      const permissions = await MediaLibrary.requestPermissionsAsync();
+
+      if (permissions.granted) {
         try {
-            const { uri } = await Print.printToFileAsync({ html: htmlContent });
-            return uri;
+          const asset = await MediaLibrary.createAssetAsync(uri);
+          await MediaLibrary.createAlbumAsync('Invoices', asset, false);
+          Alert.alert('Success', 'Invoice saved to gallery');
         } catch (error) {
-            console.error("Error generating PDF:", error);
+          console.error('Error saving to gallery:', error);
+          Alert.alert('Error', 'Failed to save invoice to gallery');
         }
-    };
+      } else {
+        Alert.alert('Permission Required', 'Storage permission is required to save the invoice');
+      }
+    } else {
+      Alert.alert('Success', 'Invoice saved successfully');
+    }
+  };
 
+  const handleDownloadPDF = async () => {
+    const uri = await generatePDF();
+    if (uri) {
+      await savePDF(uri);
+    }
+  };
 
+  const handleSharePDF = async () => {
+    const uri = await generatePDF();
+    if (uri) {
+      try {
+        await Sharing.shareAsync(uri);
+      } catch (error) {
+        console.error('Error sharing PDF:', error);
+        Alert.alert('Error', 'Failed to share PDF');
+      }
+    }
+  };
+  const numberToWords = (num) => {
+    if (num === 0) return "Zero Rupees Only";
 
-    const handleDownloadPDF = async () => {
-        const pdfUri = await generatePDF();
-        if (pdfUri) {
-            Alert.alert("Success", `PDF saved at: ${pdfUri}`);
-        }
-    };
+    const belowTwenty = [
+      "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+      "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
+      "Eighteen", "Nineteen"
+    ];
 
-    // Share PDF
-    const handleSharePDF = async () => {
-        const pdfUri = await generatePDF();
-        if (pdfUri) {
-            await Sharing.shareAsync(pdfUri);
-        }
-    };
+    const tens = [
+      "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
+    ];
 
-    return (
-        <View className="flex-1 bg-gray-50">
-            {/* Header */}
-            <View className="bg-white px-4 py-4 shadow-sm">
-                <View className="flex-row justify-between items-center">
-                    <TouchableOpacity className="p-2 rounded-full bg-blue-50">
-                        <ArrowLeft stroke="#3b82f6" width={22} height={22} />
-                    </TouchableOpacity>
-                    <Text className="text-xl font-bold text-gray-800">Invoice</Text>
-                    <View className="flex-row space-x-3">
-                        <TouchableOpacity
-                            className="p-2.5 rounded-full bg-blue-50"
-                            onPress={handleDownloadPDF}
-                        >
-                            <Download stroke="#3b82f6" width={20} height={20} />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            className="p-2.5 rounded-full bg-blue-50"
-                            onPress={handleSharePDF}
-                        >
-                            <Share2 stroke="#3b82f6" width={20} height={20} />
-                        </TouchableOpacity>
-                    </View>
+    const units = ["", "Thousand", "Lakh", "Crore"];
+
+    function convertLessThanThousand(n) {
+      if (n < 20) return belowTwenty[n];
+      if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + belowTwenty[n % 10] : "");
+      return belowTwenty[Math.floor(n / 100)] + " Hundred" + (n % 100 !== 0 ? " " + convertLessThanThousand(n % 100) : "");
+    }
+
+    let words = "";
+    let unitIndex = 0;
+
+    while (num > 0) {
+      let part = num % 1000;
+      if (part !== 0) {
+        words = convertLessThanThousand(part) + (units[unitIndex] ? " " + units[unitIndex] : "") + " " + words;
+      }
+      num = Math.floor(num / 1000);
+      unitIndex++;
+    }
+
+    return words.trim() + " Rupees Only";
+  }
+
+  return (
+    <View className="flex-1 bg-gray-50">
+      {/* Header */}
+      <View className="bg-white px-4 py-4 shadow-sm">
+        <View className="flex-row justify-between items-center">
+          <TouchableOpacity className="p-2 rounded-full bg-gray-100" onPress={() => navigation.navigate('sales')}>
+            <ArrowLeft stroke="#333" width={22} height={22} />
+          </TouchableOpacity>
+          <Text className="text-xl font-bold text-gray-800">Invoice</Text>
+          <View className="flex-row space-x-3">
+            <TouchableOpacity
+              className="p-2.5 rounded-full bg-gray-100"
+              onPress={handleDownloadPDF}
+            >
+              <Download stroke="#333" width={20} height={20} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="p-2.5 rounded-full bg-gray-100"
+              onPress={handleSharePDF}
+            >
+              <Share2 stroke="#333" width={20} height={20} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      {(loading || invoiceLoading) ? (
+        <View className="flex-1 justify-center items-center bg-white">
+          <ActivityIndicator size="large" color="#333" />
+          <Text className="mt-4 text-gray-600">Generating invoice PDF...</Text>
+        </View>
+      ) : (
+        <ScrollView className="flex-1">
+          <View className="m-4 bg-white rounded-lg shadow-sm overflow-hidden">
+            {/* Company Header */}
+            <View className="p-4 ">
+              <Text className="text-xl font-bold text-center">{orgData.businessName}</Text>
+              <Text className="text-sm text-center text-gray-600">{orgData.city}</Text>
+              <Text className="text-sm text-center text-gray-600">
+                {orgData.state}, {orgData.country}
+              </Text>
+            </View>
+            <View className="flex-row justify-between w-full px-1">
+              <Text className="text-sm text-gray-600 w-1/2">GSTIN: {orgData.gstin ? orgData.gstin : "--"}</Text>
+              <Text className="text-sm text-gray-600 text-right w-1/2">Email: {orgData.email}</Text>
+            </View>
+            {/* Customer and Invoice Info */}
+            <View className="flex-row p-1">
+              {/* Customer Info */}
+              <View className="w-1/2 p-2 border border-gray-200">
+                <Text className="font-bold mb-1">Bill To:</Text>
+                <Text>{invoices.customer?.displayName}</Text>
+                <Text className="text-gray-600 text-sm">{invoices.customer?.billingAddress?.addressLine1}</Text>
+                <Text className="text-gray-600 text-sm">
+                  State : {invoices.customer?.billingAddress?.state || ''}
+                </Text>
+                <Text className="text-gray-600 text-sm">Ph: {invoices.customer?.billingAddress?.phone}</Text>
+                <Text className="text-gray-600 text-sm">GSTIN: {invoices.customer?.gstin || ''}</Text>
+              </View>
+
+              {/* Invoice Meta */}
+              <View className="w-1/2 ">
+                <View className="flex-row  border border-gray-200 p-2">
+                  <Text className="w-1/2 font-bold text-[13px]">Invoice No:</Text>
+                  <Text className="w-1/2 text-[13px]">{invoices.invoiceNumber}</Text>
                 </View>
+                <View className="flex-row  border border-gray-200 p-2">
+                  <Text className="w-1/2 font-bold text-[13px]">Invoice Date:</Text>
+                  <Text className="w-1/2 text-[13px]">{invoices.invoiceDate}</Text>
+                </View>
+                <View className="flex-row  border border-gray-200 p-2">
+                  <Text className="w-1/2 font-bold text-[13px]">Ship To:</Text>
+                  <Text className="w-1/2 text-sm text-[13px]">{invoices.customer?.shippingAddress.addressLine1}</Text>
+                </View>
+                {/* <View className="flex-row  border border-gray-200 p-2">
+                  <Text className="w-1/2 font-bold text-[13px]">Reference NO & Date:</Text>
+                    <Text className="w-1/2 text-[13px]">{invoices.invoice.referenceNo}</Text>
+                </View> */}
+                <View className="flex-row  border border-gray-200 p-2 ">
+                  <Text className="w-1/2 font-bold text-[13px]">Terms Of Delivery:</Text>
+                  <Text className="w-1/2 text-[13px]">{invoices.terms}</Text>
+                </View>
+                {/* <View className="flex-row">
+                  <Text className="w-1/2 font-bold">Vehicle Number:</Text>
+                  <Text className="w-1/2">{invoiceData.invoice.vehicleNumber}</Text>
+                </View> */}
+              </View>
             </View>
 
-            {loading ? (
-                <View className="flex-1 justify-center items-center bg-white">
-                    <ActivityIndicator size="large" color="#3b82f6" />
-                    <Text className="mt-4 text-gray-600">Generating invoice PDF...</Text>
+            {/* Items Table */}
+            <ScrollView horizontal>
+              <View className="min-w-full">
+                {/* Table Header */}
+                <View className="flex-row bg-gray-100 border-b border-gray-200">
+                  <Text className="w-12 p-2 font-bold border-r border-gray-200 text-[12px]">S.NO</Text>
+                  <Text className="w-40 p-2 font-bold border-r border-gray-200 text-[12px]">Description of goods</Text>
+                  <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">HSN/SAC</Text>
+                  <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">Quantity</Text>
+                  <Text className="w-20 p-2 font-bold border-r border-gray-200 text-[12px]">Rate</Text>
+                  <Text className="w-24 p-2 font-bold">Amount</Text>
                 </View>
-            ) : (
-                <ScrollView className="flex-1">
-                    <View className="m-4 mb-10 bg-white rounded-xl shadow-sm overflow-hidden">
-                        {/* Header Section */}
-                        <View className="p-5 border-b border-gray-100 ">
-                            <View className="flex-row justify-between items-center w-full">
-                                <Text className="text-3xl font-bold text-blue-600 w-1/2">TAX INVOICE</Text>
-                                <View className="w-1/2">
-                                    <Text className="text-lg font-semibold text-gray-800 text-right">{invoiceData.company.name}</Text>
-                                    <Text className="text-gray-500 text-sm text-right">{invoiceData.company.address}</Text>
-                                    <Text className="text-gray-500 text-sm text-right">{invoiceData.company.city}, {invoiceData.company.state}</Text>
-                                    <Text className="text-gray-500 text-sm text-right">{invoiceData.company.country}</Text>
-                                    <Text className="text-gray-500 text-sm text-right">{invoiceData.company.email}</Text>
-                                    <Text className="text-gray-500 text-sm text-right mt-1">
-                                        <Text className="font-medium"></Text> {invoiceData.company.taxId}
-                                    </Text>
-                                </View>
-                            </View>
-                        </View>
 
-                        {/* Invoice Details */}
-                        <View className="bg-blue-50 p-4 border-l-4 border-blue-500">
-                            <View className="flex-row flex-wrap">
-                                <View className="w-1/2 mb-2">
-                                    <Text className="text-gray-600 text-xs">Invoice Number</Text>
-                                    <Text className="font-medium text-gray-800">{invoiceData.invoice.number}</Text>
-                                </View>
-                                <View className="w-1/2 mb-2">
-                                    <Text className="text-gray-600 text-xs">Invoice Date</Text>
-                                    <Text className="font-medium text-gray-800">{invoiceData.invoice.date}</Text>
-                                </View>
-                                <View className="w-1/2 mb-2">
-                                    <Text className="text-gray-600 text-xs">Due Date</Text>
-                                    <Text className="font-medium text-gray-800">{invoiceData.invoice.dueDate}</Text>
-                                </View>
-                                <View className="w-1/2 mb-2">
-                                    <Text className="text-gray-600 text-xs">Terms of Delivery</Text>
-                                    <Text className="font-medium text-gray-800">30 Days</Text>
-                                </View>
-                                <View className="w-1/2">
-                                    <Text className="text-gray-600 text-xs">Place of Supply</Text>
-                                    <Text className="font-medium text-gray-800">Belagavi</Text>
-                                </View>
-                            </View>
-                        </View>
-
-                        {/* Customer Details */}
-                        <View className="p-4 flex-row space-x-4">
-                            <View className="flex-1 bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <Text className="font-bold text-blue-600 text-sm mb-2">Bill To</Text>
-                                <Text className="text-gray-800 font-semibold text-base">{invoiceData.customer.name}</Text>
-                                <Text className="text-gray-600 text-sm mt-1">{invoiceData.customer.address}</Text>
-                                <Text className="text-gray-600 text-sm">{invoiceData.customer.city}, {invoiceData.customer.state}</Text>
-                                <Text className="text-gray-600 text-sm">{invoiceData.customer.country}</Text>
-                            </View>
-                            <View className="flex-1 bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <Text className="font-bold text-blue-600 text-sm mb-2">Ship To</Text>
-                                <Text className="text-gray-600 text-sm mt-1">{invoiceData.customer.address}</Text>
-                                <Text className="text-gray-600 text-sm">{invoiceData.customer.city}, {invoiceData.customer.state}</Text>
-                                <Text className="text-gray-600 text-sm">{invoiceData.customer.country}</Text>
-                            </View>
-                        </View>
-
-                        {/* Items Table */}
-                        <View className="px-4 pb-4">
-                            <View className="rounded-lg overflow-hidden border border-gray-200">
-                                {/* Table Header */}
-                                <View className="flex-row bg-blue-600 py-3 px-4">
-                                    <Text className="flex-1 font-medium text-white text-xs">Item</Text>
-                                    <Text className="flex-2 font-medium text-white text-xs">Description</Text>
-                                    <Text className="flex-1 font-medium text-center text-white text-xs">Qty</Text>
-                                    <Text className="flex-1 font-medium text-right text-white text-xs">Price</Text>
-                                    <Text className="flex-1 font-medium text-center text-white text-xs">Tax</Text>
-                                    <Text className="flex-1 font-medium text-right text-white text-xs">Total</Text>
-                                </View>
-
-                                {/* Items List */}
-                                {invoiceData.items.map((item, index) => (
-                                    <View
-                                        key={item.id}
-                                        className={`flex-row py-3 px-4 border-b border-gray-100 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                                            }`}
-                                    >
-                                        <Text className="flex-1 text-gray-700 text-xs">{item.id}</Text>
-                                        <Text className="flex-2 text-gray-700 text-xs">{item.description}</Text>
-                                        <Text className="flex-1 text-center text-gray-700 text-xs">{item.quantity}</Text>
-                                        <Text className="flex-1 text-right text-gray-700 text-xs">₹{item.price.toFixed(2)}</Text>
-                                        <Text className="flex-1 text-center text-gray-700 text-xs">{item.tax}%</Text>
-                                        <Text className="flex-1 text-right text-gray-800 font-medium text-xs">₹{item.total.toFixed(2)}</Text>
-                                    </View>
-                                ))}
-                            </View>
-                        </View>
-
-                        {/* Summary Section */}
-                        <View className="px-4 pb-6">
-                            <View className="ml-auto w-1/2 mt-4">
-                                <View className="flex-row justify-between py-2">
-                                    <Text className="text-gray-600">Subtotal:</Text>
-                                    <Text className="text-gray-800">₹{invoiceData.subtotal.toFixed(2)}</Text>
-                                </View>
-                                <View className="flex-row justify-between py-2">
-                                    <Text className="text-gray-600">Tax:</Text>
-                                    <Text className="text-gray-800">₹{invoiceData.taxTotal.toFixed(2)}</Text>
-                                </View>
-                                <View className="flex-row justify-between py-3 mt-2 border-t border-gray-200">
-                                    <Text className="font-bold text-gray-800 text-lg">Total:</Text>
-                                    <Text className="font-bold text-blue-600 text-lg">₹{invoiceData.total.toFixed(2)}</Text>
-                                </View>
-                            </View>
-                        </View>
-
-                        {/* Footer */}
-                        <View className="p-4 bg-gray-50 border-t border-gray-100">
-                            <Text className="text-center text-gray-500 text-xs">
-                                Thank you for your business! This is a computer-generated invoice and does not require a signature.
-                            </Text>
-                        </View>
+                {/* Table Rows */}
+                {invoices.items?.map((item, index) => {
+                  let totalAmount = Number(item.sellingPrice) * Number(item.quantity)
+                  subTotal += totalAmount
+                  totalQTY += Number(item.quantity)
+                  return (
+                    <View key={index} className="flex-row border-b border-gray-200">
+                      <Text className="w-12 p-2 border-r border-gray-200 text-[12px]">{index + 1}</Text>
+                      <Text className="w-40 p-2 border-r border-gray-200 text-[12px]">{item.itemName}</Text>
+                      <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.itemHsn}</Text>
+                      <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.quantity}</Text>
+                      <Text className="w-20 p-2 text-right border-r border-gray-200 text-[12px]">{item.sellingPrice?.toFixed(2)}</Text>
+                      <Text className="w-24 p-2 text-right text-[12px]">{totalAmount.toFixed(2)}</Text>
                     </View>
-                </ScrollView>
-            )}
-        </View>
-    );
+                  )
+                })}
+
+                {/* Sub Total */}
+
+              </View>
+            </ScrollView>
+
+            {/* Totals */}
+            <View className="flex-row border-b border-gray-200">
+              <View className="w-1/2 p-4 border-r border-gray-200">
+                <Text>Total Quantity : {totalQTY}</Text>
+              </View>
+              <View className="w-1/2 p-4">
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className=" flex-1 text-left font-bold text-[13px]">Sub Total :</Text>
+                  <Text className="w-20 text-right font-bold text-[13px]">{subTotal.toFixed(2)}</Text>
+                </View>
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className="  flex-1 text-left text-[13px]">Discount :</Text>
+                  <Text className="w-20 text-right text-[13px]">{invoices.discountInput}</Text>
+                </View>
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className="flex-1 text-left font-bold text-[13px]">Total Amount :</Text>
+                  <Text className=" w-20 text-right  font-bold text-[13px]">{subTotal.toFixed(2)}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Amount in Words */}
+            <View className="p-4 border-b border-gray-200">
+              <Text className="font-bold">Amount In Words</Text>
+              <Text>{numberToWords(subTotal)}</Text>
+            </View>
+
+            {/* Declaration and Bank Details */}
+            <View className="flex-row border-b border-gray-200">
+              <View className="w-1/2 p-4 border-r border-gray-200">
+                <Text className="font-bold mb-1">Declaration:</Text>
+                <Text className="text-sm">{invoiceData.declaration}</Text>
+              </View>
+              <View className="w-1/2 p-4">
+                <Text className="font-bold mb-1">Company's Bank Details:</Text>
+                <Text className="text-sm">Account Holders Name : {orgData.businessName}</Text>
+                <Text className="text-sm">Bank Name : {orgData.businessName}</Text>
+                <Text className="text-sm">A/c No : {orgData.accountNumber ? orgData.accountNumber : "--"}</Text>
+                <Text className="text-sm">IFSC Code : {orgData.ifscCode ? orgData.ifscCode : "--"}</Text>
+                <Text className="text-sm">Branch : {orgData.city}</Text>
+              </View>
+            </View>
+
+            {/* Signatures */}
+            <View className="flex-row border-b border-gray-200">
+              <View className="w-1/2 p-4 border-r border-gray-200 h-24">
+                <Text>Customer Signature and Seal</Text>
+              </View>
+              <View className="w-1/2 p-4 ">
+                {/* <Text className="text-right">For {invoiceData.company.name}</Text> */}
+                <Text className="text-right mt-12">Authorized Signature</Text>
+              </View>
+            </View>
+
+            {/* Footer */}
+            <View className="p-2 bg-gray-50">
+              <Text className="text-center text-xs text-gray-500">Powered By Portstay</Text>
+            </View>
+          </View>
+        </ScrollView>
+      )}
+    </View>
+  );
 };
 
 export default InvoiceTemp;

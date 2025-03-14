@@ -135,7 +135,7 @@ export default function InvoiceCards() {
                                         <View className="flex-row justify-between items-center">
                                             <View className="flex-row items-center">
                                                 <Feather name="file-text" size={20} color="#60A5FA" />
-                                                <Text className="ml-2 text-sm font-medium text-gray-900" onPress={() => navigation.navigate('InvoiceTemp')}>
+                                                <Text className="ml-2 text-sm font-medium text-gray-900" onPress={() => navigation.navigate('InvoiceTemp', { id: invoice.id })}>
                                                     {invoice.invoiceNumber}
                                                 </Text>
                                             </View>
