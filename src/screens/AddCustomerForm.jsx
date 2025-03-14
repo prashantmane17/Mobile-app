@@ -127,12 +127,8 @@ export default function EnhancedAddCustomerForm() {
                 body: data,
                 headers: {}
             });
-
-            console.log("Response status:", response.status);
-
             if (response.ok) {
                 const result = await response.json();
-                console.log("Party saved:", result);
                 setFormData(intialData)
                 Alert.alert('Success', "Customer Created Successfully");
             } else {

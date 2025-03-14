@@ -21,6 +21,7 @@ const InvoiceTemp = ({ route }) => {
   const navigation = useNavigation();
   const [invoices, setInvoices] = useState({})
   const [orgData, setOrgData] = useState({})
+  const [isSameState, setIsSameSate] = useState(false)
   const invoiceDatas = async () => {
     setInvoiceLoading(true);
     try {
@@ -29,8 +30,13 @@ const InvoiceTemp = ({ route }) => {
       const data = response.invoices.find((invoice) => invoice.id === id)
       setInvoices(data);
       setOrgData(orgResponse.organizationList[0]);
-      console.log("id-----", id)
-      console.log("data-----", orgResponse.organizationList[0])
+      const orgState = orgResponse.organizationList[0].state;
+      const placeOfSupply = data.customer.placeOfSupply;
+      if (orgState === placeOfSupply) {
+        setIsSameSate(true)
+      } else {
+        setIsSameSate(false)
+      }
     } catch (error) {
       console.error("Error fetching invoices:", error);
     }
@@ -45,6 +51,77 @@ const InvoiceTemp = ({ route }) => {
   }, [id]);
   let subTotal = 0;
   let totalQTY = 0;
+
+  const numberToWords = (num) => {
+    if (num === 0) return "Zero Rupees Only";
+
+    const belowTwenty = [
+      "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+      "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
+      "Eighteen", "Nineteen"
+    ];
+
+    const tens = [
+      "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
+    ];
+
+    const units = ["", "Thousand", "Lakh", "Crore"];
+
+    function convertLessThanThousand(n) {
+      if (n < 20) return belowTwenty[n];
+      if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + belowTwenty[n % 10] : "");
+      return belowTwenty[Math.floor(n / 100)] + " Hundred" + (n % 100 !== 0 ? " " + convertLessThanThousand(n % 100) : "");
+    }
+
+    let [rupees, paise] = num?.toFixed(2).split(".");
+    rupees = parseInt(rupees, 10);
+    paise = parseInt(paise, 10);
+
+    let words = "";
+    let unitIndex = 0;
+
+    while (rupees > 0) {
+      let part = rupees % 1000;
+      if (part !== 0) {
+        words = convertLessThanThousand(part) + (units[unitIndex] ? " " + units[unitIndex] : "") + " " + words;
+      }
+      rupees = Math.floor(rupees / 1000);
+      unitIndex++;
+    }
+
+    words = words.trim() + " Rupees";
+
+    if (paise > 0) {
+      words += " and " + convertLessThanThousand(paise) + " Paise";
+    }
+
+    return words + " Only";
+  };
+
+  const taxSummary = {};
+  let allTaxTotal = 0;
+
+  invoices.items?.forEach((item) => {
+    const itemTotal = Number(item.quantity) * Number(item.sellingPrice);
+    const ItaxRate = Number(item.interStateTax);
+    const GtaxRate = Number(item.intraStateTax);
+
+    const applicableTaxRate = isSameState ? GtaxRate : ItaxRate;
+    if (applicableTaxRate === 0) return;
+
+    const totalTax = (itemTotal * applicableTaxRate) / 100;
+
+    if (!taxSummary[applicableTaxRate]) {
+      taxSummary[applicableTaxRate] = 0;
+    }
+    allTaxTotal += totalTax;
+    taxSummary[applicableTaxRate] += totalTax;
+  });
+
+
+
+
+
   const generateHTML = () => {
     ActivityIndicator
     return `
@@ -387,41 +464,6 @@ const InvoiceTemp = ({ route }) => {
       }
     }
   };
-  const numberToWords = (num) => {
-    if (num === 0) return "Zero Rupees Only";
-
-    const belowTwenty = [
-      "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
-      "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
-      "Eighteen", "Nineteen"
-    ];
-
-    const tens = [
-      "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
-    ];
-
-    const units = ["", "Thousand", "Lakh", "Crore"];
-
-    function convertLessThanThousand(n) {
-      if (n < 20) return belowTwenty[n];
-      if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + belowTwenty[n % 10] : "");
-      return belowTwenty[Math.floor(n / 100)] + " Hundred" + (n % 100 !== 0 ? " " + convertLessThanThousand(n % 100) : "");
-    }
-
-    let words = "";
-    let unitIndex = 0;
-
-    while (num > 0) {
-      let part = num % 1000;
-      if (part !== 0) {
-        words = convertLessThanThousand(part) + (units[unitIndex] ? " " + units[unitIndex] : "") + " " + words;
-      }
-      num = Math.floor(num / 1000);
-      unitIndex++;
-    }
-
-    return words.trim() + " Rupees Only";
-  }
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -497,10 +539,10 @@ const InvoiceTemp = ({ route }) => {
                   <Text className="w-1/2 font-bold text-[13px]">Ship To:</Text>
                   <Text className="w-1/2 text-sm text-[13px]">{invoices.customer?.shippingAddress.addressLine1}</Text>
                 </View>
-                {/* <View className="flex-row  border border-gray-200 p-2">
-                  <Text className="w-1/2 font-bold text-[13px]">Reference NO & Date:</Text>
-                    <Text className="w-1/2 text-[13px]">{invoices.invoice.referenceNo}</Text>
-                </View> */}
+                <View className="flex-row  border border-gray-200 p-2">
+                  <Text className="w-1/2 font-bold text-[13px]">Place of supply:</Text>
+                  <Text className="w-1/2 text-[13px]">{invoices.customer?.placeOfSupply}</Text>
+                </View>
                 <View className="flex-row  border border-gray-200 p-2 ">
                   <Text className="w-1/2 font-bold text-[13px]">Terms Of Delivery:</Text>
                   <Text className="w-1/2 text-[13px]">{invoices.terms}</Text>
@@ -521,12 +563,14 @@ const InvoiceTemp = ({ route }) => {
                   <Text className="w-40 p-2 font-bold border-r border-gray-200 text-[12px]">Description of goods</Text>
                   <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">HSN/SAC</Text>
                   <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">Quantity</Text>
+                  <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">GST</Text>
                   <Text className="w-20 p-2 font-bold border-r border-gray-200 text-[12px]">Rate</Text>
                   <Text className="w-24 p-2 font-bold">Amount</Text>
                 </View>
 
                 {/* Table Rows */}
                 {invoices.items?.map((item, index) => {
+
                   let totalAmount = Number(item.sellingPrice) * Number(item.quantity)
                   subTotal += totalAmount
                   totalQTY += Number(item.quantity)
@@ -536,6 +580,8 @@ const InvoiceTemp = ({ route }) => {
                       <Text className="w-40 p-2 border-r border-gray-200 text-[12px]">{item.itemName}</Text>
                       <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.itemHsn}</Text>
                       <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.quantity}</Text>
+                      {isSameState ? (<Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.intraStateTax}%</Text>
+                      ) : (<Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.interStateTax}%</Text>)}
                       <Text className="w-20 p-2 text-right border-r border-gray-200 text-[12px]">{item.sellingPrice?.toFixed(2)}</Text>
                       <Text className="w-24 p-2 text-right text-[12px]">{totalAmount.toFixed(2)}</Text>
                     </View>
@@ -561,9 +607,32 @@ const InvoiceTemp = ({ route }) => {
                   <Text className="  flex-1 text-left text-[13px]">Discount :</Text>
                   <Text className="w-20 text-right text-[13px]">{invoices.discountInput}</Text>
                 </View>
+
+                {Object.entries(taxSummary).map(([rate, totalTax], index) => (
+                  <View key={index}>
+                    {isSameState ? (
+                      <View>
+                        <View className="flex-row justify-between items-center mb-2">
+                          <Text className="flex-1 text-left text-[13px]">SGST ({rate}%):</Text>
+                          <Text className="w-20 text-right text-[13px]">{(totalTax / 2).toFixed(2)}</Text>
+                        </View>
+                        <View className="flex-row justify-between items-center mb-2">
+                          <Text className="flex-1 text-left text-[13px]">CGST ({rate}%):</Text>
+                          <Text className="w-20 text-right text-[13px]">{(totalTax / 2).toFixed(2)}</Text>
+                        </View>
+                      </View>
+                    ) : (
+                      <View className="flex-row justify-between items-center mb-2">
+                        <Text className="flex-1 text-left text-[13px]">IGST ({rate}%):</Text>
+                        <Text className="w-20 text-right text-[13px]">{totalTax.toFixed(2)}</Text>
+                      </View>
+                    )}
+                  </View>
+                ))}
+
                 <View className="flex-row justify-between items-center mb-2">
                   <Text className="flex-1 text-left font-bold text-[13px]">Total Amount :</Text>
-                  <Text className=" w-20 text-right  font-bold text-[13px]">{subTotal.toFixed(2)}</Text>
+                  <Text className=" w-20 text-right  font-bold text-[13px]">{(subTotal + allTaxTotal).toFixed(2)}</Text>
                 </View>
               </View>
             </View>
@@ -571,7 +640,8 @@ const InvoiceTemp = ({ route }) => {
             {/* Amount in Words */}
             <View className="p-4 border-b border-gray-200">
               <Text className="font-bold">Amount In Words</Text>
-              <Text>{numberToWords(subTotal)}</Text>
+              <Text>{numberToWords(Number(subTotal) + Number(allTaxTotal) || 0)}</Text>
+
             </View>
 
             {/* Declaration and Bank Details */}
@@ -607,8 +677,9 @@ const InvoiceTemp = ({ route }) => {
             </View>
           </View>
         </ScrollView>
-      )}
-    </View>
+      )
+      }
+    </View >
   );
 };
 

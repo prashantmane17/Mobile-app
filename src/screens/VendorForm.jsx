@@ -110,8 +110,6 @@ export default function VendorForm() {
                 headers: {}
             });
 
-            console.log("Response status:", response.status);
-
             if (response.ok) {
                 const result = await response.json();
                 setFormData(intialData)

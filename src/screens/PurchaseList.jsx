@@ -57,7 +57,6 @@ export default function PurchaseList() {
     const purchaseData = async () => {
         try {
             const response = await getAllPurchases();
-            console.log("resp------", response.invoices);
             setPurchases(response.invoices)
         } catch (error) {
             console.error("Error fetching invoices:", error);

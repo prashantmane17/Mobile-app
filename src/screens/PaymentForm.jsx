@@ -72,7 +72,6 @@ export default function PaymentForm() {
         setFormData({ ...formData, customerName: selectedName.displayName });
         const filteredIn = invoices.filter((invoice) => invoice.customer.id === selectedName.id);
         setFilteredInvoices(filteredIn);
-        console.log(filteredIn)
         setModalVisible(false);
     };
     const handleDateChange = (event, date) => {
@@ -121,9 +120,6 @@ export default function PaymentForm() {
                 credentials: "include",
                 headers: {},
             });
-
-
-            console.log("res----", response)
 
             if (response.ok) {
                 console.log("Payment saved successfully:");

@@ -97,7 +97,6 @@ export default function AdminSetting() {
             Alert.alert('Error', 'Please enter a valid email address');
             return;
         }
-        console.log("businessInfo---------", businessInfo);
 
         try {
             const response = await fetch(`http://192.168.1.25:8080/editOrgitembyid/${businessInfo.id}`, {
@@ -113,7 +112,6 @@ export default function AdminSetting() {
             }
 
             const data = await response.text(); // or response.json() if the API returns JSON
-            console.log("Update Successful:", data);
         } catch (error) {
             console.log("Error updating organization profile:", error);
         }

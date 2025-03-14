@@ -56,7 +56,6 @@ export default function ItemScreen() {
                         try {
                             const response = await deleteItem(id);
                             if (response.status === 200) {
-                                console.log("resp---", response.data)
                                 fetchItems()
                             }
                         } catch (error) {

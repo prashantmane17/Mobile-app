@@ -43,12 +43,10 @@ export default function AddItemForm() {
                 headers: {}
             });
 
-            console.log("Response status:", response.status);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const savedItem = await response.json();
-            console.log("Item saved successfully:", savedItem);
         } catch (error) {
             console.error("Error saving item:", error);
         }

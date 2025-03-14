@@ -117,7 +117,6 @@ export default function InvoiceForm() {
         }
     };
     const handleSelect = (selectedName) => {
-        console.log("selectedName---", selectedName)
 
         setInvoiceData({ ...invoiceData, customerName: selectedName.displayName });
         setInvoiceData({ ...invoiceData, customer: selectedName })
@@ -155,16 +154,10 @@ export default function InvoiceForm() {
         //     setSelectedDate(date);
         // }
         if (date) {
-            console.log("date---", date);
-
-            // Ensure time is set to 00:00:00
             date.setHours(0, 0, 0, 0);
-
-            // Format date in "Thu Mar 13 00:00:00 IST 2025"
             const formattedDate =
                 date.toDateString() + " 00:00:00 IST";
 
-            console.log("Formatted Date:", formattedDate);
 
             setInvoiceData({ ...invoiceData, [type]: formattedDate });
             setSelectedDate(date);
@@ -218,7 +211,6 @@ export default function InvoiceForm() {
         //     invoiceDate: new Date(invoiceData.invoiceDate).toISOString().split("T")[0],
         //     dueDate: new Date(invoiceData.dueDate).toISOString().split("T")[0],
         // };
-        console.log("jijii")
         const data = new FormData();
 
         // Append primitive values

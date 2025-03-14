@@ -32,7 +32,7 @@ export default function VendorScreen() {
 
     useEffect(() => {
         vendorData();
-    }, [vendorData]);
+    }, []);
 
 
     const filteredInvoices = vendors.filter(invoice =>

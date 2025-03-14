@@ -53,7 +53,6 @@ export default function ExpenseForm() {
 
 
     const saveExpense = async () => {
-        console.log("Click")
         if (!formData.category || !formData.amount || !formData.paymentMethod) {
             Alert.alert("Validation Error", "Please fill in all required fields.");
             return;
@@ -69,7 +68,6 @@ export default function ExpenseForm() {
         };
 
         try {
-            console.log("Click2")
             const response = await fetch('http://192.168.1.25:8080/save-Expenses-mobileApp', {
                 method: 'POST',
                 headers: {

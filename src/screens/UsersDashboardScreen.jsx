@@ -26,7 +26,6 @@ export default function UsersDashboardScreen() {
     const screenWidth = Dimensions.get('window').width;
     const allInvoiceData = async () => {
         const response = await getAllInvoices();
-        console.log("response---", response);
     }
     useEffect(() => {
         allInvoiceData();
