@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 // import { Checkbox } from 'react-native-paper';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -11,6 +11,7 @@ export default function CustomerList() {
     const navigation = useNavigation();
     const [customers, setCustomers] = useState([])
     const [loading, setLoading] = useState(false)
+    const [refreshing, setRefreshing] = useState(false);
     const [invoices, setInvoices] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
     const [open, setOpen] = useState(false);
@@ -37,7 +38,11 @@ export default function CustomerList() {
     useEffect(() => {
         customerData();
     }, []);
-
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await customerData();
+        setRefreshing(false);
+    };
 
     const filteredInvoices = customers?.filter(invoice =>
         invoice?.displayName?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -74,7 +79,12 @@ export default function CustomerList() {
             <StatusBar barStyle="dark-content" backgroundColor="#f3f4f6" />
 
             <View className="flex-1 p-4">
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3b82f6"]} />
+                    }
+                >
                     <View className="bg-white p-4 shadow-sm rounded-lg mb-4">
                         <View className="flex-1 flex-row items-center bg-gray-100 rounded-md px-3 py-1 mb-4">
                             <Feather name="search" size={20} color="#9CA3AF" />

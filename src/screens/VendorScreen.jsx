@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Alert, RefreshControl } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { TextInput } from 'react-native-gesture-handler';
@@ -14,6 +14,7 @@ export default function VendorScreen() {
     const [invoices, setInvoices] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
     const [open, setOpen] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [value, setValue] = useState(25);
     const [items, setItems] = useState([
         { label: '25', value: 25 },
@@ -34,7 +35,11 @@ export default function VendorScreen() {
         vendorData();
     }, []);
 
-
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await vendorData();
+        setRefreshing(false);
+    };
     const filteredInvoices = vendors.filter(invoice =>
         invoice.displayName.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -67,7 +72,12 @@ export default function VendorScreen() {
             <StatusBar barStyle="dark-content" backgroundColor="#f3f4f6" />
 
             <View className="flex-1 p-4">
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3b82f6"]} />
+                    }
+                >
                     <View className="bg-white p-4 shadow-sm rounded-lg mb-4">
                         <View className="flex-1 flex-row items-center bg-gray-100 rounded-md px-3 py-1 mb-4">
                             <Feather name="search" size={20} color="#9CA3AF" />
@@ -137,7 +147,8 @@ export default function VendorScreen() {
                             <View className="flex-row justify-between items-center p-4  border-b border-gray-100">
                                 <View className="flex-row items-center">
                                     <MaterialCommunityIcons name="account" size={20} color="#3b82f6" />
-                                    <Text className="ml-2 text-lg font-semibold text-blue-600 capitalize">{customer.displayName}</Text>
+                                    <Text className="ml-2 text-lg font-semibold text-blue-600 capitalize"
+                                        onPress={() => navigation.navigate("VendorDetails", { id: customer.id })}>{customer.displayName}</Text>
                                 </View>
                                 <View className="flex-row items-center">
                                     <TouchableOpacity

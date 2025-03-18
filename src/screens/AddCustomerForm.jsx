@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Text, TextInput, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, ScrollView, Text, TextInput, TouchableOpacity, SafeAreaView, Image, Alert } from 'react-native';
 import { ArrowLeft, Building, Mail, Phone, User, MapPin, Users, Info, Upload, ChevronDown, Copy } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from "expo-image-picker";

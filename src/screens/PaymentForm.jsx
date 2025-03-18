@@ -122,7 +122,6 @@ export default function PaymentForm() {
             });
 
             if (response.ok) {
-                console.log("Payment saved successfully:");
                 setFormData(initialFormData)
                 Alert.alert("Success", "Payment details saved successfully!");
             } else {
