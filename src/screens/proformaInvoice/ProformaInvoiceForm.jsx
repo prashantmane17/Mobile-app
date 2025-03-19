@@ -195,23 +195,24 @@ export default function ProformaInvoiceForm() {
     };
 
     const handleSubmit = async () => {
-        // console.log("Button clicked", invoiceData.invoiceDate); // Check if function is called
 
-        // if (!invoiceData.invoiceDate || !invoiceData.dueDate) {
-        //     console.error("Error: invoiceDate or dueDate is missing");
-        //     return;
-        // }
-        // const updatedInvoiceData = {
-        //     ...invoiceData,
-        //     invoiceDate: new Date(invoiceData.invoiceDate).toISOString().split("T")[0],
-        //     dueDate: new Date(invoiceData.dueDate).toISOString().split("T")[0],
-        // };
         const data = new FormData();
 
-        // Append primitive values
         Object.keys(invoiceData).forEach((key) => {
-            if (typeof invoiceData[key] !== "object" || invoiceData[key] === null) {
-                data.append(key, invoiceData[key]);
+            if (invoiceData[key] && typeof invoiceData[key] === "object") {
+                // If key is 'customer', flatten its properties
+                if (key === "customer") {
+                    Object.keys(invoiceData[key]).forEach((subKey) => {
+                        data.append(`customer.${subKey}`, invoiceData[key][subKey]);
+                    });
+                }
+            } else {
+                // Handle date conversion & append normal fields
+                if (key.toLowerCase().includes("date")) {
+                    data.append(key, new Date().toISOString().split("T")[0]); // YYYY-MM-DD
+                } else {
+                    data.append(key, invoiceData[key]);
+                }
             }
         });
 

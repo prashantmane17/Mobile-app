@@ -73,16 +73,28 @@ export default function TimeZoneForm({ onClose }) {
 
     const handleSubmit = async () => {
 
-        const formData = {
-            timeZone: selectedTimeZone,
-            startMonth: startMonth,
-            endMonth: endMonth,
-            currency: currency
-        };
+        const formData = new FormData();
+        formData.append("timeZone", selectedTimeZone);
+        formData.append("startMonth", startMonth);
+        formData.append("endMonth", endMonth);
+        formData.append("currency", currency);
 
         try {
-            const response = await setTimeZone(formData);
+            const response = await fetch("http://192.168.1.25:8080/saveOrgSettins", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+                body: formData,
+            });
+            console.log("res---", response)
+            const data = await response.json();
 
+            if (response.ok) {
+                console.log("Settings saved successfully:", data);
+            } else {
+                console.error("Failed to save settings:", data);
+            }
         } catch (error) {
             console.error("Error setting time zone:", error);
         }

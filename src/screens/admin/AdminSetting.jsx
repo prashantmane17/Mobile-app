@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getOrgProfie, updateOrgProfie } from "../../api/admin/adminApi";
@@ -21,6 +22,8 @@ export default function AdminSetting() {
     const profileData = async () => {
         const response = await getOrgProfie();
         const data = response.organizationList[0];
+
+        console.log("dat------------", data)
         setBusinessInfo(data)
     }
     useEffect(() => {
@@ -59,6 +62,7 @@ export default function AdminSetting() {
     ];
 
     const handleChange = (field, value) => {
+        console.log("value0----", value)
         setBusinessInfo({
             ...businessInfo,
             [field]: value
@@ -78,16 +82,17 @@ export default function AdminSetting() {
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0.8,
+            base64: false, // Not needed here, we'll convert manually
         });
 
         if (!result.canceled) {
-            handleChange('logo', result.assets[0].uri);
+            const imageUri = result.assets[0].uri;
+            const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding: 'base64' });
+            handleChange('base64Content', base64);
         }
     };
 
-    // Handle form submission
     const handleSave = async () => {
-        // Validate form
         if (!businessInfo.businessName.trim()) {
             Alert.alert('Error', 'Business name is required');
             return;
@@ -97,26 +102,29 @@ export default function AdminSetting() {
             Alert.alert('Error', 'Please enter a valid email address');
             return;
         }
-
+        console.log("huiui-----", businessInfo);
         try {
-            const response = await fetch(`http://192.168.1.25:8080/editOrgitembyid/${businessInfo.id}`, {
+            const response = await fetch(`http://192.168.1.25:8080/UpdateOrganization/${businessInfo.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(businessInfo),
             });
+            console.log("jiii---", response)
+            if (response.ok) {
+                const data = await response.text(); // or response.json() if the API returns JSON
+                Alert.alert('Success', 'Business information updated successfully');
+            } else {
+                Alert.alert('Failed', 'Failed to update Business information');
 
-            if (!response.ok) {
-                throw new Error(`Request failed with status: ${response.status}`);
+
             }
 
-            const data = await response.text(); // or response.json() if the API returns JSON
         } catch (error) {
             console.log("Error updating organization profile:", error);
         }
 
-        Alert.alert('Success', 'Business information updated successfully');
         setIsEditing(false);
     };
 
@@ -144,16 +152,17 @@ export default function AdminSetting() {
                             <Text className="text-2xl font-bold text-gray-800">Business Information</Text>
                             <Text className="text-gray-500">Update your business details</Text>
                         </View>
-                        {!isEditing && <TouchableOpacity
+                        <TouchableOpacity
                             onPress={toggleEditMode}
                             className="p-2 rounded-full bg-blue-50"
                         >
                             <MaterialIcons
-                                name="edit"
+                                name={isEditing ? "close" : "edit"} // 🔄 Use "close" instead of "x"
                                 size={24}
                                 color="#3b82f6"
                             />
-                        </TouchableOpacity>}
+                        </TouchableOpacity>
+
                     </View>
 
                     {/* Main content */}<View className="bg-white rounded-xl shadow-sm p-4 mb-4">
@@ -164,9 +173,14 @@ export default function AdminSetting() {
                             {businessInfo.logo ? (
                                 <View className="relative">
                                     <Image
-                                        source={{ uri: businessInfo.logo }}
+                                        source={
+                                            businessInfo.base64Content?.data
+                                                ? { uri: `data:image/png;base64,${businessInfo.base64Content.data}` }
+                                                : require('../../../assets/icon.png') // Replace with your default image
+                                        }
                                         className="w-40 h-40 rounded-lg"
                                     />
+
                                     {isEditing && (
                                         <TouchableOpacity
                                             className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-2"
@@ -298,8 +312,8 @@ export default function AdminSetting() {
                                         <Text className="text-gray-700 font-medium mb-1">Bank Account Number</Text>
                                         <TextInput
                                             className={`border rounded-lg p-3 ${isEditing ? 'border-blue-300 bg-white' : 'border-gray-200 bg-gray-50'}`}
-                                            value={businessInfo.bankAccountNumber}
-                                            onChangeText={(text) => handleChange('bankAccountNumber', text)}
+                                            value={businessInfo.accountNumber}
+                                            onChangeText={(text) => handleChange('accountNumber', text)}
                                             editable={isEditing}
                                             placeholder="Enter account number"
                                         />

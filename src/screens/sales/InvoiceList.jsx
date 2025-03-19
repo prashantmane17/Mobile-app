@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getAllInvoices } from '../../api/user/invoice';
 
 
@@ -31,11 +31,13 @@ export default function InvoiceCards() {
     };
 
 
-    useEffect(() => {
-        invoiceData();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            invoiceData();
+        }, [])
+    );
     const filteredInvoices = invoices?.filter(invoice =>
-        invoice.customer.displayName.toLowerCase().includes(searchQuery.toLowerCase())
+        invoice.customer?.displayName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const totalPages = Math.ceil(filteredInvoices.length / value);
@@ -154,7 +156,7 @@ export default function InvoiceCards() {
                                             <View className="flex-row items-center">
                                                 <Feather name="user" size={16} color="#60A5FA" />
                                                 <Text className="ml-2 text-sm text-gray-600 capitalize">
-                                                    {invoice.customer.displayName}
+                                                    {invoice.customer?.displayName || "--"}
                                                 </Text>
                                             </View>
 
