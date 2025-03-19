@@ -5,7 +5,7 @@ import * as Sharing from "expo-sharing";
 import * as Print from "expo-print";
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
-import { getAllVendors } from '../api/user/vendor';
+import { getAllVendors } from '../../api/user/vendor';
 
 const VendorDetails = ({ route, navigation }) => {
     const { id } = route.params;
@@ -432,7 +432,7 @@ const VendorDetails = ({ route, navigation }) => {
     if (!customer) {
         return (
             <View className="flex-1 justify-center items-center bg-white p-4">
-                <Text className="text-lg text-gray-800 text-center mb-4">Customer not found or error loading data</Text>
+                <Text className="text-lg text-gray-800 text-center mb-4">Vendor not found or error loading data</Text>
                 <TouchableOpacity
                     className="px-4 py-2 bg-blue-500 rounded-lg"
                     onPress={() => navigation.goBack()}
@@ -454,7 +454,7 @@ const VendorDetails = ({ route, navigation }) => {
                     >
                         <ArrowLeft size={22} color="#ffffff" />
                     </TouchableOpacity>
-                    <Text className="text-xl font-bold text-white">Customer Profile</Text>
+                    <Text className="text-xl font-bold text-white">Vendor Profile</Text>
                     <View className="flex-row space-x-2">
                         {generating ? (
                             <ActivityIndicator size="small" color="#ffffff" />

@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Aler
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { TextInput } from 'react-native-gesture-handler';
-import { deleteVendor, getAllVendors } from '../api/user/vendor';
+import { deleteVendor, getAllVendors } from '../../api/user/vendor';
 import { useNavigation } from '@react-navigation/native';
 
 

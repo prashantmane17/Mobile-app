@@ -6,8 +6,8 @@ import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import { captureRef } from "react-native-view-shot";
 import * as Print from "expo-print";
-import { getAllPayments } from "../api/user/payment";
-import { getOrgProfie } from "../api/admin/adminApi";
+import { getAllPayments } from "../../api/user/payment";
+import { getOrgProfie } from "../../api/admin/adminApi";
 import { ArrowLeft } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 

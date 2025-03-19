@@ -5,7 +5,7 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { TextInput } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
-import { deleteCustomer, getAllCustomers } from '../api/user/customer';
+import { deleteCustomer, getAllCustomers } from '../../api/user/customer';
 
 export default function CustomerList() {
     const navigation = useNavigation();

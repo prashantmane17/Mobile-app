@@ -1,31 +1,37 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import UsersDashboardScreen from '../screens/UsersDashboardScreen';
-import Party from '../screens/Party';
+
 import DrawerContent from '../components/user/DrawerContent';
 import Header from '../components/user/Header';
-import CustomerList from '../screens/Party';
-import AddCustomerForm from '../screens/AddCustomerForm';
-import AddItemForm from '../screens/AddItemForm';
-import ItemScreen from '../screens/ItemScreen';
-import InvoiceList from '../screens/InvoiceList';
+
 import { HeaderProvider } from '../context/HeaderContext';
-import PaymentList from '../screens/PaymentList';
-import PurchaseList from '../screens/PurchaseList';
-import VendorScreen from '../screens/VendorScreen';
-import Expense from '../screens/Expense';
-import BankScreen from '../screens/BankScreen';
-import ProformaInvoice from '../screens/ProformaInvoice';
-import InvoiceForm from '../screens/InvoiceForm';
-import PaymentForm from '../screens/PaymentForm';
-import ExpenseForm from '../screens/ExpenseForm';
-import BankForm from '../screens/BankForm';
-import InvoiceTemp from '../screens/InvoiceTemp';
-import VendorForm from '../screens/VendorForm';
-import PaymentDetails from '../screens/PaymentDetails';
-import ItemsDetail from '../screens/ItemsDetail';
-import CustomerDetails from '../screens/CustomerDetails';
-import VendorDetails from '../screens/VendorDetails';
+import UsersDashboardScreen from '../screens/dashboard/UsersDashboardScreen';
+import CustomerList from '../screens/customer/Party';
+import CustomerDetails from '../screens/customer/CustomerDetails';
+import InvoiceCards from '../screens/sales/InvoiceList';
+import InvoiceForm from '../screens/sales/InvoiceForm';
+import InvoiceTemp from '../screens/sales/InvoiceTemp';
+import PaymentForm from '../screens/payment/PaymentForm';
+import PaymentDetails from '../screens/payment/PaymentDetails';
+import PaymentList from '../screens/payment/PaymentList';
+import ItemScreen from '../screens/stocks/ItemScreen';
+import ItemDetails from '../screens/stocks/ItemsDetail';
+import AddItemForm from '../screens/stocks/AddItemForm';
+import EnhancedAddCustomerForm from '../screens/customer/AddCustomerForm';
+import ProformaInvoiceForm from '../screens/proformaInvoice/ProformaInvoiceForm';
+import ProformaInvoiceDetails from '../screens/proformaInvoice/ProformaInvoiceDetails';
+import ProformaInvoice from '../screens/proformaInvoice/ProformaInvoice';
+import BankScreen from '../screens/bank/BankScreen';
+import BankForm from '../screens/bank/BankForm';
+import VendorForm from '../screens/vendor/VendorForm';
+import VendorDetails from '../screens/vendor/VendorDetails';
+import VendorScreen from '../screens/vendor/VendorScreen';
+import ExpenseForm from '../screens/expesne/ExpenseForm';
+import Expense from '../screens/expesne/Expense';
+import PurchaseDetails from '../screens/purchase/PurchaseDetails';
+import PurchaseForm from '../screens/purchase/PurchaseForm';
+import PurchaseList from '../screens/purchase/PurchaseList';
+
 
 const Drawer = createDrawerNavigator();
 
@@ -46,15 +52,17 @@ export default function EmployeeNavigator() {
                 <Drawer.Screen name="Dashboard" component={UsersDashboardScreen} />
                 <Drawer.Screen name="Parties" component={CustomerList} />
                 <Drawer.Screen name="CustomerDetails" component={CustomerDetails} />
-                <Drawer.Screen name="sales" component={InvoiceList} />
+                <Drawer.Screen name="sales" component={InvoiceCards} />
                 <Drawer.Screen name="InvoiceForm" component={InvoiceForm} />
                 <Drawer.Screen name="InvoiceTemp" component={InvoiceTemp} />
                 <Drawer.Screen name="PaymentForm" component={PaymentForm} />
                 <Drawer.Screen name="PaymentDetails" component={PaymentDetails} />
                 <Drawer.Screen name="Payment" component={PaymentList} />
                 <Drawer.Screen name="ItemScreen" component={ItemScreen} />
-                <Drawer.Screen name="ItemsDetail" component={ItemsDetail} />
+                <Drawer.Screen name="ItemsDetail" component={ItemDetails} />
                 <Drawer.Screen name="Purchase" component={PurchaseList} />
+                <Drawer.Screen name="PurchaseForm" component={PurchaseForm} />
+                <Drawer.Screen name="PurchaseDetails" component={PurchaseDetails} />
                 <Drawer.Screen name="Expense" component={Expense} />
                 <Drawer.Screen name="ExpenseForm" component={ExpenseForm} />
                 <Drawer.Screen name="Vendor" component={VendorScreen} />
@@ -63,7 +71,9 @@ export default function EmployeeNavigator() {
                 <Drawer.Screen name="Bank" component={BankScreen} />
                 <Drawer.Screen name="BankForm" component={BankForm} />
                 <Drawer.Screen name="Pinvoice" component={ProformaInvoice} />
-                <Drawer.Screen name="AddCustomerForm" component={AddCustomerForm} />
+                <Drawer.Screen name="PinvoiceDetails" component={ProformaInvoiceDetails} />
+                <Drawer.Screen name="PinvoiceForm" component={ProformaInvoiceForm} />
+                <Drawer.Screen name="AddCustomerForm" component={EnhancedAddCustomerForm} />
                 <Drawer.Screen name="AddItemForm" component={AddItemForm} />
             </Drawer.Navigator>
         </HeaderProvider>

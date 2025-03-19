@@ -17,7 +17,7 @@ import {
 } from "react-native"
 import { Feather } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
-import countryData from "../../assets/json/countries_states_cities.json"
+import countryData from "../../../assets/json/countries_states_cities.json"
 
 // Business types
 const industryTypes = [

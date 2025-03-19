@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useNavigation } from '@react-navigation/native';
-import { getAllInvoices } from '../api/user/invoice';
+import { getAllInvoices } from '../../api/user/invoice';
 
 
 export default function InvoiceCards() {

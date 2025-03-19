@@ -5,7 +5,7 @@ import * as Sharing from "expo-sharing";
 import * as Print from "expo-print";
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
-import { getAllCustomers } from '../api/user/customer';
+import { getAllCustomers } from '../../api/user/customer';
 
 const CustomerDetails = ({ route, navigation }) => {
     const { id } = route.params;

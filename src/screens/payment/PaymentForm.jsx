@@ -3,8 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, Platform, ScrollView, Alert, M
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
-import { savePayments } from '../api/user/payment';
-import { getAllCustomers } from '../api/user/customer';
+import { savePayments } from '../../api/user/payment';
+import { getAllCustomers } from '../../api/user/customer';
 import Checkbox from "expo-checkbox";
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft } from 'react-native-feather';

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, ScrollView, SafeAreaView, Platform, StatusBar, Dimensions } from 'react-native';
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Feather, FontAwesome } from '@expo/vector-icons';
-import { getAllInvoices } from '../api/user/invoice';
+import { getAllInvoices } from '../../api/user/invoice';
 
 // Metric Card Component
 function MetricCard({ title, value, icon, iconColor, iconBgColor }) {

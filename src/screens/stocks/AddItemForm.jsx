@@ -5,7 +5,7 @@ import { View, ScrollView, Text, TextInput, TouchableOpacity, SafeAreaView, Imag
 import { ArrowLeft } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
-import { saveItems } from '../api/user/items';
+import { saveItems } from '../../api/user/items';
 
 
 export default function AddItemForm() {

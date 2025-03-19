@@ -6,7 +6,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons"
 import DropDownPicker from "react-native-dropdown-picker"
 import { TextInput } from "react-native-gesture-handler"
 import { useNavigation } from "@react-navigation/native"
-import { getAllItems, deleteItem } from "../api/user/items"
+import { getAllItems, deleteItem } from "../../api/user/items"
 
 
 

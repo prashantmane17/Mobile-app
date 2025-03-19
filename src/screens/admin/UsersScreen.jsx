@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, RefreshControl, Text, TouchableOpacity } from "react-native";
-import UserCard from "../components/UserCard";
+import UserCard from "../../components/UserCard";
 import { Ionicons } from '@expo/vector-icons';
-import TimeZoneForm from "../components/timeZoneSetting";
-import { getSession } from "../api/admin/adminApi";
+import TimeZoneForm from "../../components/timeZoneSetting";
+import { getSession } from "../../api/admin/adminApi";
 
 export default function UsersScreen() {
     const [modalVisible, setModalVisible] = useState(false);

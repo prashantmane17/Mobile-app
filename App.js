@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer, useNavigation, useNavigationState } from "@react-navigation/native";
 import { SafeAreaView, StatusBar, BackHandler, ToastAndroid } from "react-native";
-import LoginScreen from "./src/screens/Login";
-import SignUpScreen from "./src/screens/SignUpScreen";
-import HomeScreen from "./src/screens/HomeScreen";
-import ForgetPassword from "./src/screens/ForgetPassword";
+import LoginScreen from "./src/screens/auth/Login";
+import SignUpScreen from "./src/screens/auth/SignUpScreen";
+import ForgetPassword from "./src/screens/auth/ForgetPassword";
 import AppNavigator from "./src/navigation/AppNavigator";
 import EmployeeNavigator from "./src/navigation/EmployeeNavigator";
 import { getSession } from "./src/api/admin/adminApi";
@@ -76,7 +75,6 @@ function AppWithBackHandler() {
     <Stack.Navigator initialRouteName="Login">
       <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Signup" component={SignUpScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="ForgetPassword" component={ForgetPassword} options={{ headerShown: false }} />
       <Stack.Screen name="AdminDashboard" component={AppNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="UserDashboard" component={EmployeeNavigator} options={{ headerShown: false }} />

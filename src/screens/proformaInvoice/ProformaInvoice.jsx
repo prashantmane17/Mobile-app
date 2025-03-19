@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { getAllPurchases } from '../api/user/purchase';
+import { getAllProformaInvoices } from '../../api/user/proformaInvoice';
+import { useNavigation } from '@react-navigation/native';
 
 const purchaseOrders = [
     {
@@ -43,8 +44,9 @@ const purchaseOrders = [
     }
 ];
 
-export default function PurchaseList() {
-    const [purchases, setPurchases] = useState([])
+export default function ProformaInvoice() {
+    const navigation = useNavigation()
+    const [invoices, setInvoices] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [open, setOpen] = useState(false);
@@ -54,10 +56,12 @@ export default function PurchaseList() {
         { label: '50', value: 50 },
         { label: '100', value: 100 }
     ]);
+
     const purchaseData = async () => {
         try {
-            const response = await getAllPurchases();
-            setPurchases(response.invoices)
+            const response = await getAllProformaInvoices();
+            console.log("response-----", response.invoices)
+            setInvoices(response.invoices)
         } catch (error) {
             console.error("Error fetching invoices:", error);
         }
@@ -66,9 +70,8 @@ export default function PurchaseList() {
     useEffect(() => {
         purchaseData();
     }, []);
-
-    const filteredOrders = purchases.filter(order =>
-        order.vendor.displayName.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredOrders = invoices?.filter(order =>
+        order.customer.displayName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const totalPages = Math.ceil(filteredOrders.length / value);
@@ -94,7 +97,7 @@ export default function PurchaseList() {
                     <Feather name="search" size={20} color="#9CA3AF" />
                     <TextInput
                         className="flex-1 ml-2 text-base"
-                        placeholder="Search purchase orders..."
+                        placeholder="Search Invoice..."
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
@@ -104,9 +107,9 @@ export default function PurchaseList() {
                     <View className="flex-row items-center justify-between gap-3">
                         <TouchableOpacity
                             className="bg-blue-500 px-4 py-2 rounded-md"
-                            onPress={() => console.log('Create PO')}
+                            onPress={() => navigation.navigate("PinvoiceForm")}
                         >
-                            <Text className="text-white font-medium">+ Create PO</Text>
+                            <Text className="text-white font-medium">+ Create PI</Text>
                         </TouchableOpacity>
                         <Text className="text-sm text-gray-600">
                             Total: {paginatedOrders.length}
@@ -153,15 +156,12 @@ export default function PurchaseList() {
                                     <View className="flex-row justify-between items-center">
                                         <View className="flex-row items-center">
                                             <Feather name="file-text" size={20} color="#60A5FA" />
-                                            <Text className="ml-2 text-sm font-medium text-gray-900">
-                                                {order.purchaseOrderNumber}
+                                            <Text className="ml-2 text-sm font-medium text-gray-900"
+                                                onPress={() => navigation.navigate("PinvoiceDetails", { id: order.id })}>
+                                                {order.invoiceNumber}
                                             </Text>
                                         </View>
-                                        <View className={`px-3 py-1 rounded-full ${order.purchaseStatus === 'Paid' ? 'bg-green-100' : 'bg-blue-100'}`}>
-                                            <Text className={`text-xs font-medium ${order.purchaseStatus === 'Paid' ? 'text-green-600' : 'text-blue-600'}`}>
-                                                {order.purchaseStatus === 'Paid' ? order.purchaseStatus : "Pending"}
-                                            </Text>
-                                        </View>
+
                                     </View>
                                 </View>
 
@@ -171,8 +171,8 @@ export default function PurchaseList() {
                                         {/* Supplier Info */}
                                         <View className="flex-row items-center">
                                             <Feather name="user" size={16} color="#60A5FA" />
-                                            <Text className="ml-2 text-sm text-gray-600">
-                                                {order.vendor.displayName}
+                                            <Text className="ml-2 text-sm text-gray-600 capitalize w-14">
+                                                {order.customer.displayName}
                                             </Text>
                                         </View>
 
@@ -180,7 +180,7 @@ export default function PurchaseList() {
                                         <View className="flex-row items-center">
                                             <Feather name="mail" size={16} color="#60A5FA" />
                                             <Text className="ml-2 text-sm text-gray-600">
-                                                {order.vendor.emailAddress ? order.vendor.emailAddress : "--"}
+                                                {order.customer.emailAddress || "--"}
                                             </Text>
                                         </View>
 
@@ -188,7 +188,7 @@ export default function PurchaseList() {
                                         <View className="flex-row justify-between items-center">
                                             <View>
                                                 <Text className="text-xs text-gray-500">Purchase Date</Text>
-                                                <Text className="text-sm text-gray-900">{formatDate(order.purchaseDate)}</Text>
+                                                <Text className="text-sm text-gray-900">{formatDate(order.invoiceDate)}</Text>
                                             </View>
                                             <View>
                                                 <Text className="text-xs text-gray-500">Due Date</Text>
@@ -203,7 +203,7 @@ export default function PurchaseList() {
                                     <View className="flex-row justify-between items-center">
                                         <Text className="text-sm text-gray-500">Total Amount</Text>
                                         <Text className="text-lg font-semibold text-gray-900">
-                                            {order.totalAmount}
+                                            ₹ {order.totalAmount || "0"}
                                         </Text>
                                     </View>
                                 </View>

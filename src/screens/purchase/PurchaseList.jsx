@@ -1,48 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { getAllPurchases } from '../../api/user/purchase';
+import { useNavigation } from '@react-navigation/native';
 
-const purchaseOrders = [
-    {
-        date: '25 Feb 2025',
-        orderNo: 'PO-2025/00005',
-        supplier: 'Gukesh',
-        email: '- -',
-        dueDate: '25 Feb 2025',
-        amount: '₹ 994.74',
-        status: 'Pay'
-    },
-    {
-        date: '22 Feb 2025',
-        orderNo: 'PO-2025/00004',
-        supplier: 'Umesh',
-        email: '- -',
-        dueDate: '07 Mar 2025',
-        amount: '₹ 94.4',
-        status: 'Paid'
-    },
-    {
-        date: '21 Feb 2025',
-        orderNo: 'PO-2025/00003',
-        supplier: 'Amar M',
-        email: '- -',
-        dueDate: '21 Feb 2025',
-        amount: '₹ 1609.52',
-        status: 'Paid'
-    },
-    {
-        date: '21 Feb 2025',
-        orderNo: 'PO-2025/00001',
-        supplier: 'Makarndsdsqw',
-        email: '- -',
-        dueDate: '06 Mar 2025',
-        amount: '₹ 75.52',
-        status: 'Paid'
-    }
-];
 
-export default function ProformaInvoice() {
+export default function PurchaseList() {
+    const navigation = useNavigation();
+    const [purchases, setPurchases] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [open, setOpen] = useState(false);
@@ -52,10 +18,21 @@ export default function ProformaInvoice() {
         { label: '50', value: 50 },
         { label: '100', value: 100 }
     ]);
+    const purchaseData = async () => {
+        try {
+            const response = await getAllPurchases();
+            setPurchases(response.invoices)
+        } catch (error) {
+            console.error("Error fetching invoices:", error);
+        }
+    };
 
-    const filteredOrders = purchaseOrders.filter(order =>
-        order.orderNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.supplier.toLowerCase().includes(searchQuery.toLowerCase())
+    useEffect(() => {
+        purchaseData();
+    }, []);
+
+    const filteredOrders = purchases.filter(order =>
+        order.vendor.displayName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const totalPages = Math.ceil(filteredOrders.length / value);
@@ -63,6 +40,15 @@ export default function ProformaInvoice() {
         (currentPage - 1) * value,
         currentPage * value
     );
+
+    const formatDate = (timestamp) => {
+        const date = new Date(Number(timestamp)); // Convert to Date object
+        return date.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        }).toUpperCase(); // Convert month to uppercase
+    };
 
     return (
         <ScrollView className="flex-1 bg-gray-100">
@@ -72,7 +58,7 @@ export default function ProformaInvoice() {
                     <Feather name="search" size={20} color="#9CA3AF" />
                     <TextInput
                         className="flex-1 ml-2 text-base"
-                        placeholder="Search Invoice..."
+                        placeholder="Search purchase orders..."
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
@@ -82,9 +68,9 @@ export default function ProformaInvoice() {
                     <View className="flex-row items-center justify-between gap-3">
                         <TouchableOpacity
                             className="bg-blue-500 px-4 py-2 rounded-md"
-                            onPress={() => console.log('Create PO')}
+                            onPress={() => navigation.navigate("PurchaseForm")}
                         >
-                            <Text className="text-white font-medium">+ Create PI</Text>
+                            <Text className="text-white font-medium">+ Create PO</Text>
                         </TouchableOpacity>
                         <Text className="text-sm text-gray-600">
                             Total: {paginatedOrders.length}
@@ -121,7 +107,7 @@ export default function ProformaInvoice() {
             <View className="px-4 py-4">
                 <View className="flex-row flex-wrap -mx-2">
                     {paginatedOrders.map((order) => (
-                        <View key={order.orderNo} className="w-full px-2 mb-4">
+                        <View key={order.id} className="w-full px-2 mb-4">
                             <TouchableOpacity
                                 className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
                                 activeOpacity={0.7}
@@ -131,13 +117,14 @@ export default function ProformaInvoice() {
                                     <View className="flex-row justify-between items-center">
                                         <View className="flex-row items-center">
                                             <Feather name="file-text" size={20} color="#60A5FA" />
-                                            <Text className="ml-2 text-sm font-medium text-gray-900">
-                                                {order.orderNo}
+                                            <Text className="ml-2 text-sm font-medium text-gray-900"
+                                                onPress={() => navigation.navigate("PurchaseDetails", { id: order.id })}  >
+                                                {order.purchaseOrderNumber}
                                             </Text>
                                         </View>
-                                        <View className={`px-3 py-1 rounded-full ${order.status === 'Paid' ? 'bg-green-100' : 'bg-blue-100'}`}>
-                                            <Text className={`text-xs font-medium ${order.status === 'Paid' ? 'text-green-600' : 'text-blue-600'}`}>
-                                                {order.status}
+                                        <View className={`px-3 py-1 rounded-full ${order.purchaseStatus === 'Paid' ? 'bg-green-100' : 'bg-blue-100'}`}>
+                                            <Text className={`text-xs font-medium ${order.purchaseStatus === 'Paid' ? 'text-green-600' : 'text-blue-600'}`}>
+                                                {order.purchaseStatus === 'Paid' ? order.purchaseStatus : "Pending"}
                                             </Text>
                                         </View>
                                     </View>
@@ -150,7 +137,7 @@ export default function ProformaInvoice() {
                                         <View className="flex-row items-center">
                                             <Feather name="user" size={16} color="#60A5FA" />
                                             <Text className="ml-2 text-sm text-gray-600">
-                                                {order.supplier}
+                                                {order.vendor.displayName}
                                             </Text>
                                         </View>
 
@@ -158,7 +145,7 @@ export default function ProformaInvoice() {
                                         <View className="flex-row items-center">
                                             <Feather name="mail" size={16} color="#60A5FA" />
                                             <Text className="ml-2 text-sm text-gray-600">
-                                                {order.email}
+                                                {order.vendor.emailAddress ? order.vendor.emailAddress : "--"}
                                             </Text>
                                         </View>
 
@@ -166,11 +153,11 @@ export default function ProformaInvoice() {
                                         <View className="flex-row justify-between items-center">
                                             <View>
                                                 <Text className="text-xs text-gray-500">Purchase Date</Text>
-                                                <Text className="text-sm text-gray-900">{order.date}</Text>
+                                                <Text className="text-sm text-gray-900">{formatDate(order.purchaseDate)}</Text>
                                             </View>
                                             <View>
                                                 <Text className="text-xs text-gray-500">Due Date</Text>
-                                                <Text className="text-sm text-gray-900">{order.dueDate}</Text>
+                                                <Text className="text-sm text-gray-900">{formatDate(order.dueDate)}</Text>
                                             </View>
                                         </View>
                                     </View>
@@ -181,7 +168,7 @@ export default function ProformaInvoice() {
                                     <View className="flex-row justify-between items-center">
                                         <Text className="text-sm text-gray-500">Total Amount</Text>
                                         <Text className="text-lg font-semibold text-gray-900">
-                                            {order.amount}
+                                            ₹ {order.totalAmount}
                                         </Text>
                                     </View>
                                 </View>

@@ -4,7 +4,7 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity, SafeAreaView, Acti
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useNavigation } from '@react-navigation/native';
-import { getAllPayments } from '../api/user/payment';
+import { getAllPayments } from '../../api/user/payment';
 
 const PaymentList = () => {
     const navigation = useNavigation();

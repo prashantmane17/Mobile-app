@@ -14,7 +14,7 @@ import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getOrgProfie, updateOrgProfie } from "../api/admin/adminApi";
+import { getOrgProfie, updateOrgProfie } from "../../api/admin/adminApi";
 
 export default function AdminSetting() {
     const [businessInfo, setBusinessInfo] = useState([]);

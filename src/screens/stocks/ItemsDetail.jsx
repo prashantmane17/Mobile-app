@@ -5,7 +5,7 @@ import * as Sharing from "expo-sharing";
 import * as Print from "expo-print";
 import { ArrowLeft } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getAllItems } from "../api/user/items";
+import { getAllItems } from "../../api/user/items";
 
 export default function ItemDetails({ route }) {
     const navigation = useNavigation();

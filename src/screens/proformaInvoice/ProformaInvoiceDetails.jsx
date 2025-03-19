@@ -5,16 +5,16 @@ import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import { ArrowLeft, Download, Share2 } from 'lucide-react-native';
-import { getAllInvoices } from '../api/user/invoice';
 import { useNavigation } from '@react-navigation/native';
-import { getOrgProfie } from '../api/admin/adminApi';
+import { getOrgProfie } from '../../api/admin/adminApi';
+import { getAllProformaInvoices } from '../../api/user/proformaInvoice';
 
 // Sample invoice data - you can replace this with your actual data
 const invoiceData = {
   declaration: 'We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct',
 };
 
-const InvoiceTemp = ({ route }) => {
+const ProformaInvoiceDetails = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [invoiceLoading, setInvoiceLoading] = useState(false);
   const { id } = route.params;
@@ -25,7 +25,7 @@ const InvoiceTemp = ({ route }) => {
   const invoiceDatas = async () => {
     setInvoiceLoading(true);
     try {
-      const response = await getAllInvoices();
+      const response = await getAllProformaInvoices();
       const orgResponse = await getOrgProfie();
       const data = response.invoices.find((invoice) => invoice.id === id)
       setInvoices(data);
@@ -470,10 +470,10 @@ const InvoiceTemp = ({ route }) => {
       {/* Header */}
       <View className="bg-white px-4 py-4 shadow-sm">
         <View className="flex-row justify-between items-center">
-          <TouchableOpacity className="p-2 rounded-full bg-gray-100" onPress={() => navigation.navigate('sales')}>
+          <TouchableOpacity className="p-2 rounded-full bg-gray-100" onPress={() => navigation.navigate('Pinvoice')}>
             <ArrowLeft stroke="#333" width={22} height={22} />
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-gray-800">Invoice</Text>
+          <Text className="text-xl font-bold text-gray-800">ProformaInvoice</Text>
           <View className="flex-row space-x-3">
             <TouchableOpacity
               className="p-2.5 rounded-full bg-gray-100"
@@ -683,4 +683,4 @@ const InvoiceTemp = ({ route }) => {
   );
 };
 
-export default InvoiceTemp;
+export default ProformaInvoiceDetails;

@@ -13,11 +13,10 @@ import {
 } from 'react-native';
 import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Plus, Trash } from 'react-native-feather';
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { getAllCustomers } from '../api/user/customer';
-import { getAllItems } from '../api/user/items';
-import { getAllPurchases } from '../api/user/purchase';
+import { getAllCustomers } from '../../api/user/customer';
+import { getAllItems } from '../../api/user/items';
 
-export default function PurchaseForm() {
+export default function InvoiceForm() {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [customers, setCustomers] = useState([])
     const [isLoading, setISLoading] = useState(false)
@@ -26,7 +25,7 @@ export default function PurchaseForm() {
     const getCustomer = async () => {
         setISLoading(true);
         try {
-            const response = await getAllPurchases();
+            const response = await getAllCustomers();
             const itemResponse = await getAllItems();
             setCustomers(response.parties)
             setInvoices(response.invoices)

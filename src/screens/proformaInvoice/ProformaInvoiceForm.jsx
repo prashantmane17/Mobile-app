@@ -13,23 +13,21 @@ import {
 } from 'react-native';
 import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Plus, Trash } from 'react-native-feather';
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { getAllCustomers } from '../api/user/customer';
-import { getAllItems } from '../api/user/items';
-import { getAllPurchases } from '../api/user/purchase';
+import { getAllCustomers } from '../../api/user/customer';
+import { getAllItems } from '../../api/user/items';
 
 export default function ProformaInvoiceForm() {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [customers, setCustomers] = useState([])
     const [isLoading, setISLoading] = useState(false)
-    const [invoices, setInvoices] = useState([])
     const [inoiceItems, setInvoiceItems] = useState([])
     const getCustomer = async () => {
         setISLoading(true);
         try {
-            const response = await getAllPurchases();
+            const response = await getAllCustomers();
             const itemResponse = await getAllItems();
+            console.log("response-------", response)
             setCustomers(response.parties)
-            setInvoices(response.invoices)
             setInvoiceItems(itemResponse.items)
             setFilteredUsers(response.parties)
         } catch (error) {
@@ -118,21 +116,17 @@ export default function ProformaInvoiceForm() {
         }
     };
     const handleSelect = (selectedName) => {
-
+        console.log("selectedName----", selectedName)
         setInvoiceData({ ...invoiceData, customerName: selectedName.displayName });
         setInvoiceData({ ...invoiceData, customer: selectedName })
         setModalVisible(false);
     };
     const parseDateToDDMMYYYY = (inputDate) => {
-        if (!inputDate) return ""; // Handle empty input
-
-        // Extract day, month (3-letter), and year
+        if (!inputDate) return "";
         const dateParts = inputDate.match(/(\d{1,2}) (\w{3}), (\d{4})/);
-        if (!dateParts) return "Invalid Date"; // Handle invalid input format
-
+        if (!dateParts) return "Invalid Date";
         const [, day, month, year] = dateParts;
 
-        // Convert month from short name to number
         const monthMap = {
             Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
             Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12"
@@ -232,7 +226,7 @@ export default function ProformaInvoiceForm() {
         try {
             console.log("Invoice Date Before Sending:", invoiceData.invoiceDate);
 
-            const response = await fetch("http://192.168.1.25:8080/save-invoice", {
+            const response = await fetch("http://192.168.1.25:8080/save-proforma-invoice", {
                 method: "POST",
                 body: data,
                 credentials: "include",

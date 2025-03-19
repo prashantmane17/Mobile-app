@@ -13,24 +13,39 @@ import {
 } from 'react-native';
 import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Plus, Trash } from 'react-native-feather';
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { getAllCustomers } from '../api/user/customer';
-import { getAllItems } from '../api/user/items';
+import { getAllCustomers } from '../../api/user/customer';
+import { getAllItems } from '../../api/user/items';
+import { getAllPurchases } from '../../api/user/purchase';
+import { getAllVendors } from '../../api/user/vendor';
+import { useNavigation } from '@react-navigation/native';
+import { getOrgProfie } from '../../api/admin/adminApi';
 
-export default function InvoiceForm() {
+export default function PurchaseForm() {
+    const navigation = useNavigation();
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [customers, setCustomers] = useState([])
+    const [totalAmt, setTotalAmt] = useState(0);
+    const [taxSummary, setTaxSummary] = useState({});
+    const [allTaxTotal, setAllTaxTotal] = useState(0);
     const [isLoading, setISLoading] = useState(false)
-    const [invoices, setInvoices] = useState([])
     const [inoiceItems, setInvoiceItems] = useState([])
+    const [isSameState, setIsSameSate] = useState(false)
     const getCustomer = async () => {
         setISLoading(true);
         try {
-            const response = await getAllCustomers();
+            const response = await getAllVendors();
             const itemResponse = await getAllItems();
-            setCustomers(response.parties)
-            setInvoices(response.invoices)
+            const orgResponse = await getOrgProfie();
+            setCustomers(response.vendors)
             setInvoiceItems(itemResponse.items)
-            setFilteredUsers(response.parties)
+            setFilteredUsers(response.vendors)
+            const orgState = orgResponse.organizationList[0].state;
+            const placeOfSupply = data.customer.placeOfSupply;
+            if (orgState === placeOfSupply) {
+                setIsSameSate(true)
+            } else {
+                setIsSameSate(false)
+            }
         } catch (error) {
 
         } finally {
@@ -89,7 +104,8 @@ export default function InvoiceForm() {
                     details: '',
                     quantity: '1',
                     price: '0.00',
-                    tax: '0',
+                    interStateTax: '0',
+                    intraStateTax: '0',
                     amount: '0.00',
                 },
             ],
@@ -117,7 +133,7 @@ export default function InvoiceForm() {
         }
     };
     const handleSelect = (selectedName) => {
-
+        console.log(selectedName.displayName)
         setInvoiceData({ ...invoiceData, customerName: selectedName.displayName });
         setInvoiceData({ ...invoiceData, customer: selectedName })
         setModalVisible(false);
@@ -178,12 +194,14 @@ export default function InvoiceForm() {
     };
     const handleSelectItem = (selectedItem) => {
         const updatedItems = [...invoiceData.items];
+        console.log("selectedItem----", selectedItem)
         updatedItems[selectedIndex] = {
             details: selectedItem.itemName,
             quantity: 1,
-            price: selectedItem.sellingPrice,
-            tax: selectedItem.intraStateTax || 0,
-            amount: Number(selectedItem.sellingPrice) * 1,
+            price: selectedItem.purchasePrice,
+            interStateTax: selectedItem.interStateTax || 0,
+            intraStateTax: selectedItem.intraStateTax || 0,
+            amount: Number(selectedItem.purchasePrice) * 1,
         };
 
         setInvoiceData({ ...invoiceData, items: updatedItems });
@@ -198,7 +216,35 @@ export default function InvoiceForm() {
 
         setInvoiceData({ ...invoiceData, items: updatedItems });
     };
+    useEffect(() => {
+        // Recalculate total when invoiceData changes
+        if (invoiceData?.items) {
+            const newTotal = invoiceData.items.reduce((total, item) => total + Number(item.amount), 0);
+            let newTaxSummary = {};
+            let newAllTaxTotal = 0;
 
+            invoiceData.items.forEach((item) => {
+                const itemTotal = Number(item.quantity) * Number(item.price);
+                const ItaxRate = Number(item.interStateTax);
+                const GtaxRate = Number(item.intraStateTax);
+
+                const applicableTaxRate = isSameState ? GtaxRate : ItaxRate;
+                if (applicableTaxRate === 0) return;
+
+                const totalTax = (itemTotal * applicableTaxRate) / 100;
+
+                if (!newTaxSummary[applicableTaxRate]) {
+                    newTaxSummary[applicableTaxRate] = 0;
+                }
+                newTaxSummary[applicableTaxRate] += totalTax;
+                newAllTaxTotal += totalTax;
+            });
+
+            setTaxSummary(newTaxSummary);
+            setAllTaxTotal(newAllTaxTotal);
+            setTotalAmt(newTotal);
+        }
+    }, [invoiceData]);
     const handleSubmit = async () => {
         // console.log("Button clicked", invoiceData.invoiceDate); // Check if function is called
 
@@ -242,6 +288,8 @@ export default function InvoiceForm() {
             console.error("Error submitting invoice:", error);
         }
     };
+
+
 
 
     const renderQuantityControl = (value, index, item) => {
@@ -289,7 +337,8 @@ export default function InvoiceForm() {
                 <ScrollView className="flex-1">
                     {/* Header */}
                     <View className="flex-row items-center p-4 border-b border-gray-200">
-                        <TouchableOpacity className="mr-4">
+                        <TouchableOpacity className="mr-4"
+                            onPress={() => navigation.navigate('Purchase')}>
                             <ArrowLeft width={24} height={24} color="#2563eb" />
                         </TouchableOpacity>
                         <Text className="text-xl font-bold text-gray-800">Create Invoice</Text>
@@ -521,7 +570,7 @@ export default function InvoiceForm() {
 
                                         {/* Tax */}
                                         <View className="flex-row items-start w-16 ml-2">
-                                            <Text className=" text-left">{item.tax}</Text>
+                                            <Text className=" text-left">{isSameState ? item.intraStateTax : item.interStateTax}</Text>
                                             <Text className="ml-1">%</Text>
                                         </View>
 
@@ -585,7 +634,39 @@ export default function InvoiceForm() {
                                 </View>
                             </Modal>
                         </View>
+                        <View className="bg-gray-50 p-4 rounded-md mt-4">
+                            <View className="flex-row justify-between items-center mb-3">
+                                <Text className="text-gray-700">Sub Total</Text>
+                                <Text className="font-medium">₹ {totalAmt || "0.00"}</Text>
+                            </View>
+                            {Object.entries(taxSummary).map(([rate, amount], index) => (
+                                <View key={index}>
+                                    {isSameState ? (
+                                        <View>
+                                            <View className="flex-row justify-between items-center mb-2">
+                                                <Text className="flex-1 text-left text-[13px]">SGST ({rate}%):</Text>
+                                                <Text className="w-20 text-right text-[13px]">{(amount / 2).toFixed(2)}</Text>
+                                            </View>
+                                            <View className="flex-row justify-between items-center mb-2">
+                                                <Text className="flex-1 text-left text-[13px]">CGST ({rate}%):</Text>
+                                                <Text className="w-20 text-right text-[13px]">{(amount / 2).toFixed(2)}</Text>
+                                            </View>
+                                        </View>
+                                    ) : (
+                                        <View className="flex-row justify-between items-center mb-2">
+                                            <Text className="flex-1 text-left text-[13px]">IGST ({rate}%):</Text>
+                                            <Text className="w-20 text-right text-[13px]">{amount.toFixed(2)}</Text>
+                                        </View>
+                                    )}
+                                </View>
+                            ))}
 
+
+                            <View className="flex-row justify-between items-center pt-3 border-t border-gray-300">
+                                <Text className="text-gray-700 font-medium">Total</Text>
+                                <Text className="font-bold">₹ {totalAmt + allTaxTotal || "0.00"}</Text>
+                            </View>
+                        </View>
                         {/* Terms & Conditions */}
                         <View>
                             <Text className="text-gray-700 mb-1">Terms & Conditions</Text>
@@ -593,8 +674,8 @@ export default function InvoiceForm() {
                                 className="border border-gray-300 rounded-md p-3 bg-white h-24"
                                 multiline
                                 placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
-                                value={invoiceData.termsAndConditions}
-                                onChangeText={(text) => setInvoiceData({ ...invoiceData, termsAndConditions: text })}
+                                value={invoiceData.termsandconditions}
+                                onChangeText={(text) => setInvoiceData({ ...invoiceData, termsandconditions: text })}
                             />
                         </View>
 
@@ -604,61 +685,14 @@ export default function InvoiceForm() {
                             <TextInput
                                 className="border border-gray-300 rounded-md p-3 bg-white h-24"
                                 multiline
-                                value={invoiceData.customerNotes}
-                                onChangeText={(text) => setInvoiceData({ ...invoiceData, customerNotes: text })}
+                                value={invoiceData.customernote}
+                                onChangeText={(text) => setInvoiceData({ ...invoiceData, customernote: text })}
                             />
                             <Text className="text-gray-500 text-xs mt-1">Will be displayed on the invoice</Text>
                         </View>
 
                         {/* Summary Section */}
-                        <View className="bg-gray-50 p-4 rounded-md mt-4">
-                            <View className="flex-row justify-between items-center mb-3">
-                                <Text className="text-gray-700">Sub Total</Text>
-                                <Text className="font-medium">₹{invoiceData.subTotal}</Text>
-                            </View>
 
-                            <View className="flex-row justify-between items-center mb-3">
-                                <View className="flex-row items-center">
-                                    <Text className="text-gray-700 mr-2">Discount</Text>
-                                    <View className="flex-row items-center border border-gray-300 rounded-md bg-white">
-                                        <TextInput
-                                            className="w-12 p-1 text-center"
-                                            value={invoiceData.discountInput}
-                                            keyboardType="numeric"
-                                            onChangeText={(text) => setInvoiceData({ ...invoiceData, discountInput: text })}
-                                        />
-                                        <View className="border-l border-gray-300 p-1">
-                                            <ChevronDown width={16} height={16} color="#666" />
-                                        </View>
-                                    </View>
-                                    <Text className="ml-1">%</Text>
-                                </View>
-                                <Text className="font-medium">-0.00</Text>
-                            </View>
-
-                            <View className="flex-row justify-between items-center mb-3">
-                                <View className="flex-row items-center">
-                                    <Text className="text-gray-700 mr-2">Adjustment</Text>
-                                    <View className="flex-row items-center border border-gray-300 rounded-md bg-white">
-                                        <TextInput
-                                            className="w-12 p-1 text-center"
-                                            value={invoiceData.adjustmentInput}
-                                            keyboardType="numeric"
-                                            onChangeText={(text) => setInvoiceData({ ...invoiceData, adjustmentInput: text })}
-                                        />
-                                        <View className="border-l border-gray-300 p-1">
-                                            <ChevronDown width={16} height={16} color="#666" />
-                                        </View>
-                                    </View>
-                                </View>
-                                <Text className="font-medium">0.00</Text>
-                            </View>
-
-                            <View className="flex-row justify-between items-center pt-3 border-t border-gray-300">
-                                <Text className="text-gray-700 font-medium">Total</Text>
-                                <Text className="font-bold">0.00</Text>
-                            </View>
-                        </View>
 
                         {/* Action Buttons */}
                         <View className="flex-row justify-end space-x-3 mt-4 mb-8">
@@ -673,6 +707,6 @@ export default function InvoiceForm() {
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
