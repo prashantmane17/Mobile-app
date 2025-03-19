@@ -163,9 +163,7 @@ export default function ItemScreen() {
                                             <View className="flex-row items-center ml-2">
                                                 <TouchableOpacity
                                                     className="mr-2 bg-blue-100 p-2 rounded-full"
-                                                    onPress={() => {
-
-                                                    }}
+                                                    onPress={() => navigation.navigate("EditItemForm", { id: item.id })}
                                                 >
                                                     <MaterialCommunityIcons name="pencil" size={18} color="#3b82f6" />
                                                 </TouchableOpacity>

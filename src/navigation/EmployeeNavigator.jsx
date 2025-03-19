@@ -32,6 +32,8 @@ import PurchaseDetails from '../screens/purchase/PurchaseDetails';
 import PurchaseForm from '../screens/purchase/PurchaseForm';
 import PurchaseList from '../screens/purchase/PurchaseList';
 import EditCustomerForm from '../screens/customer/editCustomerForm';
+import EditItemForm from '../screens/stocks/EditItemForm';
+import EditVendor from '../screens/vendor/EditVendor';
 
 
 const Drawer = createDrawerNavigator();
@@ -67,6 +69,7 @@ export default function EmployeeNavigator() {
                 <Drawer.Screen name="Expense" component={Expense} />
                 <Drawer.Screen name="ExpenseForm" component={ExpenseForm} />
                 <Drawer.Screen name="Vendor" component={VendorScreen} />
+                <Drawer.Screen name="EditVendor" component={EditVendor} />
                 <Drawer.Screen name="VendorDetails" component={VendorDetails} />
                 <Drawer.Screen name="VendorForm" component={VendorForm} />
                 <Drawer.Screen name="Bank" component={BankScreen} />
@@ -77,6 +80,7 @@ export default function EmployeeNavigator() {
                 <Drawer.Screen name="AddCustomerForm" component={EnhancedAddCustomerForm} />
                 <Drawer.Screen name="EditCustomerForm" component={EditCustomerForm} />
                 <Drawer.Screen name="AddItemForm" component={AddItemForm} />
+                <Drawer.Screen name="EditItemForm" component={EditItemForm} />
             </Drawer.Navigator>
         </HeaderProvider>
     );
