@@ -31,6 +31,7 @@ import Expense from '../screens/expesne/Expense';
 import PurchaseDetails from '../screens/purchase/PurchaseDetails';
 import PurchaseForm from '../screens/purchase/PurchaseForm';
 import PurchaseList from '../screens/purchase/PurchaseList';
+import EditCustomerForm from '../screens/customer/editCustomerForm';
 
 
 const Drawer = createDrawerNavigator();
@@ -74,6 +75,7 @@ export default function EmployeeNavigator() {
                 <Drawer.Screen name="PinvoiceDetails" component={ProformaInvoiceDetails} />
                 <Drawer.Screen name="PinvoiceForm" component={ProformaInvoiceForm} />
                 <Drawer.Screen name="AddCustomerForm" component={EnhancedAddCustomerForm} />
+                <Drawer.Screen name="EditCustomerForm" component={EditCustomerForm} />
                 <Drawer.Screen name="AddItemForm" component={AddItemForm} />
             </Drawer.Navigator>
         </HeaderProvider>

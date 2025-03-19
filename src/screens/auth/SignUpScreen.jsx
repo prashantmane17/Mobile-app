@@ -56,6 +56,7 @@ export default function SignUpScreen() {
         address: "",
         industryType: "",
         gstRegistered: "",
+        gstin: "",
     }
 
     const [formData, setFormData] = useState(initialData)
@@ -466,6 +467,15 @@ export default function SignUpScreen() {
                         value={formData.gstRegistered}
                         onPress={() => setGstModalVisible(true)}
                     />
+
+                    {formData.gstRegistered === "Yes" && (<View className="flex-row items-center border-b-2 border-gray-300 mb-3">
+                        <TextInput
+                            placeholder="Enter GST Number"
+                            className="flex-1 ml-2 text-sm"
+                            value={formData.gstin}
+                            onChangeText={(text) => handleInputChange("gstin", text)}
+                        />
+                    </View>)}
 
                     {/* Password */}
                     <View className="mb-5">

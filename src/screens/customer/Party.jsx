@@ -165,7 +165,7 @@ export default function CustomerList() {
                                         <View className="flex-row items-center">
                                             <TouchableOpacity
                                                 className="mr-4 bg-blue-100 p-2 rounded-full"
-                                                onPress={() => {/* Edit functionality */ }}
+                                                onPress={() => navigation.navigate('EditCustomerForm', { id: customer.id })}
                                             >
                                                 <MaterialCommunityIcons name="pencil" size={18} color="#3b82f6" />
                                             </TouchableOpacity>

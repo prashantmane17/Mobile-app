@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, TouchableWithoutFeedback, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { Bell, Plus } from 'lucide-react-native';
@@ -7,19 +7,22 @@ import { useHeader } from '../../context/HeaderContext';
 
 export default function Header() {
     const navigation = useNavigation();
-    const [showDropdown, setShowDropdown] = useState(false);
     const { headerName } = useHeader();
+    const [showDropdown, setShowDropdown] = useState(false);
+
     const toggleDropdown = () => {
         setShowDropdown(!showDropdown);
     };
 
     const closeDropdown = () => {
-        if (showDropdown) {
-            setShowDropdown(false);
-        }
+        setShowDropdown(false);
     };
-    const handleOptionSelect = (option) => {
-        setShowDropdown(false); // Close dropdown after selection
+    const handleLogout = () => {
+
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'Login' }],
+        });
     };
 
     return (
@@ -36,64 +39,64 @@ export default function Header() {
             </View>
 
             <View className="flex-row items-center gap-2">
-                <View className="flex-row items-center space-x-4">
-                    {/* <TouchableOpacity>
-                        <Bell className="w-6 h-6 text-gray-600" />
-                    </TouchableOpacity> */}
-                    <View className=" flex-row justify-center items-center bg-gray-50 relative">
-                        <TouchableOpacity
-                            className="bg-blue-500 rounded-full p-2"
-                            onPress={(e) => {
-                                e.stopPropagation(); // Prevent the click from propagating
-                                toggleDropdown();
-                            }}
-                        >
-                            <Plus className="w-5 h-5 text-white" />
-                        </TouchableOpacity>
-                        {showDropdown && (
-                            <TouchableWithoutFeedback onPress={closeDropdown}>
-                                <View className="bg-gray-800/50 absolute w-[100vw] top-[6vh] right-[-66px] h-[94vh] z-10"></View>
-                            </TouchableWithoutFeedback>
-                        )}
-                        {/* Dropdown */}
-                        {showDropdown && (
-                            <View className="absolute z-20 top-10 mt-2  bg-white border border-gray-200 rounded-lg shadow-lg w-36">
-                                <TouchableOpacity
-                                    className="p-4  flex-row items-center justify-start"
-                                    onPress={() => handleOptionSelect('Option 1')}
-                                >
-                                    <View className=" px-1 mr-2 rounded-md  flex-row items-center justify-center bg-blue-500">
-                                        <Feather name="plus" size={18} color="#fff" />
-                                    </View>
-                                    <Text className="text-gray-700 ">Customers</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    className="p-4  flex-row items-center justify-start"
-                                    onPress={() => handleOptionSelect('Option 2')}
-                                >
-                                    <View className=" px-1 mr-2 rounded-md  flex-row items-center justify-center bg-blue-500">
-                                        <Feather name="plus" size={18} color="#fff" />
-                                    </View>
-                                    <Text className="text-gray-700 ">Items</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    className="p-4  flex-row items-center justify-start"
-                                    onPress={() => handleOptionSelect('Option 3')}
-                                >
-                                    <View className=" px-1 mr-2 rounded-md  flex-row items-center justify-center bg-blue-500">
-                                        <Feather name="plus" size={18} color="#fff" />
-                                    </View>
-                                    <Text className="text-gray-700 ">Invoice</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    </View>
-                </View>
-                <TouchableOpacity
+                <TouchableOpacity onPress={toggleDropdown}
                     className="flex-row items-center bg-blue-600 px-3 py-2 rounded-lg"
-                    onPress={() => navigation.navigate('AddUser')}
                 >
                     <Feather name="user" size={18} color="#fff" />
+                </TouchableOpacity>
+                <Modal
+                    visible={showDropdown}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={closeDropdown}
+                >
+                    <TouchableWithoutFeedback onPress={closeDropdown}>
+                        <View className="flex-1 justify-center items-center bg-black/50">
+                            <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+                                <View className="bg-white p-6 rounded-2xl w-80 shadow-xl">
+                                    {/* Profile Header */}
+                                    <View className="flex-row items-center justify-between mb-4">
+                                        <Text className="text-xl font-bold text-gray-800">Profile</Text>
+                                    </View>
+
+                                    {/* Profile Info */}
+                                    <View className="space-y-2">
+                                        <Text className="text-gray-700 font-medium">
+                                            <Text className="text-black font-semibold">Name: </Text>
+
+                                        </Text>
+                                        <Text className="text-gray-700 font-medium">
+                                            <Text className="text-black font-semibold">Email: </Text>
+
+                                        </Text>
+                                        <Text className="text-gray-700 font-medium">
+                                            <Text className="text-black font-semibold">Joined: </Text>
+
+                                        </Text>
+                                    </View>
+
+                                    {/* Buttons */}
+                                    <View className="flex-row justify-end mt-5 space-x-3">
+                                        <TouchableOpacity
+                                            onPress={closeDropdown}
+                                            className="bg-gray-400 px-4 py-2 rounded-lg"
+                                        >
+                                            <Text className="text-white font-medium">Close</Text>
+                                        </TouchableOpacity>
+
+
+                                    </View>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </Modal>
+                <TouchableOpacity
+                    className="flex-row items-center px-2 py-3 border-t border-gray-200"
+                    onPress={handleLogout}
+                >
+                    <Feather name="log-out" size={20} color="red" />
+                    {/* <Text className="ml-3 text-base text-red-600">Logout</Text> */}
                 </TouchableOpacity>
             </View>
         </View>
