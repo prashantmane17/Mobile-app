@@ -1,10 +1,10 @@
 // TransactionCard.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 // import { Checkbox } from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getAllExpenses } from '../../api/user/bank_Expense';
 
 const TransactionCard = ({ transaction, onToggleSelect }) => {
@@ -29,12 +29,7 @@ const TransactionCard = ({ transaction, onToggleSelect }) => {
                     <Text className="text-sm text-gray-500">{formatDate(transaction.createdAt)}</Text>
                 </View>
                 <View className="flex-row items-center">
-                    <TouchableOpacity
-                        className="mr-4 bg-blue-100 p-2 rounded-full"
-                    // onPress={() => { }}
-                    >
-                        <MaterialCommunityIcons name="pencil" size={18} color="#3b82f6" />
-                    </TouchableOpacity>
+
                     <TouchableOpacity
                         className="bg-red-100 p-2 rounded-full"
                     // onPress={() => deleteCustomer(transaction.id)}
@@ -47,7 +42,7 @@ const TransactionCard = ({ transaction, onToggleSelect }) => {
 
             <View className="pl-5 pr-4 py-1  ">
                 <View className="bg-gray-50 border-l-2 p-2">
-                    <Text className="text-gray-600">{transaction.description}</Text>
+                    <Text className="text-gray-600">{transaction.description || "--"}</Text>
                 </View>
             </View>
 
@@ -70,10 +65,10 @@ const Expense = () => {
             console.error("Error fetching Customer:", error);
         }
     };
-
-    useEffect(() => {
+    useFocusEffect(useCallback(() => {
         expenseData();
-    }, [expenseData]);
+    }, []))
+
     const handleToggleSelect = (id) => {
         setTransactionData(transactionData.map(item =>
             item.id === id ? { ...item, selected: !item.selected } : item

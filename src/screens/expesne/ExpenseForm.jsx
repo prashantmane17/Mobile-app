@@ -2,17 +2,18 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Platform, ScrollView, Modal, FlatList, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar, ChevronLeft, ChevronDown } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 
 export default function ExpenseForm() {
     const [formData, setFormData] = useState({
-        date: '03/01/2025',
+        date: new Date(),
         category: '',
         amount: '',
         paymentMethod: '',
         description: '',
         invoiceId: ''
     });
-
+    const navigation = useNavigation();
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date(2025, 2, 1)); // March 1, 2025
 
@@ -36,18 +37,23 @@ export default function ExpenseForm() {
         "Card",
         "Bank Transfer",
     ];
-
+    const parseDateToDDMMYYYY = (inputDate) => {
+        if (inputDate) {
+            const formattedDate =
+                inputDate.getDate().toString().padStart(2, "0") +
+                "/" +
+                (inputDate.getMonth() + 1).toString().padStart(2, "0") +
+                "/" +
+                inputDate.getFullYear();
+            return formattedDate;
+        }
+        return inputDate;
+    };
     const handleDateChange = (event, date) => {
         setShowDatePicker(Platform.OS === 'ios');
         if (date) {
             setSelectedDate(date);
-            const formattedDate =
-                date.getDate().toString().padStart(2, "0") +
-                "/" +
-                (date.getMonth() + 1).toString().padStart(2, "0") +
-                "/" +
-                date.getFullYear();
-            setFormData({ ...formData, date: formattedDate });
+            setFormData({ ...formData, date: date });
         }
     };
 
@@ -75,11 +81,12 @@ export default function ExpenseForm() {
                 },
                 body: JSON.stringify(requestBody)
             });
-            console.log("Click3", response)
             const data = await response.json();
             if (response.ok) {
                 Alert.alert("Success", "Expense saved successfully!");
                 setFormData({ date: formData.date, category: '', amount: '', paymentMethod: '', description: '', invoiceId: '' });
+                navigation.navigate('Expense')
+
             } else {
                 Alert.alert("Error", data.message || "Failed to save expense.");
             }
@@ -106,7 +113,8 @@ export default function ExpenseForm() {
         <View className="flex-1 bg-white">
             {/* Header */}
             <View className="flex-row items-center p-4 border-b border-gray-200">
-                <TouchableOpacity className="mr-4">
+                <TouchableOpacity className="mr-4"
+                    onPress={() => navigation.navigate('Expense')}>
                     <ChevronLeft width={24} height={24} color="#3b82f6" />
                 </TouchableOpacity>
                 <Text className="text-xl font-semibold">Create Expenses</Text>
@@ -121,7 +129,7 @@ export default function ExpenseForm() {
                     <View className="relative">
                         <TextInput
                             className="border border-gray-300 rounded-md p-3 bg-white"
-                            value={formData.date}
+                            value={parseDateToDDMMYYYY(formData.date)}
                             editable={false} // Prevent manual typing
                         />
                         <TouchableOpacity

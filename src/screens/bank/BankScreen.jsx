@@ -1,13 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
-// import { Checkbox } from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getAllBankData } from '../../api/user/bank_Expense';
-
-
-
 
 const TransactionCard = ({ transaction, onToggleSelect }) => {
     const formatDate = (timestamp) => {
@@ -34,7 +30,7 @@ const TransactionCard = ({ transaction, onToggleSelect }) => {
 
             <View className="pl-5 pr-4 py-1  ">
                 <View className="bg-gray-50 border-l-2 p-2">
-                    <Text className="text-gray-600">{transaction.description}</Text>
+                    <Text className="text-gray-600">{transaction.description || "--"}</Text>
                 </View>
             </View>
 
@@ -57,10 +53,11 @@ const BankScreen = () => {
 
         }
     };
-
-    useEffect(() => {
-        bankData();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            bankData();
+        }, [])
+    )
     const handleToggleSelect = (id) => {
         setTransactionData(transactionData.map(item =>
             item.id === id ? { ...item, selected: !item.selected } : item

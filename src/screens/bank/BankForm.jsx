@@ -3,11 +3,13 @@ import { View, Text, TextInput, TouchableOpacity, Platform, ScrollView, Modal, A
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { Calendar, ChevronLeft } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 
 export default function BankForm() {
+    const navigation = useNavigation();
     const intialData = {
         transactionId: '',
-        transactionDate: '03/02/2025',
+        transactionDate: new Date(),
         transactionType: 'credit',
         amount: '',
         description: ''
@@ -21,13 +23,24 @@ export default function BankForm() {
         { label: 'Credit (+)', value: 'credit' },
         { label: 'Debit (-)', value: 'debit' },
     ];
+    const parseDateToDDMMYYYY = (inputDate) => {
+        if (inputDate) {
+            const formattedDate =
+                inputDate.getDate().toString().padStart(2, "0") +
+                "/" +
+                (inputDate.getMonth() + 1).toString().padStart(2, "0") +
+                "/" +
+                inputDate.getFullYear();
+            return formattedDate;
+        }
+        return inputDate;
+    };
 
     const handleDateChange = (event, date) => {
         setShowDatePicker(Platform.OS === 'ios');
         if (date) {
             setSelectedDate(date);
-            const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-            setFormData({ ...formData, transactionDate: formattedDate });
+            setFormData({ ...formData, transactionDate: date });
         }
     };
 
@@ -51,6 +64,8 @@ export default function BankForm() {
             if (response.ok) {
                 Alert.alert('Success', 'Transaction saved successfully');
                 setFormData(intialData)
+                navigation.navigate('Bank')
+
             } else {
                 Alert.alert('Error', result || 'Something went wrong');
             }
@@ -64,7 +79,8 @@ export default function BankForm() {
         <View className="flex-1 bg-white">
             {/* Header */}
             <View className="flex-row items-center p-4 border-b border-gray-200">
-                <TouchableOpacity className="mr-4">
+                <TouchableOpacity className="mr-4"
+                    onPress={() => navigation.navigate('Bank')}>
                     <ChevronLeft width={24} height={24} color="#3b82f6" />
                 </TouchableOpacity>
                 <Text className="text-xl font-semibold">Create Entry</Text>
@@ -86,7 +102,7 @@ export default function BankForm() {
                 <View className="mb-4">
                     <Text className="text-gray-700 mb-1">Transaction Date<Text className="text-red-500">*</Text></Text>
                     <View className="relative">
-                        <TextInput className="border border-gray-300 rounded-md p-3 bg-white" value={formData.transactionDate} editable={false} />
+                        <TextInput className="border border-gray-300 rounded-md p-3 bg-white" value={parseDateToDDMMYYYY(formData.transactionDate)} editable={false} />
                         <TouchableOpacity className="absolute right-3 top-3" onPress={() => setShowDatePicker(true)}>
                             <Calendar width={20} height={20} color="#666" />
                         </TouchableOpacity>
