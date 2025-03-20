@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import DrawerContent from '../components/user/DrawerContent';
@@ -34,54 +34,58 @@ import PurchaseList from '../screens/purchase/PurchaseList';
 import EditCustomerForm from '../screens/customer/editCustomerForm';
 import EditItemForm from '../screens/stocks/EditItemForm';
 import EditVendor from '../screens/vendor/EditVendor';
+import { TaxProvider, useTax } from '../context/TaxContext';
 
 
 const Drawer = createDrawerNavigator();
 
 export default function EmployeeNavigator() {
+
     return (
         <HeaderProvider>
-            <Drawer.Navigator
-                drawerContent={(props) => <DrawerContent {...props} />}
-                screenOptions={{
-                    headerShown: true, // Ensure the header is shown globally
-                    drawerStyle: {
-                        width: '60%',
-                        backgroundColor: "#282e3b",
-                    },
-                    header: () => <Header />, // Set the global header
-                }}
-            >
-                <Drawer.Screen name="Dashboard" component={UsersDashboardScreen} />
-                <Drawer.Screen name="Parties" component={CustomerList} />
-                <Drawer.Screen name="CustomerDetails" component={CustomerDetails} />
-                <Drawer.Screen name="sales" component={InvoiceCards} />
-                <Drawer.Screen name="InvoiceForm" component={InvoiceForm} />
-                <Drawer.Screen name="InvoiceTemp" component={InvoiceTemp} />
-                <Drawer.Screen name="PaymentForm" component={PaymentForm} />
-                <Drawer.Screen name="PaymentDetails" component={PaymentDetails} />
-                <Drawer.Screen name="Payment" component={PaymentList} />
-                <Drawer.Screen name="ItemScreen" component={ItemScreen} />
-                <Drawer.Screen name="ItemsDetail" component={ItemDetails} />
-                <Drawer.Screen name="Purchase" component={PurchaseList} />
-                <Drawer.Screen name="PurchaseForm" component={PurchaseForm} />
-                <Drawer.Screen name="PurchaseDetails" component={PurchaseDetails} />
-                <Drawer.Screen name="Expense" component={Expense} />
-                <Drawer.Screen name="ExpenseForm" component={ExpenseForm} />
-                <Drawer.Screen name="Vendor" component={VendorScreen} />
-                <Drawer.Screen name="EditVendor" component={EditVendor} />
-                <Drawer.Screen name="VendorDetails" component={VendorDetails} />
-                <Drawer.Screen name="VendorForm" component={VendorForm} />
-                <Drawer.Screen name="Bank" component={BankScreen} />
-                <Drawer.Screen name="BankForm" component={BankForm} />
-                <Drawer.Screen name="Pinvoice" component={ProformaInvoice} />
-                <Drawer.Screen name="PinvoiceDetails" component={ProformaInvoiceDetails} />
-                <Drawer.Screen name="PinvoiceForm" component={ProformaInvoiceForm} />
-                <Drawer.Screen name="AddCustomerForm" component={EnhancedAddCustomerForm} />
-                <Drawer.Screen name="EditCustomerForm" component={EditCustomerForm} />
-                <Drawer.Screen name="AddItemForm" component={AddItemForm} />
-                <Drawer.Screen name="EditItemForm" component={EditItemForm} />
-            </Drawer.Navigator>
+            <TaxProvider>
+                <Drawer.Navigator
+                    drawerContent={(props) => <DrawerContent {...props} />}
+                    screenOptions={{
+                        headerShown: true,
+                        drawerStyle: {
+                            width: '60%',
+                            backgroundColor: "#282e3b",
+                        },
+                        header: () => <Header />,
+                    }}
+                >
+                    <Drawer.Screen name="Dashboard" component={UsersDashboardScreen} />
+                    <Drawer.Screen name="Parties" component={CustomerList} />
+                    <Drawer.Screen name="CustomerDetails" component={CustomerDetails} />
+                    <Drawer.Screen name="sales" component={InvoiceCards} />
+                    <Drawer.Screen name="InvoiceForm" component={InvoiceForm} />
+                    <Drawer.Screen name="InvoiceTemp" component={InvoiceTemp} />
+                    <Drawer.Screen name="PaymentForm" component={PaymentForm} />
+                    <Drawer.Screen name="PaymentDetails" component={PaymentDetails} />
+                    <Drawer.Screen name="Payment" component={PaymentList} />
+                    <Drawer.Screen name="ItemScreen" component={ItemScreen} />
+                    <Drawer.Screen name="ItemsDetail" component={ItemDetails} />
+                    <Drawer.Screen name="Purchase" component={PurchaseList} />
+                    <Drawer.Screen name="PurchaseForm" component={PurchaseForm} />
+                    <Drawer.Screen name="PurchaseDetails" component={PurchaseDetails} />
+                    <Drawer.Screen name="Expense" component={Expense} />
+                    <Drawer.Screen name="ExpenseForm" component={ExpenseForm} />
+                    <Drawer.Screen name="Vendor" component={VendorScreen} />
+                    <Drawer.Screen name="EditVendor" component={EditVendor} />
+                    <Drawer.Screen name="VendorDetails" component={VendorDetails} />
+                    <Drawer.Screen name="VendorForm" component={VendorForm} />
+                    <Drawer.Screen name="Bank" component={BankScreen} />
+                    <Drawer.Screen name="BankForm" component={BankForm} />
+                    <Drawer.Screen name="Pinvoice" component={ProformaInvoice} />
+                    <Drawer.Screen name="PinvoiceDetails" component={ProformaInvoiceDetails} />
+                    <Drawer.Screen name="PinvoiceForm" component={ProformaInvoiceForm} />
+                    <Drawer.Screen name="AddCustomerForm" component={EnhancedAddCustomerForm} />
+                    <Drawer.Screen name="EditCustomerForm" component={EditCustomerForm} />
+                    <Drawer.Screen name="AddItemForm" component={AddItemForm} />
+                    <Drawer.Screen name="EditItemForm" component={EditItemForm} />
+                </Drawer.Navigator>
+            </TaxProvider>
         </HeaderProvider>
     );
 }

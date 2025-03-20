@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { getAllProformaInvoices } from '../../api/user/proformaInvoice';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 const purchaseOrders = [
     {
@@ -66,10 +66,11 @@ export default function ProformaInvoice() {
             console.error("Error fetching invoices:", error);
         }
     };
-
-    useEffect(() => {
-        purchaseData();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            purchaseData();
+        }, [])
+    )
     const filteredOrders = invoices?.filter(order =>
         order.customer.displayName.toLowerCase().includes(searchQuery.toLowerCase())
     );

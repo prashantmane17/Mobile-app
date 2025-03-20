@@ -1,9 +1,9 @@
 // import { PlusIcon } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getAllPayments } from '../../api/user/payment';
 
 const PaymentList = () => {
@@ -30,10 +30,10 @@ const PaymentList = () => {
             setLoading(false)
         }
     };
-
-    useEffect(() => {
-        paymentData();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            paymentData();
+        }, []));
     const filteredInvoices = payment.filter(invoice =>
         invoice.customerName.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -109,7 +109,7 @@ const PaymentList = () => {
                                         <View className="flex-row justify-between items-start mb-3">
                                             <View>
                                                 <Text className="text-lg font-semibold text-gray-900 capitalize" onPress={() => navigation.navigate("PaymentDetails", { id: payment.id })}>{payment.customerName}</Text>
-                                                <Text className="text-gray-500 text-sm">{payment.paymentDate}</Text>
+                                                <Text className="text-gray-500 text-sm">{payment.paymentDate?.split("T")[0]}</Text>
                                             </View>
                                             <View className="bg-green-100 px-3 py-1 rounded-full">
                                                 <Text className="text-green-600 font-medium">Paid</Text>

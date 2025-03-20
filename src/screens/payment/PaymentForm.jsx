@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Platform, ScrollView, Alert, Modal, FlatList } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar } from 'lucide-react-native';
@@ -6,7 +6,7 @@ import { Picker } from '@react-native-picker/picker';
 import { savePayments } from '../../api/user/payment';
 import { getAllCustomers } from '../../api/user/customer';
 import Checkbox from "expo-checkbox";
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ArrowLeft } from 'react-native-feather';
 
 export default function PaymentForm() {
@@ -18,18 +18,20 @@ export default function PaymentForm() {
     const [filteredInvoices, setFilteredInvoices] = useState([]);
     const [loading, setLoading] = useState(false)
     const [invoices, setInvoices] = useState([])
+    const [selectedId, setSelectedId] = useState([])
 
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date(2025, 2, 1));
     const initialFormData = {
         customerName: '',
-        outstandingAmount: '',
+        amountReceived: '',
         bankCharges: '',
-        paymentDate: '03/01/2025',
+        paymentDate: new Date(),
         paymentMode: '',
         paymentNumber: '',
         referenceNumber: '',
         notes: ''
+
     };
     const [formData, setFormData] = useState(initialFormData);
     const customerData = async () => {
@@ -46,10 +48,25 @@ export default function PaymentForm() {
             setLoading(false)
         }
     };
-    useEffect(() => {
-        customerData();
-    }, []);
-    // March 1, 2025
+    const generatePaymentId = () => {
+        const now = new Date();
+        const dd = String(now.getDate()).padStart(2, '0');
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const yy = String(now.getFullYear()).slice(-2);
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const sec = String(now.getSeconds()).padStart(2, '0');
+
+        const finalNum = `PAY-${yy}${mm}${dd}${hh}${min}${sec}`;
+        setFormData({ ...formData, paymentNumber: finalNum });
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            generatePaymentId();
+            customerData();
+        }, []));
+
 
     const handleChange = (name, value) => {
         setFormData({ ...formData, [name]: value });
@@ -74,35 +91,48 @@ export default function PaymentForm() {
         setFilteredInvoices(filteredIn);
         setModalVisible(false);
     };
+    const parseDateToDDMMYYYY = (inputDate) => {
+        if (inputDate) {
+            const formattedDate =
+                inputDate.getDate().toString().padStart(2, "0") +
+                "/" +
+                (inputDate.getMonth() + 1).toString().padStart(2, "0") +
+                "/" +
+                inputDate.getFullYear();
+            return formattedDate;
+        }
+        return inputDate;
+    };
     const handleDateChange = (event, date) => {
         setShowDatePicker(Platform.OS === 'ios');
         if (date) {
             setSelectedDate(date);
-            const formattedDate =
-                date.getDate().toString().padStart(2, "0") +
-                "/" +
-                (date.getMonth() + 1).toString().padStart(2, "0") +
-                "/" +
-                date.getFullYear();
-            handleChange('paymentDate', formattedDate);
+            console.log("dta--", date)
+
+            handleChange('paymentDate', date);
         }
     };
     const handleCheckboxSelect = (invoice) => {
         setSelectedInvoices((prev) => {
             const isAlreadySelected = prev.some((item) => item.id === invoice.id);
-
+            let updatedSelectedId;
             if (isAlreadySelected) {
                 const updatedSelection = prev.filter((item) => item.id !== invoice.id);
                 const newTotal = updatedSelection.reduce((sum, item) => sum + Number(item.totalAmount), 0);
-                setFormData({ ...formData, outstandingAmount: newTotal.toString() });
+                setFormData({ ...formData, amountReceived: newTotal.toString() });
+                updatedSelectedId = selectedId.filter((id) => id !== invoice.id);
+                setSelectedId(updatedSelectedId);// Remove ID
                 return updatedSelection;
             } else {
                 const updatedSelection = [...prev, invoice];
                 const newTotal = updatedSelection.reduce((sum, item) => sum + Number(item.totalAmount), 0);
-                setFormData({ ...formData, outstandingAmount: newTotal.toString() });
+                setFormData({ ...formData, amountReceived: newTotal.toString() });
+                updatedSelectedId = [...selectedId, invoice.id];
+                setSelectedId(updatedSelectedId);
                 return updatedSelection;
             }
         });
+
     };
 
     const handleSubmit = async () => {
@@ -110,9 +140,16 @@ export default function PaymentForm() {
 
         Object.keys(formData).forEach((key) => {
             if (typeof formData[key] !== "object" || formData[key] === null) {
-                data.append(key, formData[key]);
+                if (key.toLowerCase().includes("paymentDate")) {
+                } else {
+                    data.append(key, formData[key]);
+                }
             }
         });
+        console.log("selec------", selectedId)
+        const specificDate = new Date(formData.paymentDate).toISOString();
+        data.append("paymentDate", specificDate);
+        data.append("invoiceIds", selectedId);
         try {
             const response = await fetch("http://192.168.1.25:8080/save-payment", {
                 method: "POST",
@@ -124,6 +161,7 @@ export default function PaymentForm() {
             if (response.ok) {
                 setFormData(initialFormData)
                 Alert.alert("Success", "Payment details saved successfully!");
+                navigation.navigate('Payment')
             } else {
                 console.error("Error saving payment:");
                 Alert.alert("Error");
@@ -135,7 +173,7 @@ export default function PaymentForm() {
     };
 
 
-    // Resets the form
+
     const handleReset = () => {
         setFormData(initialFormData);
     };
@@ -208,8 +246,8 @@ export default function PaymentForm() {
                 <TextInput
                     className="border border-gray-300 rounded-md p-3 bg-white"
                     placeholder="Enter received amount"
-                    value={formData.outstandingAmount}
-                    onChangeText={(text) => handleChange("outstandingAmount", text)}
+                    value={formData.amountReceived}
+                    onChangeText={(text) => handleChange("amountReceived", text)}
                     keyboardType="numeric"
                 />
 
@@ -244,7 +282,7 @@ export default function PaymentForm() {
                 <View className="relative">
                     <TextInput
                         className="border border-gray-300 rounded-md p-3 bg-white"
-                        value={formData.paymentDate}
+                        value={parseDateToDDMMYYYY(formData.paymentDate)}
                         editable={false} // Prevent manual typing
                     />
                     <TouchableOpacity className="absolute right-3 top-3" onPress={() => setShowDatePicker(true)}>
@@ -264,18 +302,21 @@ export default function PaymentForm() {
             {/* Payment Mode */}
             <View className="mb-4">
                 <Text className="text-gray-700 mb-1">Payment Mode<Text className="text-red-500">*</Text></Text>
-                <Picker
-                    selectedValue={formData.paymentMode}
-                    onValueChange={(value) => handleChange('paymentMode', value)}
-                    className="border border-gray-300 rounded-md p-3 bg-white"
-                >
-                    <Picker.Item label="Select payment mode" value="" />
-                    <Picker.Item label="Credit Card" value="credit_card" />
-                    <Picker.Item label="Bank Transfer" value="bank_transfer" />
-                    <Picker.Item label="Cash" value="cash" />
-                </Picker>
-            </View>
+                <View className="border border-gray-300 rounded-md">
+                    <Picker
+                        selectedValue={formData.paymentMode}
+                        onValueChange={(value) => handleChange('paymentMode', value)}
+                        className="border border-gray-300 rounded-md p-3 bg-white"
+                    >
+                        <Picker.Item label="Select payment mode" value="" />
+                        <Picker.Item label="Credit Card" value="Credit Card" />
+                        <Picker.Item label="Bank Transfer" value="Bank Transfer" />
+                        <Picker.Item label="Cash" value="Cash" />
+                        <Picker.Item label="UPI" value="UPI" />
+                    </Picker>
 
+                </View>
+            </View>
             {/* Payment # */}
             <View className="mb-4">
                 <Text className="text-gray-700 mb-1">Payment #</Text>

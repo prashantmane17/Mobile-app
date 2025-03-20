@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -10,36 +10,49 @@ import {
     Modal,
     KeyboardAvoidingView,
     FlatList,
+    Alert,
 } from 'react-native';
 import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Plus, Trash } from 'react-native-feather';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { getAllCustomers } from '../../api/user/customer';
 import { getAllItems } from '../../api/user/items';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { getOrgProfie } from '../../api/admin/adminApi';
 
 export default function ProformaInvoiceForm() {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [customers, setCustomers] = useState([])
+    const navigation = useNavigation();
     const [isLoading, setISLoading] = useState(false)
+    const [isSameState, setIsSameSate] = useState(false)
+    const [orgState, setOrgState] = useState('');
+    const [totalAmt, setTotalAmt] = useState(0);
+    const [taxSummary, setTaxSummary] = useState({});
+    const [allTaxTotal, setAllTaxTotal] = useState(0);
     const [inoiceItems, setInvoiceItems] = useState([])
     const getCustomer = async () => {
         setISLoading(true);
         try {
             const response = await getAllCustomers();
             const itemResponse = await getAllItems();
-            console.log("response-------", response)
+            const orgResponse = await getOrgProfie();
             setCustomers(response.parties)
             setInvoiceItems(itemResponse.items)
             setFilteredUsers(response.parties)
+            const org_State = orgResponse.organizationList[0].state;
+            setOrgState(org_State)
+
         } catch (error) {
 
         } finally {
             setISLoading(false);
         }
     }
-    useEffect(() => {
-        getCustomer();
-
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+            getCustomer();
+        }, [])
+    );
 
     const [showInvoicePicker, setShowInvoicePicker] = useState(false);
     const [showDuePicker, setShowDuePicker] = useState(false);
@@ -48,26 +61,28 @@ export default function ProformaInvoiceForm() {
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [filteredItems, setFilteredItems] = useState([]);
     const [itemModalVisible, setItemModalVisible] = useState(false);
-    useEffect(() => {
 
-        console.log("kii----")
-    }, [filteredUsers])
-    const [invoiceData, setInvoiceData] = useState({
+    const intialData = {
         customerName: '',
         invoiceNumber: 'INV/2025/00003',
         orderNumber: '',
-        invoiceDate: '02/28/2025',
+        invoiceDate: new Date(),
         terms: '',
-        dueDate: '02/28/2025',
+        dueDate: new Date(),
         salesperson: 'Harish',
         subject: '',
         customer: {},
         items: [
             {
+                id: '',
+                itemHsn: "",
+                type: "",
+                unit: "",
                 details: '',
                 quantity: '1',
                 price: '0.00',
-                tax: '0',
+                intraStateTax: '0',
+                interStateTax: '0',
                 amount: '0.00',
             },
         ],
@@ -77,7 +92,9 @@ export default function ProformaInvoiceForm() {
         discountInput: '0',
         adjustmentInput: '0',
         invoiceStatus: "VOID",
-    });
+    }
+
+    const [invoiceData, setInvoiceData] = useState(intialData);
 
     const addItem = () => {
         setInvoiceData({
@@ -85,10 +102,15 @@ export default function ProformaInvoiceForm() {
             items: [
                 ...invoiceData.items,
                 {
+                    id: '',
+                    itemHsn: "",
+                    type: "",
+                    unit: "",
                     details: '',
                     quantity: '1',
                     price: '0.00',
-                    tax: '0',
+                    intraStateTax: '0',
+                    interStateTax: '0',
                     amount: '0.00',
                 },
             ],
@@ -115,49 +137,70 @@ export default function ProformaInvoiceForm() {
             setFilteredUsers(customers);
         }
     };
+    useEffect(() => {
+        if (invoiceData?.items) {
+            const newTotal = invoiceData.items.reduce((total, item) => total + Number(item.amount), 0);
+            let newTaxSummary = {};
+            let newAllTaxTotal = 0;
+
+            invoiceData.items.forEach((item) => {
+                const itemTotal = Number(item.quantity) * Number(item.price);
+                const ItaxRate = Number(item.interStateTax);
+                const GtaxRate = Number(item.intraStateTax);
+
+                const applicableTaxRate = isSameState ? GtaxRate : ItaxRate;
+                if (applicableTaxRate === 0) return;
+
+                const totalTax = (itemTotal * applicableTaxRate) / 100;
+
+                if (!newTaxSummary[applicableTaxRate]) {
+                    newTaxSummary[applicableTaxRate] = 0;
+                }
+                newTaxSummary[applicableTaxRate] += totalTax;
+                newAllTaxTotal += totalTax;
+            });
+
+            setTaxSummary(newTaxSummary);
+            setAllTaxTotal(newAllTaxTotal);
+            setTotalAmt(newTotal);
+        }
+    }, [invoiceData]);
     const handleSelect = (selectedName) => {
-        console.log("selectedName----", selectedName)
+        const placeOfSupply = selectedName.placeOfSupply;
+        if (orgState === placeOfSupply) {
+            setIsSameSate(true)
+        } else {
+            setIsSameSate(false)
+        }
         setInvoiceData({ ...invoiceData, customerName: selectedName.displayName });
         setInvoiceData({ ...invoiceData, customer: selectedName })
         setModalVisible(false);
     };
     const parseDateToDDMMYYYY = (inputDate) => {
-        if (!inputDate) return "";
-        const dateParts = inputDate.match(/(\d{1,2}) (\w{3}), (\d{4})/);
-        if (!dateParts) return "Invalid Date";
-        const [, day, month, year] = dateParts;
-
-        const monthMap = {
-            Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
-            Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12"
-        };
-
-        return `${day.padStart(2, "0")}/${monthMap[month]}/${year}`;
+        if (inputDate) {
+            const formattedDate =
+                inputDate.getDate().toString().padStart(2, "0") +
+                "/" +
+                (inputDate.getMonth() + 1).toString().padStart(2, "0") +
+                "/" +
+                inputDate.getFullYear();
+            return formattedDate;
+        }
+        return inputDate;
     };
 
     const handleDateChange = (event, date, type) => {
-        // if (date) {
-        //     console.log("date---", date)
-        //     const formattedDate =
-        //         date.getDate().toString().padStart(2, "0") +
-        //         "/" +
-        //         (date.getMonth() + 1).toString().padStart(2, "0") +
-        //         "/" +
-        //         date.getFullYear();
-
-        //     setInvoiceData({ ...invoiceData, [type]: date });
-        //     setSelectedDate(date);
-        // }
         if (date) {
-            date.setHours(0, 0, 0, 0);
             const formattedDate =
-                date.toDateString() + " 00:00:00 IST";
+                date.getDate().toString().padStart(2, "0") +
+                "/" +
+                (date.getMonth() + 1).toString().padStart(2, "0") +
+                "/" +
+                date.getFullYear();
 
-
-            setInvoiceData({ ...invoiceData, [type]: formattedDate });
+            setInvoiceData({ ...invoiceData, [type]: date });
             setSelectedDate(date);
         }
-
 
         if (type === "invoiceDate") {
             setShowInvoicePicker(false);
@@ -174,10 +217,15 @@ export default function ProformaInvoiceForm() {
     const handleSelectItem = (selectedItem) => {
         const updatedItems = [...invoiceData.items];
         updatedItems[selectedIndex] = {
+            id: selectedItem.id,
+            itemHsn: selectedItem.itemHsn,
+            type: selectedItem.type,
+            unit: selectedItem.unit,
             details: selectedItem.itemName,
             quantity: 1,
             price: selectedItem.sellingPrice,
-            tax: selectedItem.intraStateTax || 0,
+            intraStateTax: selectedItem.intraStateTax || 0,
+            interStateTax: selectedItem.interStateTax || 0,
             amount: Number(selectedItem.sellingPrice) * 1,
         };
 
@@ -198,44 +246,66 @@ export default function ProformaInvoiceForm() {
 
         const data = new FormData();
 
+
         Object.keys(invoiceData).forEach((key) => {
-            if (invoiceData[key] && typeof invoiceData[key] === "object") {
-                // If key is 'customer', flatten its properties
-                if (key === "customer") {
-                    Object.keys(invoiceData[key]).forEach((subKey) => {
-                        data.append(`customer.${subKey}`, invoiceData[key][subKey]);
-                    });
-                }
-            } else {
-                // Handle date conversion & append normal fields
+            if (typeof invoiceData[key] !== "object" || invoiceData[key] === null) {
                 if (key.toLowerCase().includes("date")) {
-                    data.append(key, new Date().toISOString().split("T")[0]); // YYYY-MM-DD
+
                 } else {
                     data.append(key, invoiceData[key]);
                 }
             }
         });
+        if (invoiceData.invoiceDate) {
+            const formattedDate = new Date(invoiceData.invoiceDate).toISOString().split("T")[0];
+            data.append("invoiceDate", formattedDate);
+        }
+
+        if (invoiceData.dueDate) {
+            const formattedDate = new Date(invoiceData.dueDate).toISOString().split("T")[0];
+            data.append("dueDate", formattedDate); // ✅ Now it's "dueDate"
+        }
+
+
 
         // Append nested objects as JSON strings
         if (invoiceData.items) {
-            data.append("items", JSON.stringify(invoiceData.items));
+            invoiceData.items.forEach((item, index) => {
+                data.append(`items[${index}].id`, item.id);
+                data.append(`items[${index}].quantity`, item.quantity);
+                data.append(`items[${index}].itemName`, item.details);
+                data.append(`items[${index}].sellingPrice`, item.price);
+                data.append(`items[${index}].intraStateTax`, item.intraStateTax);
+                data.append(`items[${index}].interStateTax`, item.interStateTax);
+                data.append(`items[${index}].itemHsn`, item.itemHsn);
+                data.append(`items[${index}].type`, item.type);
+                data.append(`items[${index}].unit`, item.unit);
+            });
+
         }
+        const finalAmount = totalAmt + allTaxTotal;
         if (invoiceData.customer) {
-            data.append("customer", JSON.stringify(invoiceData.customer));
+            console.log(finalAmount)
+            data.append("customer.id", invoiceData.customer.id);
+            data.append("totalAmount", finalAmount.toFixed(2));
         }
 
         try {
-            console.log("Invoice Date Before Sending:", invoiceData.invoiceDate);
-
-            const response = await fetch("http://192.168.1.25:8080/save-proforma-invoice", {
+            const response = await fetch("http://192.168.1.25:8080/save-proforma-invoie", {
                 method: "POST",
                 body: data,
                 credentials: "include",
-            });
-
-            console.log("Response:", response);
+            }); console.log("resp-----", response)
+            if (response.ok) {
+                Alert.alert("Sucess", "Proforma Invoice created Successfully");
+                setInvoiceData(intialData)
+                navigation.navigate('Pinvoice')
+            }
+            else {
+                Alert.alert("error", "Failed to create Proforma Invoice");
+            }
         } catch (error) {
-            console.error("Error submitting invoice:", error);
+            Alert.alert("error", error);
         }
     };
 
@@ -285,10 +355,10 @@ export default function ProformaInvoiceForm() {
                 <ScrollView className="flex-1">
                     {/* Header */}
                     <View className="flex-row items-center p-4 border-b border-gray-200">
-                        <TouchableOpacity className="mr-4">
+                        <TouchableOpacity className="mr-4" onPress={() => navigation.navigate('Pinvoice')}>
                             <ArrowLeft width={24} height={24} color="#2563eb" />
                         </TouchableOpacity>
-                        <Text className="text-xl font-bold text-gray-800">Create Invoice</Text>
+                        <Text className="text-xl font-bold text-gray-800">Create Proforma Invoice</Text>
                     </View>
 
                     {/* Form Content */}
@@ -303,7 +373,7 @@ export default function ProformaInvoiceForm() {
                                     className="border border-gray-300 rounded-md p-3 bg-white"
                                     onPress={() => setModalVisible(true)}
                                 >
-                                    <Text>{invoiceData.customerName || "Search Or Select A Customer"}</Text>
+                                    <Text>{invoiceData.customer.displayName || "Search Or Select A Customer"}</Text>
                                 </TouchableOpacity>
                                 <Modal visible={modalVisible} animationType="fade" transparent>
                                     <View className="flex-1 justify-center items-center bg-black/50">
@@ -430,11 +500,10 @@ export default function ProformaInvoiceForm() {
                                 <Text className="text-gray-700 mb-1">Terms of Delivery</Text>
                                 <TextInput
                                     className="border border-gray-300 rounded-md p-3 bg-white"
-                                    value={invoiceData.termsOfDelivery}
-                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, termsOfDelivery: text })}
+                                    value={invoiceData.terms}
+                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, terms: text })}
                                 />
                             </View>
-
                         </View>
 
                         {/* Salesperson & Subject */}
@@ -517,7 +586,7 @@ export default function ProformaInvoiceForm() {
 
                                         {/* Tax */}
                                         <View className="flex-row items-start w-16 ml-2">
-                                            <Text className=" text-left">{item.tax}</Text>
+                                            <Text className=" text-left">{isSameState ? item.intraStateTax : item.interStateTax}</Text>
                                             <Text className="ml-1">%</Text>
                                         </View>
 
@@ -581,7 +650,40 @@ export default function ProformaInvoiceForm() {
                                 </View>
                             </Modal>
                         </View>
+                        {/* Summary Section */}
+                        <View className="bg-gray-50 p-4 rounded-md mt-4">
+                            <View className="flex-row justify-between items-center mb-3">
+                                <Text className="text-gray-700">Sub Total</Text>
+                                <Text className="font-medium">₹ {totalAmt || "0.00"}</Text>
+                            </View>
+                            {Object.entries(taxSummary).map(([rate, amount], index) => (
+                                <View key={index}>
+                                    {isSameState ? (
+                                        <View>
+                                            <View className="flex-row justify-between items-center mb-2">
+                                                <Text className="flex-1 text-left text-[13px]">SGST ({rate}%):</Text>
+                                                <Text className="w-20 text-right text-[13px]">{(amount / 2).toFixed(2)}</Text>
+                                            </View>
+                                            <View className="flex-row justify-between items-center mb-2">
+                                                <Text className="flex-1 text-left text-[13px]">CGST ({rate}%):</Text>
+                                                <Text className="w-20 text-right text-[13px]">{(amount / 2).toFixed(2)}</Text>
+                                            </View>
+                                        </View>
+                                    ) : (
+                                        <View className="flex-row justify-between items-center mb-2">
+                                            <Text className="flex-1 text-left text-[13px]">IGST ({rate}%):</Text>
+                                            <Text className="w-20 text-right text-[13px]">{amount.toFixed(2)}</Text>
+                                        </View>
+                                    )}
+                                </View>
+                            ))}
 
+
+                            <View className="flex-row justify-between items-center pt-3 border-t border-gray-300">
+                                <Text className="text-gray-700 font-medium">Total</Text>
+                                <Text className="font-bold">₹ {totalAmt + allTaxTotal || "0.00"}</Text>
+                            </View>
+                        </View>
                         {/* Terms & Conditions */}
                         <View>
                             <Text className="text-gray-700 mb-1">Terms & Conditions</Text>
@@ -600,60 +702,10 @@ export default function ProformaInvoiceForm() {
                             <TextInput
                                 className="border border-gray-300 rounded-md p-3 bg-white h-24"
                                 multiline
-                                value={invoiceData.customerNotes}
-                                onChangeText={(text) => setInvoiceData({ ...invoiceData, customerNotes: text })}
+                                value={invoiceData.customernote}
+                                onChangeText={(text) => setInvoiceData({ ...invoiceData, customernote: text })}
                             />
                             <Text className="text-gray-500 text-xs mt-1">Will be displayed on the invoice</Text>
-                        </View>
-
-                        {/* Summary Section */}
-                        <View className="bg-gray-50 p-4 rounded-md mt-4">
-                            <View className="flex-row justify-between items-center mb-3">
-                                <Text className="text-gray-700">Sub Total</Text>
-                                <Text className="font-medium">₹{invoiceData.subTotal}</Text>
-                            </View>
-
-                            <View className="flex-row justify-between items-center mb-3">
-                                <View className="flex-row items-center">
-                                    <Text className="text-gray-700 mr-2">Discount</Text>
-                                    <View className="flex-row items-center border border-gray-300 rounded-md bg-white">
-                                        <TextInput
-                                            className="w-12 p-1 text-center"
-                                            value={invoiceData.discountInput}
-                                            keyboardType="numeric"
-                                            onChangeText={(text) => setInvoiceData({ ...invoiceData, discountInput: text })}
-                                        />
-                                        <View className="border-l border-gray-300 p-1">
-                                            <ChevronDown width={16} height={16} color="#666" />
-                                        </View>
-                                    </View>
-                                    <Text className="ml-1">%</Text>
-                                </View>
-                                <Text className="font-medium">-0.00</Text>
-                            </View>
-
-                            <View className="flex-row justify-between items-center mb-3">
-                                <View className="flex-row items-center">
-                                    <Text className="text-gray-700 mr-2">Adjustment</Text>
-                                    <View className="flex-row items-center border border-gray-300 rounded-md bg-white">
-                                        <TextInput
-                                            className="w-12 p-1 text-center"
-                                            value={invoiceData.adjustmentInput}
-                                            keyboardType="numeric"
-                                            onChangeText={(text) => setInvoiceData({ ...invoiceData, adjustmentInput: text })}
-                                        />
-                                        <View className="border-l border-gray-300 p-1">
-                                            <ChevronDown width={16} height={16} color="#666" />
-                                        </View>
-                                    </View>
-                                </View>
-                                <Text className="font-medium">0.00</Text>
-                            </View>
-
-                            <View className="flex-row justify-between items-center pt-3 border-t border-gray-300">
-                                <Text className="text-gray-700 font-medium">Total</Text>
-                                <Text className="font-bold">0.00</Text>
-                            </View>
                         </View>
 
                         {/* Action Buttons */}
@@ -662,9 +714,9 @@ export default function ProformaInvoiceForm() {
                                 <Text className="text-white font-medium">Create Invoice</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity className="border border-gray-300 py-3 px-6 rounded-md">
+                            {/* <TouchableOpacity className="border border-gray-300 py-3 px-6 rounded-md">
                                 <Text className="text-gray-700">Close</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
                     </View>
                 </ScrollView>

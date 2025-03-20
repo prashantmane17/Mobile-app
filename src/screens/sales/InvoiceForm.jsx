@@ -18,6 +18,7 @@ import { getAllCustomers } from '../../api/user/customer';
 import { getAllItems } from '../../api/user/items';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getOrgProfie } from '../../api/admin/adminApi';
+import { useTax } from '../../context/TaxContext';
 
 export default function InvoiceForm() {
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -29,6 +30,8 @@ export default function InvoiceForm() {
     const [totalAmt, setTotalAmt] = useState(0);
     const [taxSummary, setTaxSummary] = useState({});
     const [allTaxTotal, setAllTaxTotal] = useState(0);
+    const [discountValue, setDiscountValue] = useState(0);
+    const { isTaxCompany } = useTax();
     const [inoiceItems, setInvoiceItems] = useState([])
     const getCustomer = async () => {
         setISLoading(true);
@@ -62,9 +65,7 @@ export default function InvoiceForm() {
     const [filteredItems, setFilteredItems] = useState([]);
     const [itemModalVisible, setItemModalVisible] = useState(false);
 
-
-
-    const [invoiceData, setInvoiceData] = useState({
+    const intialData = {
         customerName: '',
         invoiceNumber: 'INV/2025/00003',
         orderNumber: '',
@@ -90,11 +91,12 @@ export default function InvoiceForm() {
         ],
         termsandconditions: '',
         customernote: 'Thanks for your business.',
-        totalAmount: '0.00',
         discountInput: '0',
         adjustmentInput: '0',
         invoiceStatus: "VOID",
-    });
+    }
+
+    const [invoiceData, setInvoiceData] = useState(intialData);
 
     const addItem = () => {
         setInvoiceData({
@@ -147,11 +149,18 @@ export default function InvoiceForm() {
                 const itemTotal = Number(item.quantity) * Number(item.price);
                 const ItaxRate = Number(item.interStateTax);
                 const GtaxRate = Number(item.intraStateTax);
-
                 const applicableTaxRate = isSameState ? GtaxRate : ItaxRate;
+
                 if (applicableTaxRate === 0) return;
 
-                const totalTax = (itemTotal * applicableTaxRate) / 100;
+                // Apply discount if invoiceData.discountInput is not zero
+                let discountedTotal = itemTotal;
+                if (invoiceData.discountInput && invoiceData.discountInput !== 0) {
+                    const discountAmount = (itemTotal * Number(invoiceData.discountInput)) / 100;
+                    discountedTotal -= discountAmount; // Subtract discount from item total
+                }
+
+                const totalTax = (discountedTotal * applicableTaxRate) / 100;
 
                 if (!newTaxSummary[applicableTaxRate]) {
                     newTaxSummary[applicableTaxRate] = 0;
@@ -165,6 +174,7 @@ export default function InvoiceForm() {
             setTotalAmt(newTotal);
         }
     }, [invoiceData]);
+
     const handleSelect = (selectedName) => {
         const placeOfSupply = selectedName.placeOfSupply;
         if (orgState === placeOfSupply) {
@@ -191,13 +201,6 @@ export default function InvoiceForm() {
 
     const handleDateChange = (event, date, type) => {
         if (date) {
-            const formattedDate =
-                date.getDate().toString().padStart(2, "0") +
-                "/" +
-                (date.getMonth() + 1).toString().padStart(2, "0") +
-                "/" +
-                date.getFullYear();
-
             setInvoiceData({ ...invoiceData, [type]: date });
             setSelectedDate(date);
         }
@@ -283,11 +286,10 @@ export default function InvoiceForm() {
             });
 
         }
-        const finalAmount = totalAmt + allTaxTotal
+        const finalAmount = Number(totalAmt) + Number(allTaxTotal) - Number(discountValue);
         if (invoiceData.customer) {
-            console.log(finalAmount)
             data.append("customer.id", invoiceData.customer.id);
-            data.append("totalAmount", Number(finalAmount));
+            data.append("totalAmount", finalAmount.toFixed(2));
         }
 
         try {
@@ -295,9 +297,10 @@ export default function InvoiceForm() {
                 method: "POST",
                 body: data,
                 credentials: "include",
-            });
+            }); console.log("resp-----", response)
             if (response.ok) {
                 Alert.alert("Sucess", "Invoice created Successfully");
+                setInvoiceData(intialData)
                 navigation.navigate('sales')
             }
             else {
@@ -309,7 +312,18 @@ export default function InvoiceForm() {
             Alert.alert("error", error);
         }
     };
+    const handleDiscountAmount = (value) => {
+        let num = Number(value);
 
+        if (isNaN(num) || num < 0) {
+            num = 1; // Minimum value is 1
+        } else if (num > 100) {
+            num = 100; // Maximum value is 100
+        }
+        setInvoiceData({ ...invoiceData, discountInput: num })
+        const discountAmt = num === 0 ? 0 : (totalAmt * num) / 100
+        setDiscountValue(discountAmt)
+    }
 
     const renderQuantityControl = (value, index, item) => {
         return (
@@ -374,7 +388,7 @@ export default function InvoiceForm() {
                                     className="border border-gray-300 rounded-md p-3 bg-white"
                                     onPress={() => setModalVisible(true)}
                                 >
-                                    <Text>{invoiceData.customerName || "Search Or Select A Customer"}</Text>
+                                    <Text>{invoiceData.customer.displayName || "Search Or Select A Customer"}</Text>
                                 </TouchableOpacity>
                                 <Modal visible={modalVisible} animationType="fade" transparent>
                                     <View className="flex-1 justify-center items-center bg-black/50">
@@ -501,8 +515,8 @@ export default function InvoiceForm() {
                                 <Text className="text-gray-700 mb-1">Terms of Delivery</Text>
                                 <TextInput
                                     className="border border-gray-300 rounded-md p-3 bg-white"
-                                    value={invoiceData.termsOfDelivery}
-                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, termsOfDelivery: text })}
+                                    value={invoiceData.terms}
+                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, terms: text })}
                                 />
                             </View>
                         </View>
@@ -586,10 +600,12 @@ export default function InvoiceForm() {
                                         </View>
 
                                         {/* Tax */}
-                                        <View className="flex-row items-start w-16 ml-2">
-                                            <Text className=" text-left">{isSameState ? item.intraStateTax : item.interStateTax}</Text>
-                                            <Text className="ml-1">%</Text>
-                                        </View>
+                                        {isTaxCompany && (
+                                            <View className="flex-row items-start w-16 ml-2">
+                                                <Text className=" text-left">{isSameState ? item.intraStateTax : item.interStateTax}</Text>
+                                                <Text className="ml-1">%</Text>
+                                            </View>
+                                        )}
 
                                         {/* Total Amount */}
                                         <View className="flex-row items-center w-20 ">
@@ -657,6 +673,18 @@ export default function InvoiceForm() {
                                 <Text className="text-gray-700">Sub Total</Text>
                                 <Text className="font-medium">₹ {totalAmt || "0.00"}</Text>
                             </View>
+                            <View className="flex-row justify-between items-center mb-3">
+                                <View className="flex-row items-center">
+                                    <Text className="text-gray-700">Discount %</Text>
+                                    <TextInput
+                                        className="border w-16 ml-3 border-gray-300 rounded-md p-1.5 text-center"
+                                        keyboardType="numeric"
+                                        value={invoiceData.discountInput}
+                                        onChangeText={(text) => handleDiscountAmount(text)}
+                                    />
+                                </View>
+                                <Text className="font-medium">- ₹ {discountValue || "0.00"}</Text>
+                            </View>
                             {Object.entries(taxSummary).map(([rate, amount], index) => (
                                 <View key={index}>
                                     {isSameState ? (
@@ -682,7 +710,7 @@ export default function InvoiceForm() {
 
                             <View className="flex-row justify-between items-center pt-3 border-t border-gray-300">
                                 <Text className="text-gray-700 font-medium">Total</Text>
-                                <Text className="font-bold">₹ {totalAmt + allTaxTotal || "0.00"}</Text>
+                                <Text className="font-bold">₹ {(totalAmt + allTaxTotal - discountValue).toFixed(2) || "0.00"}</Text>
                             </View>
                         </View>
                         {/* Terms & Conditions */}
@@ -703,8 +731,8 @@ export default function InvoiceForm() {
                             <TextInput
                                 className="border border-gray-300 rounded-md p-3 bg-white h-24"
                                 multiline
-                                value={invoiceData.customerNotes}
-                                onChangeText={(text) => setInvoiceData({ ...invoiceData, customerNotes: text })}
+                                value={invoiceData.customernote}
+                                onChangeText={(text) => setInvoiceData({ ...invoiceData, customernote: text })}
                             />
                             <Text className="text-gray-500 text-xs mt-1">Will be displayed on the invoice</Text>
                         </View>
@@ -715,9 +743,9 @@ export default function InvoiceForm() {
                                 <Text className="text-white font-medium">Create Invoice</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity className="border border-gray-300 py-3 px-6 rounded-md">
+                            {/* <TouchableOpacity className="border border-gray-300 py-3 px-6 rounded-md">
                                 <Text className="text-gray-700">Close</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
                     </View>
                 </ScrollView>

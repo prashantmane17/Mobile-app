@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { getAllPurchases } from '../../api/user/purchase';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 
 export default function PurchaseList() {
@@ -27,9 +27,11 @@ export default function PurchaseList() {
         }
     };
 
-    useEffect(() => {
-        purchaseData();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            purchaseData();
+        }, [])
+    )
 
     const filteredOrders = purchases.filter(order =>
         order.vendor.displayName.toLowerCase().includes(searchQuery.toLowerCase())

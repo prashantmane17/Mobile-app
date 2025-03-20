@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -10,26 +10,27 @@ import {
     Modal,
     KeyboardAvoidingView,
     FlatList,
+    Alert,
 } from 'react-native';
 import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Plus, Trash } from 'react-native-feather';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { getAllCustomers } from '../../api/user/customer';
 import { getAllItems } from '../../api/user/items';
-import { getAllPurchases } from '../../api/user/purchase';
-import { getAllVendors } from '../../api/user/vendor';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getOrgProfie } from '../../api/admin/adminApi';
+import { getAllVendors } from '../../api/user/vendor';
 
 export default function PurchaseForm() {
-    const navigation = useNavigation();
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [customers, setCustomers] = useState([])
+    const navigation = useNavigation();
+    const [isLoading, setISLoading] = useState(false)
+    const [isSameState, setIsSameSate] = useState(false)
+    const [orgState, setOrgState] = useState('');
     const [totalAmt, setTotalAmt] = useState(0);
     const [taxSummary, setTaxSummary] = useState({});
     const [allTaxTotal, setAllTaxTotal] = useState(0);
-    const [isLoading, setISLoading] = useState(false)
     const [inoiceItems, setInvoiceItems] = useState([])
-    const [isSameState, setIsSameSate] = useState(false)
     const getCustomer = async () => {
         setISLoading(true);
         try {
@@ -39,23 +40,20 @@ export default function PurchaseForm() {
             setCustomers(response.vendors)
             setInvoiceItems(itemResponse.items)
             setFilteredUsers(response.vendors)
-            const orgState = orgResponse.organizationList[0].state;
-            const placeOfSupply = data.customer.placeOfSupply;
-            if (orgState === placeOfSupply) {
-                setIsSameSate(true)
-            } else {
-                setIsSameSate(false)
-            }
+            const org_State = orgResponse.organizationList[0].state;
+            setOrgState(org_State)
+
         } catch (error) {
 
         } finally {
             setISLoading(false);
         }
     }
-    useEffect(() => {
-        getCustomer();
-
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+            getCustomer();
+        }, [])
+    );
 
     const [showInvoicePicker, setShowInvoicePicker] = useState(false);
     const [showDuePicker, setShowDuePicker] = useState(false);
@@ -64,36 +62,39 @@ export default function PurchaseForm() {
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [filteredItems, setFilteredItems] = useState([]);
     const [itemModalVisible, setItemModalVisible] = useState(false);
-    useEffect(() => {
 
-        console.log("kii----")
-    }, [filteredUsers])
-    const [invoiceData, setInvoiceData] = useState({
+    const intialData = {
         customerName: '',
-        invoiceNumber: 'INV/2025/00003',
+        purchaseOrderNumber: 'PO-2025/00001',
         orderNumber: '',
-        invoiceDate: '02/28/2025',
+        purchaseDate: new Date(),
         terms: '',
-        dueDate: '02/28/2025',
+        dueDate: new Date(),
         salesperson: 'Harish',
         subject: '',
         customer: {},
         items: [
             {
+                id: '',
+                itemHsn: "",
+                type: "",
+                unit: "",
                 details: '',
                 quantity: '1',
                 price: '0.00',
-                tax: '0',
+                intraStateTax: '0',
+                interStateTax: '0',
                 amount: '0.00',
             },
         ],
         termsandconditions: '',
         customernote: 'Thanks for your business.',
-        totalAmount: '0.00',
         discountInput: '0',
         adjustmentInput: '0',
         invoiceStatus: "VOID",
-    });
+    }
+
+    const [invoiceData, setInvoiceData] = useState(intialData);
 
     const addItem = () => {
         setInvoiceData({
@@ -101,11 +102,15 @@ export default function PurchaseForm() {
             items: [
                 ...invoiceData.items,
                 {
+                    id: '',
+                    itemHsn: "",
+                    type: "",
+                    unit: "",
                     details: '',
                     quantity: '1',
                     price: '0.00',
-                    interStateTax: '0',
                     intraStateTax: '0',
+                    interStateTax: '0',
                     amount: '0.00',
                 },
             ],
@@ -132,92 +137,7 @@ export default function PurchaseForm() {
             setFilteredUsers(customers);
         }
     };
-    const handleSelect = (selectedName) => {
-        console.log(selectedName.displayName)
-        setInvoiceData({ ...invoiceData, customerName: selectedName.displayName });
-        setInvoiceData({ ...invoiceData, customer: selectedName })
-        setModalVisible(false);
-    };
-    const parseDateToDDMMYYYY = (inputDate) => {
-        if (!inputDate) return ""; // Handle empty input
-
-        // Extract day, month (3-letter), and year
-        const dateParts = inputDate.match(/(\d{1,2}) (\w{3}), (\d{4})/);
-        if (!dateParts) return "Invalid Date"; // Handle invalid input format
-
-        const [, day, month, year] = dateParts;
-
-        // Convert month from short name to number
-        const monthMap = {
-            Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
-            Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12"
-        };
-
-        return `${day.padStart(2, "0")}/${monthMap[month]}/${year}`;
-    };
-
-    const handleDateChange = (event, date, type) => {
-        // if (date) {
-        //     console.log("date---", date)
-        //     const formattedDate =
-        //         date.getDate().toString().padStart(2, "0") +
-        //         "/" +
-        //         (date.getMonth() + 1).toString().padStart(2, "0") +
-        //         "/" +
-        //         date.getFullYear();
-
-        //     setInvoiceData({ ...invoiceData, [type]: date });
-        //     setSelectedDate(date);
-        // }
-        if (date) {
-            date.setHours(0, 0, 0, 0);
-            const formattedDate =
-                date.toDateString() + " 00:00:00 IST";
-
-
-            setInvoiceData({ ...invoiceData, [type]: formattedDate });
-            setSelectedDate(date);
-        }
-
-
-        if (type === "invoiceDate") {
-            setShowInvoicePicker(false);
-        } else {
-            setShowDuePicker(false);
-        }
-    };
-
-    const handleOpenDropdown = (index) => {
-        setSelectedIndex(index);
-        setFilteredItems(inoiceItems);
-        setItemModalVisible(true);
-    };
-    const handleSelectItem = (selectedItem) => {
-        const updatedItems = [...invoiceData.items];
-        console.log("selectedItem----", selectedItem)
-        updatedItems[selectedIndex] = {
-            details: selectedItem.itemName,
-            quantity: 1,
-            price: selectedItem.purchasePrice,
-            interStateTax: selectedItem.interStateTax || 0,
-            intraStateTax: selectedItem.intraStateTax || 0,
-            amount: Number(selectedItem.purchasePrice) * 1,
-        };
-
-        setInvoiceData({ ...invoiceData, items: updatedItems });
-        setItemModalVisible(false);
-    };
-
-    const handleInputChange = (index, field, value) => {
-        const updatedItems = [...invoiceData.items];
-        updatedItems[index][field] = value ? parseFloat(value) : 0;
-
-        updatedItems[index].amount = updatedItems[index].quantity * updatedItems[index].price;
-
-        setInvoiceData({ ...invoiceData, items: updatedItems });
-    };
     useEffect(() => {
-        // Recalculate total when invoiceData changes
         if (invoiceData?.items) {
             const newTotal = invoiceData.items.reduce((total, item) => total + Number(item.amount), 0);
             let newTaxSummary = {};
@@ -245,51 +165,148 @@ export default function PurchaseForm() {
             setTotalAmt(newTotal);
         }
     }, [invoiceData]);
-    const handleSubmit = async () => {
-        // console.log("Button clicked", invoiceData.invoiceDate); // Check if function is called
-
-        // if (!invoiceData.invoiceDate || !invoiceData.dueDate) {
-        //     console.error("Error: invoiceDate or dueDate is missing");
-        //     return;
-        // }
-        // const updatedInvoiceData = {
-        //     ...invoiceData,
-        //     invoiceDate: new Date(invoiceData.invoiceDate).toISOString().split("T")[0],
-        //     dueDate: new Date(invoiceData.dueDate).toISOString().split("T")[0],
-        // };
-        const data = new FormData();
-
-        // Append primitive values
-        Object.keys(invoiceData).forEach((key) => {
-            if (typeof invoiceData[key] !== "object" || invoiceData[key] === null) {
-                data.append(key, invoiceData[key]);
-            }
-        });
-
-        // Append nested objects as JSON strings
-        if (invoiceData.items) {
-            data.append("items", JSON.stringify(invoiceData.items));
+    const handleSelect = (selectedName) => {
+        const placeOfSupply = selectedName.placeOfSupply;
+        if (orgState === placeOfSupply) {
+            setIsSameSate(true)
+        } else {
+            setIsSameSate(false)
         }
-        if (invoiceData.customer) {
-            data.append("customer", JSON.stringify(invoiceData.customer));
+        setInvoiceData({ ...invoiceData, customerName: selectedName.displayName });
+        setInvoiceData({ ...invoiceData, customer: selectedName })
+        setModalVisible(false);
+    };
+    const parseDateToDDMMYYYY = (inputDate) => {
+        if (inputDate) {
+            const formattedDate =
+                inputDate.getDate().toString().padStart(2, "0") +
+                "/" +
+                (inputDate.getMonth() + 1).toString().padStart(2, "0") +
+                "/" +
+                inputDate.getFullYear();
+            return formattedDate;
+        }
+        return inputDate;
+    };
+
+    const handleDateChange = (event, date, type) => {
+        if (date) {
+            const formattedDate =
+                date.getDate().toString().padStart(2, "0") +
+                "/" +
+                (date.getMonth() + 1).toString().padStart(2, "0") +
+                "/" +
+                date.getFullYear();
+
+            setInvoiceData({ ...invoiceData, [type]: date });
+            setSelectedDate(date);
         }
 
-        try {
-            console.log("Invoice Date Before Sending:", invoiceData.invoiceDate);
-
-            const response = await fetch("http://192.168.1.25:8080/save-invoice", {
-                method: "POST",
-                body: data,
-                credentials: "include",
-            });
-
-            console.log("Response:", response);
-        } catch (error) {
-            console.error("Error submitting invoice:", error);
+        if (type === "purchaseDate") {
+            setShowInvoicePicker(false);
+        } else {
+            setShowDuePicker(false);
         }
     };
 
+    const handleOpenDropdown = (index) => {
+        setSelectedIndex(index);
+        setFilteredItems(inoiceItems);
+        setItemModalVisible(true);
+    };
+    const handleSelectItem = (selectedItem) => {
+        const updatedItems = [...invoiceData.items];
+        updatedItems[selectedIndex] = {
+            id: selectedItem.id,
+            itemHsn: selectedItem.itemHsn,
+            type: selectedItem.type,
+            unit: selectedItem.unit,
+            details: selectedItem.itemName,
+            quantity: 1,
+            price: selectedItem.sellingPrice,
+            intraStateTax: selectedItem.intraStateTax || 0,
+            interStateTax: selectedItem.interStateTax || 0,
+            amount: Number(selectedItem.sellingPrice) * 1,
+        };
 
+        setInvoiceData({ ...invoiceData, items: updatedItems });
+        setItemModalVisible(false);
+    };
+
+    const handleInputChange = (index, field, value) => {
+        const updatedItems = [...invoiceData.items];
+        updatedItems[index][field] = value ? parseFloat(value) : 0;
+
+        updatedItems[index].amount = updatedItems[index].quantity * updatedItems[index].price;
+
+        setInvoiceData({ ...invoiceData, items: updatedItems });
+    };
+
+    const handleSubmit = async () => {
+
+        const data = new FormData();
+
+
+        Object.keys(invoiceData).forEach((key) => {
+            if (typeof invoiceData[key] !== "object" || invoiceData[key] === null) {
+                if (key.toLowerCase().includes("date")) {
+
+                } else {
+                    data.append(key, invoiceData[key]);
+                }
+            }
+        });
+        if (invoiceData.purchaseDate) {
+            const formattedDate = new Date(invoiceData.purchaseDate).toISOString().split("T")[0];
+            data.append("purchaseDate", formattedDate);
+        }
+
+        if (invoiceData.dueDate) {
+            const formattedDate = new Date(invoiceData.dueDate).toISOString().split("T")[0];
+            data.append("dueDate", formattedDate); // ✅ Now it's "dueDate"
+        }
+
+        if (invoiceData.items) {
+            invoiceData.items.forEach((item, index) => {
+                data.append(`items[${index}].id`, item.id);
+                data.append(`items[${index}].quantity`, item.quantity);
+                data.append(`items[${index}].itemName`, item.details);
+                data.append(`items[${index}].sellingPrice`, item.price);
+                data.append(`items[${index}].intraStateTax`, item.intraStateTax);
+                data.append(`items[${index}].interStateTax`, item.interStateTax);
+                data.append(`items[${index}].itemHsn`, item.itemHsn);
+                data.append(`items[${index}].type`, item.type);
+                data.append(`items[${index}].unit`, item.unit);
+            });
+
+        }
+        const finalAmount = totalAmt + allTaxTotal;
+        if (invoiceData.customer) {
+            console.log(finalAmount)
+            data.append("vendor.id", invoiceData.customer.id);
+            data.append("totalAmount", finalAmount.toFixed(2));
+        }
+
+        try {
+            const response = await fetch("http://192.168.1.25:8080/save-purchase", {
+                method: "POST",
+                body: data,
+                credentials: "include",
+            }); console.log("resp-----", response)
+            if (response.ok) {
+                Alert.alert("Sucess", "Purchase order created Successfully");
+                setInvoiceData(intialData)
+                navigation.navigate('Purchase')
+            }
+            else {
+                Alert.alert("error", "Failed to create Purchase order");
+            }
+
+
+        } catch (error) {
+            Alert.alert("error", error);
+        }
+    };
 
 
     const renderQuantityControl = (value, index, item) => {
@@ -337,11 +354,10 @@ export default function PurchaseForm() {
                 <ScrollView className="flex-1">
                     {/* Header */}
                     <View className="flex-row items-center p-4 border-b border-gray-200">
-                        <TouchableOpacity className="mr-4"
-                            onPress={() => navigation.navigate('Purchase')}>
+                        <TouchableOpacity className="mr-4" onPress={() => navigation.navigate('Purchase')}>
                             <ArrowLeft width={24} height={24} color="#2563eb" />
                         </TouchableOpacity>
-                        <Text className="text-xl font-bold text-gray-800">Create Invoice</Text>
+                        <Text className="text-xl font-bold text-gray-800">Create Purchase</Text>
                     </View>
 
                     {/* Form Content */}
@@ -350,13 +366,13 @@ export default function PurchaseForm() {
                         <View className="space-y-4">
                             <View>
                                 <Text className="text-gray-700 mb-1">
-                                    Customer Name<Text className="text-red-500">*</Text>
+                                    Vendor Name<Text className="text-red-500">*</Text>
                                 </Text>
                                 <TouchableOpacity
                                     className="border border-gray-300 rounded-md p-3 bg-white"
                                     onPress={() => setModalVisible(true)}
                                 >
-                                    <Text>{invoiceData.customerName || "Search Or Select A Customer"}</Text>
+                                    <Text>{invoiceData.customer.displayName || "Search Or Select A Customer"}</Text>
                                 </TouchableOpacity>
                                 <Modal visible={modalVisible} animationType="fade" transparent>
                                     <View className="flex-1 justify-center items-center bg-black/50">
@@ -401,12 +417,12 @@ export default function PurchaseForm() {
 
                             <View>
                                 <Text className="text-gray-700 mb-1">
-                                    Invoice No.<Text className="text-red-500">*</Text>
+                                    Purchase Order#<Text className="text-red-500">*</Text>
                                 </Text>
                                 <TextInput
                                     className="border border-gray-300 rounded-md p-3 bg-white"
-                                    value={invoiceData.invoiceNumber}
-                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, invoiceNumber: text })}
+                                    value={invoiceData.purchaseOrderNumber}
+                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, purchaseOrderNumber: text })}
                                 />
                             </View>
                         </View>
@@ -414,7 +430,7 @@ export default function PurchaseForm() {
                         {/* Order Number & Invoice Date */}
                         <View className="space-y-4">
                             <View>
-                                <Text className="text-gray-700 mb-1">Order Number</Text>
+                                <Text className="text-gray-700 mb-1">Reference Number</Text>
                                 <TextInput
                                     className="border border-gray-300 rounded-md p-3 bg-white"
                                     value={invoiceData.orderNumber}
@@ -424,12 +440,12 @@ export default function PurchaseForm() {
 
                             <View>
                                 <Text className="text-gray-700 mb-1">
-                                    Invoice Date<Text className="text-red-500">*</Text>
+                                    Purchase Date<Text className="text-red-500">*</Text>
                                 </Text>
                                 <View className="relative">
                                     <TextInput
                                         className="border border-gray-300 rounded-md p-3 bg-white"
-                                        value={parseDateToDDMMYYYY(invoiceData.invoiceDate)}
+                                        value={parseDateToDDMMYYYY(invoiceData.purchaseDate)}
                                         editable={false} // Prevent manual typing
                                     />
                                     <TouchableOpacity
@@ -444,7 +460,7 @@ export default function PurchaseForm() {
                                         value={selectedDate}
                                         mode="date"
                                         display={Platform.OS === "ios" ? "spinner" : "default"}
-                                        onChange={(event, date) => handleDateChange(event, date, "invoiceDate")}
+                                        onChange={(event, date) => handleDateChange(event, date, "purchaseDate")}
                                     />
                                 )}
                             </View>
@@ -455,7 +471,7 @@ export default function PurchaseForm() {
 
 
                             <View>
-                                <Text className="text-gray-700 mb-1">Due Date</Text>
+                                <Text className="text-gray-700 mb-1">Expected Date</Text>
                                 <View className="relative">
                                     <TextInput
                                         className="border border-gray-300 rounded-md p-3 bg-white"
@@ -483,11 +499,10 @@ export default function PurchaseForm() {
                                 <Text className="text-gray-700 mb-1">Terms of Delivery</Text>
                                 <TextInput
                                     className="border border-gray-300 rounded-md p-3 bg-white"
-                                    value={invoiceData.termsOfDelivery}
-                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, termsOfDelivery: text })}
+                                    value={invoiceData.terms}
+                                    onChangeText={(text) => setInvoiceData({ ...invoiceData, terms: text })}
                                 />
                             </View>
-
                         </View>
 
                         {/* Salesperson & Subject */}
@@ -634,6 +649,7 @@ export default function PurchaseForm() {
                                 </View>
                             </Modal>
                         </View>
+                        {/* Summary Section */}
                         <View className="bg-gray-50 p-4 rounded-md mt-4">
                             <View className="flex-row justify-between items-center mb-3">
                                 <Text className="text-gray-700">Sub Total</Text>
@@ -674,8 +690,8 @@ export default function PurchaseForm() {
                                 className="border border-gray-300 rounded-md p-3 bg-white h-24"
                                 multiline
                                 placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
-                                value={invoiceData.termsandconditions}
-                                onChangeText={(text) => setInvoiceData({ ...invoiceData, termsandconditions: text })}
+                                value={invoiceData.termsAndConditions}
+                                onChangeText={(text) => setInvoiceData({ ...invoiceData, termsAndConditions: text })}
                             />
                         </View>
 
@@ -691,22 +707,19 @@ export default function PurchaseForm() {
                             <Text className="text-gray-500 text-xs mt-1">Will be displayed on the invoice</Text>
                         </View>
 
-                        {/* Summary Section */}
-
-
                         {/* Action Buttons */}
                         <View className="flex-row justify-end space-x-3 mt-4 mb-8">
                             <TouchableOpacity className="bg-blue-600 py-3 px-6 rounded-md" onPress={handleSubmit}>
                                 <Text className="text-white font-medium">Create Invoice</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity className="border border-gray-300 py-3 px-6 rounded-md">
+                            {/* <TouchableOpacity className="border border-gray-300 py-3 px-6 rounded-md">
                                 <Text className="text-gray-700">Close</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
-        </SafeAreaView >
+        </SafeAreaView>
     );
 }
