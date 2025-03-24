@@ -1,17 +1,17 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, ActivityIndicator, Alert } from "react-native"
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons"
 import DropDownPicker from "react-native-dropdown-picker"
 import { TextInput } from "react-native-gesture-handler"
-import { useNavigation } from "@react-navigation/native"
+import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { getAllItems, deleteItem } from "../../api/user/items"
-
-
+import { useTax } from "../../context/TaxContext"
 
 export default function ItemScreen() {
     const navigation = useNavigation()
+    const { isTaxCompany } = useTax();
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState("")
@@ -22,8 +22,6 @@ export default function ItemScreen() {
         { label: "50", value: 50 },
         { label: "100", value: 100 },
     ])
-
-    // Sample data based on the screenshot
 
 
     const fetchItems = async () => {
@@ -67,9 +65,11 @@ export default function ItemScreen() {
             { cancelable: true }
         );
     };
-    useEffect(() => {
-        fetchItems()
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+            fetchItems()
+        }, [])
+    )
     const getIconForItemType = (type) => {
         switch (type.toLowerCase()) {
             case "meter":
@@ -154,7 +154,7 @@ export default function ItemScreen() {
                                         <View className="flex-row justify-between items-center p-4 border-b border-gray-100 bg-blue-50">
                                             <View className="flex-row items-center flex-1">
                                                 <MaterialCommunityIcons name={getIconForItemType(item.type)} size={20} color="#3b82f6" />
-                                                <Text className="ml-2 text-lg font-semibold text-blue-600 flex-1"
+                                                <Text className="ml-2 text-lg font-semibold text-blue-600 flex-1 capitalize"
                                                     onPress={() => navigation.navigate("ItemsDetail", { id: item.id })} >{item.itemName}</Text>
                                                 <View className="bg-green-100 px-3 py-1 rounded-full">
                                                     <Text className="text-green-700 font-medium">{item.type}</Text>
@@ -176,9 +176,9 @@ export default function ItemScreen() {
                                         {/* Card Body */}
                                         <View className="p-4">
                                             <View className="grid grid-cols-2 gap-3">
-                                                <View className="bg-blue-100 px-3 py-1 rounded-full w-1/3">
+                                                {isTaxCompany && (<View className="bg-blue-100 px-3 py-1 rounded-full w-1/3">
                                                     <Text className="text-blue-700 font-medium text-center">{item.taxPreference}</Text>
-                                                </View>
+                                                </View>)}
                                                 <View className="mb-1 flex-row w-full gap-2">
                                                     <Text className="text-gray-500 font-medium">Item Code:</Text>
                                                     <Text className="text-gray-800">{item.itemCode ? item.itemCode : "--"}</Text>
@@ -206,7 +206,7 @@ export default function ItemScreen() {
                                             </View>
 
                                             {/* Tax Information */}
-                                            <View className="mt-3 pt-3 border-t border-gray-100">
+                                            {isTaxCompany && (<View className="mt-3 pt-3 border-t border-gray-100">
                                                 <View className="flex-row justify-between items-center">
                                                     <View className="w-1/2 flex-row items-center justify-start border border-transparent">
                                                         <Text className="text-gray-500 font-medium">Within State Tax:</Text>
@@ -217,7 +217,7 @@ export default function ItemScreen() {
                                                         <Text className="text-gray-800 ml-2">{item.interStateTax}%</Text>
                                                     </View>
                                                 </View>
-                                            </View>
+                                            </View>)}
                                         </View>
                                     </View>
                                 ))

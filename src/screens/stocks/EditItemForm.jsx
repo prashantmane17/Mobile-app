@@ -6,10 +6,12 @@ import { ArrowLeft } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import { getAllItems, saveItems } from '../../api/user/items';
+import { useTax } from '../../context/TaxContext';
 
 
 export default function EditItemForm({ route }) {
     const { id } = route.params;
+    const { isTaxCompany } = useTax();
     const navigation = useNavigation();
     const [loading, setLoading] = useState(false);
 
@@ -46,7 +48,7 @@ export default function EditItemForm({ route }) {
     }, [id]);
     const handleSaveItems = async () => {
         try {
-            const response = await fetch(`http://192.168.1.25:8080/editeachitembyid/${id}`, {
+            const response = await fetch(`https://billing.portstay.com/editeachitembyid/${id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
@@ -167,7 +169,7 @@ export default function EditItemForm({ route }) {
                     </View>
 
                     {/* Tax Preference */}
-                    <View className="space-y-2">
+                    {isTaxCompany && (<View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Tax Preference<Text className="text-red-500">*</Text></Text>
                         <View className="border border-gray-300 rounded-lg bg-white">
                             <Picker
@@ -180,7 +182,7 @@ export default function EditItemForm({ route }) {
 
                             </Picker>
                         </View>
-                    </View>
+                    </View>)}
 
                     {/* Selling Price */}
                     {formData.type === "Product" && <View className="space-y-2">
@@ -211,7 +213,7 @@ export default function EditItemForm({ route }) {
                     </View>}
 
                     {/* Intra State Tax */}
-                    {formData.type === "Product" && <View className="space-y-2">
+                    {formData.type === "Product" && isTaxCompany && <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Intra State Tax (%)</Text>
                         <View className="border border-gray-300 rounded-lg bg-white">
                             <Picker
@@ -227,7 +229,7 @@ export default function EditItemForm({ route }) {
                     </View>}
 
                     {/* Inter State Tax */}
-                    {formData.type === "Product" && <View className="space-y-2">
+                    {formData.type === "Product" && isTaxCompany && <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Inter State Tax (%)</Text>
                         <View className="border border-gray-300 rounded-lg bg-white">
                             <Picker

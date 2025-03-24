@@ -19,10 +19,12 @@ import { getAllItems } from '../../api/user/items';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getOrgProfie } from '../../api/admin/adminApi';
 import { getAllVendors } from '../../api/user/vendor';
+import { useTax } from '../../context/TaxContext';
 
 export default function PurchaseForm() {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [customers, setCustomers] = useState([])
+    const { isTaxCompany } = useTax();
     const navigation = useNavigation();
     const [isLoading, setISLoading] = useState(false)
     const [isSameState, setIsSameSate] = useState(false)
@@ -288,7 +290,7 @@ export default function PurchaseForm() {
         }
 
         try {
-            const response = await fetch("http://192.168.1.25:8080/save-purchase", {
+            const response = await fetch("https://billing.portstay.com/save-purchase", {
                 method: "POST",
                 body: data,
                 credentials: "include",
@@ -536,7 +538,7 @@ export default function PurchaseForm() {
                                     </Text>
                                     <Text className="w-20 text-center font-medium text-gray-700">QUANTITY</Text>
                                     <Text className="w-20 text-center font-medium text-gray-700">PRICE</Text>
-                                    <Text className="w-16 text-center font-medium text-gray-700">TAX %</Text>
+                                    {isTaxCompany && (<Text className="w-16 text-center font-medium text-gray-700">TAX %</Text>)}
                                     <Text className="w-20 text-center font-medium text-gray-700">AMOUNT</Text>
                                 </View>
                             </View>
@@ -564,12 +566,6 @@ export default function PurchaseForm() {
                                     <View className="flex-row items-center justify-between">
                                         {/* Quantity */}
                                         <View className="w-24 mr-2">
-                                            {/* <TextInput
-                                                className="border border-gray-300 rounded-md p-2 text-center"
-                                                keyboardType="numeric"
-                                                value={item.quantity.toString()}
-                                                onChangeText={(value) => handleInputChange(index, "quantity", value)}
-                                            /> */}
                                             {renderQuantityControl(item.quantity, index, item)}
                                         </View>
                                         {/* Price */}
@@ -584,10 +580,11 @@ export default function PurchaseForm() {
                                         </View>
 
                                         {/* Tax */}
-                                        <View className="flex-row items-start w-16 ml-2">
-                                            <Text className=" text-left">{isSameState ? item.intraStateTax : item.interStateTax}</Text>
-                                            <Text className="ml-1">%</Text>
-                                        </View>
+                                        {isTaxCompany && (
+                                            <View className="flex-row items-start w-16 ml-2">
+                                                <Text className=" text-left">{isSameState ? item.intraStateTax : item.interStateTax}</Text>
+                                                <Text className="ml-1">%</Text>
+                                            </View>)}
 
                                         {/* Total Amount */}
                                         <View className="flex-row items-center w-20 ">

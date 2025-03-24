@@ -151,7 +151,7 @@ export default function PaymentForm() {
         data.append("paymentDate", specificDate);
         data.append("invoiceIds", selectedId);
         try {
-            const response = await fetch("http://192.168.1.25:8080/save-payment", {
+            const response = await fetch("https://billing.portstay.com/save-payment", {
                 method: "POST",
                 body: data,
                 credentials: "include",

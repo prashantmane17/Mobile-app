@@ -155,7 +155,6 @@ export default function InvoiceForm() {
 
                 if (applicableTaxRate === 0) return;
 
-                // Apply discount if invoiceData.discountInput is not zero
                 let discountedTotal = itemTotal;
                 if (invoiceData.discountInput && invoiceData.discountInput !== 0) {
                     const discountAmount = (itemTotal * Number(invoiceData.discountInput)) / 100;
@@ -306,7 +305,7 @@ export default function InvoiceForm() {
         }
 
         try {
-            const response = await fetch("http://192.168.1.25:8080/save-invoice", {
+            const response = await fetch("https://billing.portstay.com/save-invoice", {
                 method: "POST",
                 body: data,
                 credentials: "include",
@@ -693,7 +692,7 @@ export default function InvoiceForm() {
                         <View className="bg-gray-50 p-4 rounded-md mt-4">
                             <View className="flex-row justify-between items-center mb-3">
                                 <Text className="text-gray-700">Sub Total</Text>
-                                <Text className="font-medium">₹ {totalAmt || "0.00"}</Text>
+                                <Text className="font-medium">₹ {totalAmt.toFixed(2) || "0.00"}</Text>
                             </View>
                             {isTaxCompany && (<View className="flex-row justify-between items-center mb-3">
                                 <View className="flex-row items-center">

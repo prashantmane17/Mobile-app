@@ -104,7 +104,7 @@ export default function AdminSetting() {
         }
         console.log("huiui-----", businessInfo);
         try {
-            const response = await fetch(`http://192.168.1.25:8080/UpdateOrganization/${businessInfo.id}`, {
+            const response = await fetch(`https://billing.portstay.com/UpdateOrganization/${businessInfo.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

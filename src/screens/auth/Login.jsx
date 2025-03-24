@@ -32,7 +32,7 @@ export default function LoginScreen() {
                 password: formData.password,
             }).toString();
 
-            const response = await fetch('http://192.168.1.25:8080/validateuserMobileApp', {
+            const response = await fetch('https://billing.portstay.com/validateuserMobileApp', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

@@ -119,10 +119,7 @@ export default function InvoiceCards() {
             </View>
 
             <ScrollView className="flex-1 bg-gray-100">
-                {/* Header */}
 
-
-                {/* Invoice Cards */}
                 <View className="px-4 py-4">
                     <View className="flex-row flex-wrap -mx-2">
                         {paginatedInvoices.map((invoice) => {

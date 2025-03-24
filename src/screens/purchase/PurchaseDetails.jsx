@@ -9,6 +9,7 @@ import { getAllInvoices } from '../../api/user/invoice';
 import { useNavigation } from '@react-navigation/native';
 import { getOrgProfie } from '../../api/admin/adminApi';
 import { getAllPurchases } from '../../api/user/purchase';
+import { useTax } from '../../context/TaxContext';
 
 // Sample invoice data - you can replace this with your actual data
 const invoiceData = {
@@ -18,6 +19,7 @@ const invoiceData = {
 const PurchaseDetails = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const { isTaxCompany } = useTax();
   const { id } = route.params;
   const navigation = useNavigation();
   const [invoices, setInvoices] = useState({})
@@ -591,7 +593,7 @@ const PurchaseDetails = ({ route }) => {
                   <Text className="w-40 p-2 font-bold border-r border-gray-200 text-[12px]">Description of goods</Text>
                   <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">HSN/SAC</Text>
                   <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">Quantity</Text>
-                  <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">GST</Text>
+                  {isTaxCompany && (<Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">GST</Text>)}
                   <Text className="w-20 p-2 font-bold border-r border-gray-200 text-[12px]">Rate</Text>
                   <Text className="w-24 p-2 font-bold">Amount</Text>
                 </View>
@@ -608,8 +610,8 @@ const PurchaseDetails = ({ route }) => {
                       <Text className="w-40 p-2 border-r border-gray-200 text-[12px]">{item.itemName}</Text>
                       <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.itemHsn || "--"}</Text>
                       <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.quantity}</Text>
-                      {isSameState ? (<Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.intraStateTax}%</Text>
-                      ) : (<Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.interStateTax}%</Text>)}
+                      {isTaxCompany && (isSameState ? (<Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.intraStateTax}%</Text>
+                      ) : (<Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.interStateTax}%</Text>))}
                       <Text className="w-20 p-2 text-right border-r border-gray-200 text-[12px]">{item.purchasePrice?.toFixed(2)}</Text>
                       <Text className="w-24 p-2 text-right text-[12px]">{totalAmount.toFixed(2)}</Text>
                     </View>

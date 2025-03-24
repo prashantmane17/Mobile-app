@@ -22,7 +22,7 @@ export default function Header() {
             const formBody = new URLSearchParams(formData).toString();
 
             // Send the data to the API
-            const response = await fetch('http://192.168.1.25:8080/createUser', {
+            const response = await fetch('https://billing.portstay.com/createUser', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

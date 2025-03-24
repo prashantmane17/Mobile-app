@@ -6,9 +6,11 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { TextInput } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { deleteCustomer, getAllCustomers } from '../../api/user/customer';
+import { useTax } from '../../context/TaxContext';
 
 export default function CustomerList() {
     const navigation = useNavigation();
+    const { isTaxCompany } = useTax();
     const [customers, setCustomers] = useState([])
     const [loading, setLoading] = useState(false)
     const [refreshing, setRefreshing] = useState(false);
@@ -180,14 +182,14 @@ export default function CustomerList() {
 
                                     {/* Card Body */}
                                     <View className="p-4">
-                                        <View className="flex-row justify-between items-center mb-3">
+                                        {isTaxCompany && (<View className="flex-row justify-between items-center mb-3">
 
                                             <View className="bg-blue-50 px-3 py-1 rounded-full">
                                                 <Text className="text-blue-700 font-medium w-full">
                                                     GST: <Text className="capitalize">{customer.gstTreatment}</Text>
                                                 </Text>
                                             </View>
-                                        </View>
+                                        </View>)}
 
                                         <View className="mb-3">
                                             <View className="flex-row items-center mb-2">

@@ -105,7 +105,7 @@ function AppWithBackHandler() {
   }
 
   return (
-    <Stack.Navigator initialRouteName={showWelcome ? "Welcome" : "Login"}>
+    <Stack.Navigator initialRouteName={showWelcome ? "Login" : "Login"}>
       {showWelcome && (
         <Stack.Screen name="Welcome" options={{ headerShown: false }}>
           {(props) => <WelcomeScreen {...props} onContinue={handleContinue} />}

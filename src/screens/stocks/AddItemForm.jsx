@@ -6,10 +6,12 @@ import { ArrowLeft } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import { saveItems } from '../../api/user/items';
+import { useTax } from '../../context/TaxContext';
 
 
 export default function AddItemForm() {
     const navigation = useNavigation();
+    const { isTaxCompany } = useTax();
     const intialData = {
         type: "Product",
         itemName: "",
@@ -28,15 +30,13 @@ export default function AddItemForm() {
     const handleSaveItems = async () => {
         const data = new FormData();
 
-        // Add basic party fields
         Object.keys(formData).forEach((key) => {
-            // Don't include nested objects like billingAddress or shippingAddress directly
             if (typeof formData[key] !== "object" || formData[key] === null) {
                 data.append(key, formData[key]);
             }
         });
         try {
-            const response = await fetch("http://192.168.1.25:8080/save-items", {
+            const response = await fetch("https://billing.portstay.com/save-items", {
                 method: "POST",
                 credentials: "include",
                 body: data,
@@ -151,7 +151,7 @@ export default function AddItemForm() {
                     </View>
 
                     {/* Tax Preference */}
-                    <View className="space-y-2">
+                    {isTaxCompany && (<View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Tax Preference<Text className="text-red-500">*</Text></Text>
                         <View className="border border-gray-300 rounded-lg bg-white">
                             <Picker
@@ -164,7 +164,7 @@ export default function AddItemForm() {
 
                             </Picker>
                         </View>
-                    </View>
+                    </View>)}
 
                     {/* Selling Price */}
                     {formData.type === "Product" && <View className="space-y-2">
@@ -195,7 +195,7 @@ export default function AddItemForm() {
                     </View>}
 
                     {/* Intra State Tax */}
-                    {formData.type === "Product" && <View className="space-y-2">
+                    {formData.type === "Product" && isTaxCompany && <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Intra State Tax (%)</Text>
                         <View className="border border-gray-300 rounded-lg bg-white">
                             <Picker
@@ -211,7 +211,7 @@ export default function AddItemForm() {
                     </View>}
 
                     {/* Inter State Tax */}
-                    {formData.type === "Product" && <View className="space-y-2">
+                    {formData.type === "Product" && isTaxCompany && <View className="space-y-2">
                         <Text className="text-sm font-medium text-gray-600">Inter State Tax (%)</Text>
                         <View className="border border-gray-300 rounded-lg bg-white">
                             <Picker

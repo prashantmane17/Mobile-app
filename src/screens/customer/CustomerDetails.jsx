@@ -6,9 +6,11 @@ import * as Print from "expo-print";
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import { getAllCustomers } from '../../api/user/customer';
+import { useTax } from '../../context/TaxContext';
 
 const CustomerDetails = ({ route, navigation }) => {
     const { id } = route.params;
+    const { isTaxCompany } = useTax();
     const [customer, setCustomer] = useState(null);
     const [loading, setLoading] = useState(false);
     const [generating, setGenerating] = useState(false);
@@ -242,7 +244,7 @@ const CustomerDetails = ({ route, navigation }) => {
                         </div>
                         
                         <!-- Tax & Business Details -->
-                        <div class="section">
+                        ${isTaxCompany && (`<div class="section">
                             <div class="section-header">
                                 <svg class="section-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
@@ -271,7 +273,7 @@ const CustomerDetails = ({ route, navigation }) => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div>`)}
                         
                         <!-- Address Information -->
                         <div class="section">
@@ -551,7 +553,7 @@ const CustomerDetails = ({ route, navigation }) => {
                     </View>
 
                     {/* Tax & Business Details */}
-                    <View className="bg-white rounded-xl shadow-sm overflow-hidden">
+                    {isTaxCompany && (<View className="bg-white rounded-xl shadow-sm overflow-hidden">
                         <View className="bg-blue-50 px-4 py-3 border-l-4 border-blue-500 flex-row items-center">
                             <Calculator size={18} color="#3b82f6" />
                             <Text className="ml-2 text-base font-semibold text-gray-800">Tax & Business Details</Text>
@@ -578,7 +580,7 @@ const CustomerDetails = ({ route, navigation }) => {
                                 <Text className="w-2/3 text-sm font-medium text-gray-900 capitalize">{customer.taxPreference || "--"}</Text>
                             </View>
                         </View>
-                    </View>
+                    </View>)}
 
                     {/* Address Information */}
                     <View className="space-y-4">

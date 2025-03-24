@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, TextInput, TouchableOpacity, SafeAreaView, Image, Alert } from 'react-native';
-import { ArrowLeft, Building, Mail, Phone, User, MapPin, Users, Info, Upload, ChevronDown, Copy } from 'lucide-react-native';
+import { ArrowLeft, MapPin, Users, Info, Upload, ChevronDown, Copy } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import { getAllCustomers } from '../../api/user/customer';
+import { useTax } from '../../context/TaxContext';
 
 
 export default function EditCustomerForm({ route }) {
     const { id } = route.params;
-    console.log("datata-----", id)
+    const { isTaxCompany } = useTax();
     const navigation = useNavigation();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({});
@@ -132,7 +133,7 @@ export default function EditCustomerForm({ route }) {
         }
         console.log("combinedForm---", combinedForm)
         try {
-            const response = await fetch(`http://192.168.1.25:8080/editeachpartiesbyid/${id}`, {
+            const response = await fetch(`https://billing.portstay.com/editeachpartiesbyid/${id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
@@ -162,7 +163,7 @@ export default function EditCustomerForm({ route }) {
             case 'details':
                 return (
                     <View className="space-y-4">
-                        <View className="space-y-2">
+                        {isTaxCompany && (<View className="space-y-2">
                             <Text className="text-sm font-medium text-gray-600">GST Type <Text className="text-red-500">*</Text></Text>
                             <View className="border border-gray-200 rounded-lg bg-white overflow-hidden h-11 flex">
                                 <Picker
@@ -176,7 +177,7 @@ export default function EditCustomerForm({ route }) {
                                     <Picker.Item label="Overseas" value="overseas" />
                                 </Picker>
                             </View>
-                        </View >
+                        </View >)}
                         {/* Show GSTIN field only if "Registered Business - Regular" is selected */}
                         {gstType === "registered" && (
                             <View className="space-y-2">
@@ -206,7 +207,7 @@ export default function EditCustomerForm({ route }) {
                             </View>
                         </View>
 
-                        <View className="space-y-2">
+                        {isTaxCompany && (<View className="space-y-2">
                             <Text className="text-sm font-medium text-gray-600">PAN</Text>
                             <TextInput
                                 className="p-3 border border-gray-200 rounded-lg bg-white"
@@ -216,9 +217,9 @@ export default function EditCustomerForm({ route }) {
                                 value={formData.pan}
                                 onChangeText={(text) => setFormData({ ...formData, pan: text })}
                             />
-                        </View>
+                        </View>)}
 
-                        <View className="space-y-2">
+                        {isTaxCompany && (<View className="space-y-2">
                             <Text className="text-sm font-medium text-gray-600">Tax Preference</Text>
                             <View className="flex-row space-x-4">
                                 <TouchableOpacity
@@ -246,7 +247,7 @@ export default function EditCustomerForm({ route }) {
                                     <Text className="text-gray-700">Tax Exempt</Text>
                                 </TouchableOpacity>
                             </View>
-                        </View>
+                        </View>)}
 
 
                     </View >

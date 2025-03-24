@@ -6,9 +6,11 @@ import * as Print from "expo-print";
 import { ArrowLeft } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getAllItems } from "../../api/user/items";
+import { useTax } from "../../context/TaxContext";
 
 export default function ItemDetails({ route }) {
     const navigation = useNavigation();
+    const { isTaxCompany } = useTax();
     const { id } = route.params;
     const [itemData, setItemData] = useState({});
     const [loading, setLoading] = useState(false);
@@ -163,14 +165,14 @@ export default function ItemDetails({ route }) {
                                 <div class="detail-label">Purchase Price</div>
                                 <div class="detail-value">₹ ${itemData.purchasePrice || '-'}</div>
                             </div>
-                            <div class="detail-row">
+                             ${isTaxCompany && (`<div class="detail-row">
                                 <div class="detail-label">Tax Preference</div>
                                 <div class="detail-value">
                                     <span class="badge">${itemData.taxPreference || '-'}</span>
                                 </div>
-                            </div>
+                            </div>`)}
                             
-                            <div class="tax-section">
+                            ${isTaxCompany && (`<div class="tax-section">
                                 <h2>Tax Information</h2>
                                 <div class="tax-cards">
                                     <div class="tax-card">
@@ -182,7 +184,8 @@ export default function ItemDetails({ route }) {
                                         <div class="tax-value">${itemData.interStateTax || '0'}%</div>
                                     </div>
                                 </div>
-                            </div>
+                            </div>`
+            )}
                         </div>
                         <div class="footer">
                             <p>This is a computer generated document and does not require a physical signature.</p>
@@ -264,7 +267,7 @@ export default function ItemDetails({ route }) {
                     {/* Item details card */}
                     <View className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
                         <View className="p-4 bg-blue-50 border-b border-blue-100">
-                            <Text className="text-xl font-bold text-gray-800">{itemData.itemName || 'Item Details'}</Text>
+                            <Text className="text-xl font-bold text-gray-800 capitalize">{itemData?.itemName || 'Item Details'}</Text>
                         </View>
 
                         <View className="p-4">
@@ -272,29 +275,31 @@ export default function ItemDetails({ route }) {
                             <DetailRow label="HSN Code" value={itemData.itemHsn} />
                             <DetailRow label="Selling Price" value={`₹ ${itemData.sellingPrice ? itemData.sellingPrice : "--"}`} />
                             <DetailRow label="Purchase Price" value={`₹ ${itemData.purchasePrice ? itemData.purchasePrice : "--"}`} />
-                            <DetailRow
+                            {isTaxCompany && (<DetailRow
                                 label="Tax Preference"
                                 value={
                                     <View className="bg-blue-50 px-3 py-1 rounded-full">
                                         <Text className="text-blue-600 text-sm">{itemData.taxPreference}</Text>
                                     </View>
                                 }
-                            />
+                            />)}
                         </View>
                     </View>
 
                     {/* Tax information section */}
-                    <Text className="text-lg font-bold text-gray-800 mb-3 px-1">Tax Information</Text>
-                    <View className="flex-row space-x-4 mb-6">
-                        <View className="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                            <Text className="text-gray-500 text-sm mb-1">Intra State Tax</Text>
-                            <Text className="text-2xl font-bold text-gray-800">{itemData.intraStateTax || '0'}%</Text>
+                    {isTaxCompany && (<View>
+                        <Text className="text-lg font-bold text-gray-800 mb-3 px-1">Tax Information</Text>
+                        <View className="flex-row space-x-4 mb-6">
+                            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                                <Text className="text-gray-500 text-sm mb-1">Intra State Tax</Text>
+                                <Text className="text-2xl font-bold text-gray-800">{itemData.intraStateTax || '0'}%</Text>
+                            </View>
+                            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                                <Text className="text-gray-500 text-sm mb-1">Inter State Tax</Text>
+                                <Text className="text-2xl font-bold text-gray-800">{itemData.interStateTax || '0'}%</Text>
+                            </View>
                         </View>
-                        <View className="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                            <Text className="text-gray-500 text-sm mb-1">Inter State Tax</Text>
-                            <Text className="text-2xl font-bold text-gray-800">{itemData.interStateTax || '0'}%</Text>
-                        </View>
-                    </View>
+                    </View>)}
 
                     {/* Additional information or actions can be added here */}
                     <View className="bg-blue-50 p-4 rounded-xl mb-6 flex-row items-center">

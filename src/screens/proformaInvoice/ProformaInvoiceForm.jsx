@@ -293,7 +293,7 @@ export default function ProformaInvoiceForm() {
         }
 
         try {
-            const response = await fetch("http://192.168.1.25:8080/save-proforma-invoice", {
+            const response = await fetch("https://billing.portstay.com/save-proforma-invoice", {
                 method: "POST",
                 body: data,
                 credentials: "include",

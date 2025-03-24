@@ -15,7 +15,7 @@ export default function ForgetPassword() {
 
     const handleSendOTP = async () => {
         try {
-            const response = await fetch("http://192.168.1.25:8080/send-otp", {
+            const response = await fetch("https://billing.portstay.com/send-otp", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -40,7 +40,7 @@ export default function ForgetPassword() {
 
     const handleVerifyOTP = async () => {
         try {
-            const response = await fetch("http://192.168.1.25:8080/verify-otp", {
+            const response = await fetch("https://billing.portstay.com/verify-otp", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -71,7 +71,7 @@ export default function ForgetPassword() {
         }
 
         try {
-            const response = await fetch("http://192.168.1.25:8080/reset-password", {
+            const response = await fetch("https://billing.portstay.com/reset-password", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

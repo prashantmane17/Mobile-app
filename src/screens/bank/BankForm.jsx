@@ -53,7 +53,7 @@ export default function BankForm() {
             }
         });
         try {
-            const response = await fetch('http://192.168.1.25:8080/save-BankDetails', {
+            const response = await fetch('https://billing.portstay.com/save-BankDetails', {
                 method: 'POST',
                 body: data,
                 credentials: "include",

@@ -8,6 +8,7 @@ import { ArrowLeft, Download, Share2 } from 'lucide-react-native';
 import { getAllInvoices } from '../../api/user/invoice';
 import { useNavigation } from '@react-navigation/native';
 import { getOrgProfie } from '../../api/admin/adminApi';
+import { useTax } from '../../context/TaxContext';
 
 // Sample invoice data - you can replace this with your actual data
 const invoiceData = {
@@ -18,6 +19,7 @@ const InvoiceTemp = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [invoiceLoading, setInvoiceLoading] = useState(false);
   const { id } = route.params;
+  const { isTaxCompany } = useTax();
   const navigation = useNavigation();
   const [invoices, setInvoices] = useState({})
   const [orgData, setOrgData] = useState({})
@@ -418,7 +420,7 @@ const InvoiceTemp = ({ route }) => {
             </div>
             </div>
             
-            <!-- Amount in Words -->
+          
            
             
             <!-- Footer -->
@@ -572,7 +574,7 @@ const InvoiceTemp = ({ route }) => {
                   State : {invoices.customer?.billingAddress?.state || ''}
                 </Text>
                 <Text className="text-gray-600 text-sm">Ph: {invoices.customer?.billingAddress?.phone}</Text>
-                <Text className="text-gray-600 text-sm">GSTIN: {invoices.customer?.gstin || ''}</Text>
+                {isTaxCompany && <Text className="text-gray-600 text-sm">GSTIN: {invoices.customer?.gstin || ''}</Text>}
               </View>
 
               {/* Invoice Meta */}
@@ -613,8 +615,9 @@ const InvoiceTemp = ({ route }) => {
                   <Text className="w-40 p-2 font-bold border-r border-gray-200 text-[12px]">Description of goods</Text>
                   <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">HSN/SAC</Text>
                   <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">Quantity</Text>
-                  <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">GST</Text>
                   <Text className="w-20 p-2 font-bold border-r border-gray-200 text-[12px]">Rate</Text>
+                  {isTaxCompany ? <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">GST</Text> :
+                    <Text className="w-24 p-2 font-bold border-r border-gray-200 text-[12px]">DISCOUNT</Text>}
                   <Text className="w-24 p-2 font-bold">Amount</Text>
                 </View>
 
@@ -622,6 +625,9 @@ const InvoiceTemp = ({ route }) => {
                 {invoices.items?.map((item, index) => {
 
                   let totalAmount = Number(item.sellingPrice) * Number(item.quantity)
+                  if (!isTaxCompany) {
+                    totalAmount = totalAmount - totalAmount * (Number(item.discount) / 100)
+                  }
                   subTotal += totalAmount
                   totalQTY += Number(item.quantity)
                   return (
@@ -630,9 +636,17 @@ const InvoiceTemp = ({ route }) => {
                       <Text className="w-40 p-2 border-r border-gray-200 text-[12px]">{item.itemName}</Text>
                       <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.itemHsn}</Text>
                       <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.quantity}</Text>
-                      {isSameState ? (<Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.intraStateTax}%</Text>
-                      ) : (<Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.interStateTax}%</Text>)}
+
                       <Text className="w-20 p-2 text-right border-r border-gray-200 text-[12px]">{item.sellingPrice?.toFixed(2)}</Text>
+                      {isTaxCompany ?
+                        (isSameState ?
+                          <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.intraStateTax}%</Text>
+                          :
+                          <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.interStateTax}%</Text>
+                        )
+                        :
+                        <Text className="w-24 p-2 border-r border-gray-200 text-[12px]">{item.discount}%</Text>
+                      }
                       <Text className="w-24 p-2 text-right text-[12px]">{totalAmount.toFixed(2)}</Text>
                     </View>
                   )
@@ -657,28 +671,29 @@ const InvoiceTemp = ({ route }) => {
                   <Text className="  flex-1 text-left text-[13px]">Discount :</Text>
                   <Text className="w-20 text-right text-[13px]">- {subTotal * (Number(invoices.discountInput) / 100)}</Text>
                 </View>
-
-                {Object.entries(taxSummary).map(([rate, totalTax], index) => (
-                  <View key={index}>
-                    {isSameState ? (
-                      <View>
-                        <View className="flex-row justify-between items-center mb-2">
-                          <Text className="flex-1 text-left text-[13px]">SGST ({rate}%):</Text>
-                          <Text className="w-20 text-right text-[13px]">{(totalTax / 2).toFixed(2)}</Text>
+                {isTaxCompany && (
+                  Object.entries(taxSummary).map(([rate, totalTax], index) => (
+                    <View key={index}>
+                      {isSameState ? (
+                        <View>
+                          <View className="flex-row justify-between items-center mb-2">
+                            <Text className="flex-1 text-left text-[13px]">SGST ({rate}%):</Text>
+                            <Text className="w-20 text-right text-[13px]">{(totalTax / 2).toFixed(2)}</Text>
+                          </View>
+                          <View className="flex-row justify-between items-center mb-2">
+                            <Text className="flex-1 text-left text-[13px]">CGST ({rate}%):</Text>
+                            <Text className="w-20 text-right text-[13px]">{(totalTax / 2).toFixed(2)}</Text>
+                          </View>
                         </View>
+                      ) : (
                         <View className="flex-row justify-between items-center mb-2">
-                          <Text className="flex-1 text-left text-[13px]">CGST ({rate}%):</Text>
-                          <Text className="w-20 text-right text-[13px]">{(totalTax / 2).toFixed(2)}</Text>
+                          <Text className="flex-1 text-left text-[13px]">IGST ({rate}%):</Text>
+                          <Text className="w-20 text-right text-[13px]">{totalTax.toFixed(2)}</Text>
                         </View>
-                      </View>
-                    ) : (
-                      <View className="flex-row justify-between items-center mb-2">
-                        <Text className="flex-1 text-left text-[13px]">IGST ({rate}%):</Text>
-                        <Text className="w-20 text-right text-[13px]">{totalTax.toFixed(2)}</Text>
-                      </View>
-                    )}
-                  </View>
-                ))}
+                      )}
+                    </View>
+                  ))
+                )}
                 <View className="flex-row justify-between items-center mb-2">
                   <Text className="flex-1 text-left font-bold text-[13px]">Adjustment :</Text>
                   <Text className=" w-20 text-right  font-bold text-[13px]">{invoices.adjustmentInput}</Text>

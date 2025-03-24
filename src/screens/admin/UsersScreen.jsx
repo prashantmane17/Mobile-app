@@ -13,7 +13,7 @@ export default function UsersScreen() {
 
     const fetchAdminDashboard = async () => {
         try {
-            const response = await fetch("http://192.168.1.25:8080/admin-dashbordMobileApp", {
+            const response = await fetch("https://billing.portstay.com/admin-dashbordMobileApp", {
                 method: "GET",
                 credentials: "include",
             });

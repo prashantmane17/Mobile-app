@@ -4,10 +4,13 @@ import { ArrowLeft, Building, Mail, Phone, User, MapPin, Users, Info, Upload, Ch
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import { getAllVendors } from '../../api/user/vendor';
+import { useTax } from '../../context/TaxContext';
 
 
 export default function EditVendor({ route }) {
     const { id } = route.params;
+    const { isTaxCompany } = useTax();
+
     console.log("datata-----", id)
     const navigation = useNavigation();
     const [loading, setLoading] = useState(false);
@@ -129,7 +132,7 @@ export default function EditVendor({ route }) {
         }
         console.log("combinedForm---", combinedForm)
         try {
-            const response = await fetch(`http://192.168.1.25:8080/editeachvendorbyid/${id}`, {
+            const response = await fetch(`https://billing.portstay.com/editeachvendorbyid/${id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
@@ -159,7 +162,7 @@ export default function EditVendor({ route }) {
             case 'details':
                 return (
                     <View className="space-y-4">
-                        <View className="space-y-2">
+                        {isTaxCompany && (<View className="space-y-2">
                             <Text className="text-sm font-medium text-gray-600">GST Type <Text className="text-red-500">*</Text></Text>
                             <View className="border border-gray-200 rounded-lg bg-white overflow-hidden h-11 flex">
                                 <Picker
@@ -173,9 +176,9 @@ export default function EditVendor({ route }) {
                                     <Picker.Item label="Overseas" value="overseas" />
                                 </Picker>
                             </View>
-                        </View >
+                        </View >)}
                         {/* Show GSTIN field only if "Registered Business - Regular" is selected */}
-                        {gstType === "registered" && (
+                        {gstType === "registered" && isTaxCompany && (
                             <View className="space-y-2">
                                 <Text className="text-sm font-medium text-gray-600">GSTIN <Text className="text-red-500">*</Text></Text>
                                 <TouchableOpacity className="px-1 p-1 border border-gray-200 rounded-lg bg-white flex-row justify-between items-center">
@@ -203,7 +206,7 @@ export default function EditVendor({ route }) {
                             </View>
                         </View>
 
-                        <View className="space-y-2">
+                        {isTaxCompany && (<View className="space-y-2">
                             <Text className="text-sm font-medium text-gray-600">PAN</Text>
                             <TextInput
                                 className="p-3 border border-gray-200 rounded-lg bg-white"
@@ -213,9 +216,9 @@ export default function EditVendor({ route }) {
                                 value={formData.pan}
                                 onChangeText={(text) => setFormData({ ...formData, pan: text })}
                             />
-                        </View>
+                        </View>)}
 
-                        <View className="space-y-2">
+                        {isTaxCompany && (<View className="space-y-2">
                             <Text className="text-sm font-medium text-gray-600">Tax Preference</Text>
                             <View className="flex-row space-x-4">
                                 <TouchableOpacity
@@ -243,7 +246,7 @@ export default function EditVendor({ route }) {
                                     <Text className="text-gray-700">Tax Exempt</Text>
                                 </TouchableOpacity>
                             </View>
-                        </View>
+                        </View>)}
 
 
                     </View >
@@ -477,7 +480,7 @@ export default function EditVendor({ route }) {
                     <ArrowLeft className="w-6 h-6 text-blue-500" />
                 </TouchableOpacity>
                 <View>
-                    <Text className="text-xl font-bold text-gray-800">Create Customer</Text>
+                    <Text className="text-xl font-bold text-gray-800">Edit  Venodr</Text>
                 </View>
             </View>
             <ScrollView>

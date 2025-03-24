@@ -80,7 +80,7 @@ export default function TimeZoneForm({ onClose }) {
         formData.append("currency", currency);
 
         try {
-            const response = await fetch("http://192.168.1.25:8080/saveOrgSettins", {
+            const response = await fetch("https://billing.portstay.com/saveOrgSettins", {
                 method: "POST",
                 headers: {
                     "Content-Type": "multipart/form-data",

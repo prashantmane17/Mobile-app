@@ -226,7 +226,7 @@ export default function SignUpScreen() {
         }).toString()
 
         try {
-            const response = await fetch("http://192.168.1.25:8080/createOrganizationForMobileApp", {
+            const response = await fetch("https://billing.portstay.com/createOrganizationForMobileApp", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
