@@ -347,21 +347,50 @@ const PurchaseDetails = ({ route }) => {
                   </tr>
                 `)
     }).join('')}
-                <tr>
-                  <td colspan="5" class="text-right">Sub Total</td>
-                  <td class="text-right">${subTotal.toFixed(2)}</td>
-                </tr>
               </tbody>
             </table>
             
             <!-- Totals -->
             <div class="totals">
+<div>
               <div class="total-quantity">
                 Total Quantity : ${totalQTY}
               </div>
-               <div class="total-amount">
-                <strong>Total Amount : ${subTotal.toFixed(2)}</strong>
+               <div class="amount-in-words">
+              <div><strong>Amount Chargeable (In Words)</strong></div>
+              <div>${numberToWords(Number(subTotal) + Number(allTaxTotal) - Number(subTotal * (Number(invoices.discountInput) / 100)) + Number(invoices.adjustmentInput) || 0)}</div>
+            </div>
               </div>
+              <div class="totalCal">
+              <div class="total-amount">
+                SubTotal  :  ${subTotal}
+              </div>
+
+              ${Object.entries(taxSummary).map(([rate, totalTax]) => (`
+                  <div >
+                    ${isSameState ? (`
+                      <div>
+                        <div class="gstType">
+                          <div class="">SGST (${rate}%):</div>
+                          <div class="">${(totalTax / 2).toFixed(2)}</div>
+                        </div>
+                        <div class="gstType">
+                          <div class="">CGST (${rate}%):</div>
+                          <div class="">${(totalTax / 2).toFixed(2)}</div>
+                        </div>
+                      </div>`
+      ) : (`
+                      <div class="gstType">
+                        <div class="">IGST (${rate}%):</div>
+                        <div class="">${totalTax.toFixed(2)}</div>
+                      </div>`
+      )}
+                  </div>
+                `))}
+               <div class="total-amount">
+                <strong>Total Amount : ${Number(subTotal) + Number(allTaxTotal).toFixed(2)}</strong>
+              </div>
+            </div>
             </div>
             
             <!-- Amount in Words -->

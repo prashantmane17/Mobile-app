@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import { NavigationContainer, useNavigation, useNavigationState } from "@react-navigation/native";
+import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { SafeAreaView, StatusBar, BackHandler, ToastAndroid } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoginScreen from "./src/screens/auth/Login";
 import SignUpScreen from "./src/screens/auth/SignUpScreen";
 import ForgetPassword from "./src/screens/auth/ForgetPassword";
 import AppNavigator from "./src/navigation/AppNavigator";
 import EmployeeNavigator from "./src/navigation/EmployeeNavigator";
 import { getSession } from "./src/api/admin/adminApi";
+import WelcomeScreen from "./src/screens/WelcomeScreen";
 
 const Stack = createStackNavigator();
 
 export default function App() {
-
-
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -24,10 +24,29 @@ export default function App() {
   );
 }
 
-
 function AppWithBackHandler() {
   const navigation = useNavigation();
   const [exitApp, setExitApp] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(null); // null = loading state
+
+  useEffect(() => {
+    const checkWelcomeScreen = async () => {
+      try {
+        const hasSeenWelcome = await AsyncStorage.getItem("hasSeenWelcome");
+
+        if (hasSeenWelcome === null) {
+          setShowWelcome(true); // First time user
+        } else {
+          setShowWelcome(false); // Skip Welcome Page
+        }
+      } catch (error) {
+        console.error("Error reading AsyncStorage", error);
+        setShowWelcome(false);
+      }
+    };
+
+    checkWelcomeScreen();
+  }, []);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -63,7 +82,7 @@ function AppWithBackHandler() {
           return true;
         }
       }
-      return false; // Let React Navigation handle other cases
+      return false;
     };
 
     const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
@@ -71,8 +90,28 @@ function AppWithBackHandler() {
     return () => backHandler.remove();
   }, [exitApp, navigation]);
 
+  const handleContinue = async () => {
+    try {
+      await AsyncStorage.setItem("hasSeenWelcome", "true");
+      setShowWelcome(false);
+      navigation.navigate("Login");
+    } catch (error) {
+      console.error("Error saving AsyncStorage", error);
+    }
+  };
+
+  if (showWelcome === null) {
+    return null; // Prevents flashing during loading
+  }
+
   return (
-    <Stack.Navigator initialRouteName="Login">
+    <Stack.Navigator initialRouteName={showWelcome ? "Welcome" : "Login"}>
+      {showWelcome && (
+        <Stack.Screen name="Welcome" options={{ headerShown: false }}>
+          {(props) => <WelcomeScreen {...props} onContinue={handleContinue} />}
+        </Stack.Screen>
+
+      )}
       <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Signup" component={SignUpScreen} options={{ headerShown: false }} />
       <Stack.Screen name="ForgetPassword" component={ForgetPassword} options={{ headerShown: false }} />
@@ -81,4 +120,3 @@ function AppWithBackHandler() {
     </Stack.Navigator>
   );
 }
-

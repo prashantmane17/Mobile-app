@@ -5,6 +5,7 @@ import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import { ArrowLeft, Download, Share2 } from 'lucide-react-native';
+import { getAllInvoices } from '../../api/user/invoice';
 import { useNavigation } from '@react-navigation/native';
 import { getOrgProfie } from '../../api/admin/adminApi';
 import { getAllProformaInvoices } from '../../api/user/proformaInvoice';
@@ -108,8 +109,12 @@ const ProformaInvoiceDetails = ({ route }) => {
 
     const applicableTaxRate = isSameState ? GtaxRate : ItaxRate;
     if (applicableTaxRate === 0) return;
-
-    const totalTax = (itemTotal * applicableTaxRate) / 100;
+    let discountedTotal = itemTotal;
+    if (invoices.discountInput && invoices.discountInput !== 0) {
+      const discountAmount = (itemTotal * Number(invoices.discountInput)) / 100;
+      discountedTotal -= discountAmount;
+    }
+    const totalTax = (discountedTotal * applicableTaxRate) / 100;
 
     if (!taxSummary[applicableTaxRate]) {
       taxSummary[applicableTaxRate] = 0;
@@ -186,7 +191,7 @@ const ProformaInvoiceDetails = ({ route }) => {
             table {
               width: 100%;
               border-collapse: collapse;
-              
+
             }
             th, td {
               border: 1px solid #000;
@@ -205,8 +210,21 @@ const ProformaInvoiceDetails = ({ route }) => {
             .totals {
               display: flex;
               justify-content: space-between;
-              
+
             }
+            .totalCal{
+        width:50%;
+              padding:10px;
+              border-left: 1px solid #000;
+           text-align: right;
+
+      }
+            .gstType{
+            display: flex;
+      align-items: center;
+            }
+
+
             .total-quantity {
               width: 50%;
               padding: 10px;
@@ -219,11 +237,11 @@ const ProformaInvoiceDetails = ({ route }) => {
             }
             .amount-in-words {
               padding: 10px;
-              border-top: 1px solid #000;
-              border-bottom: 1px solid #000;
+
             }
             .footer {
               display: flex;
+              border-top: 1px solid #000;
             }
             .declaration {
               width: 50%;
@@ -328,11 +346,12 @@ const ProformaInvoiceDetails = ({ route }) => {
                   <th>HSN/SAC</th>
                   <th>Quantity</th>
                   <th>Rate</th>
+                  <th>Tax</th>
                   <th>Amount</th>
                 </tr>
               </thead>
               <tbody>
-                ${invoices.items.map((item, index) => {
+                ${invoices.items?.map((item, index) => {
       const itemTotal = Number(item.sellingPrice) * Number(item.quantity)
       return (`
                   <tr>
@@ -340,36 +359,68 @@ const ProformaInvoiceDetails = ({ route }) => {
                     <td>${item.itemName}</td>
                     <td>${item.itemHsn}</td>
                     <td>${item.quantity}</td>
+                    ${isSameState ? (`<td class="text-right">${item.intraStateTax}%</td>
+                      `) : (`<td class="text-right">${item.interStateTax}%</td>`)}
                     <td class="text-right">${item.sellingPrice.toFixed(2)}</td>
                     <td class="text-right">${itemTotal.toFixed(2)}</td>
                   </tr>
                 `)
     }).join('')}
-                <tr>
-                  <td colspan="5" class="text-right">Sub Total</td>
-                  <td class="text-right">${subTotal.toFixed(2)}</td>
-                </tr>
+                
               </tbody>
             </table>
             
             <!-- Totals -->
             <div class="totals">
+<div>
               <div class="total-quantity">
                 Total Quantity : ${totalQTY}
               </div>
+               <div class="amount-in-words">
+              <div><strong>Amount Chargeable (In Words)</strong></div>
+              <div>${numberToWords(Number(subTotal) + Number(allTaxTotal) - Number(subTotal * (Number(invoices.discountInput) / 100)) + Number(invoices.adjustmentInput) || 0)}</div>
+            </div>
+              </div>
+              <div class="totalCal">
               <div class="total-amount">
-                Discount  : (-) ${invoices.discountInput}
+                SubTotal  :  ${subTotal}
+              </div>
+              <div class="total-amount">
+                Discount  : (-) ${subTotal * (Number(invoices.discountInput) / 100)}
+              </div>
+
+              ${Object.entries(taxSummary).map(([rate, totalTax], index) => (`
+                  <div >
+                    ${isSameState ? (`
+                      <div>
+                        <div class="gstType">
+                          <div class="">SGST (${rate}%):</div>
+                          <div class="">${(totalTax / 2).toFixed(2)}</div>
+                        </div>
+                        <div class="gstType">
+                          <div class="">CGST (${rate}%):</div>
+                          <div class="">${(totalTax / 2).toFixed(2)}</div>
+                        </div>
+                      </div>`
+      ) : (`
+                      <div class="gstType">
+                        <div class="">IGST (${rate}%):</div>
+                        <div class="">${totalTax.toFixed(2)}</div>
+                      </div>`
+      )}
+                  </div>
+                `))}
+              <div class="total-amount">
+                Adjustment  : (-) ${invoices.adjustmentInput}
               </div>
                <div class="total-amount">
-                <strong>Total Amount : ${subTotal.toFixed(2)}</strong>
+                <strong>Total Amount : ${Number(subTotal) + Number(allTaxTotal) - Number(subTotal * (Number(invoices.discountInput) / 100)) + Number(invoices.adjustmentInput).toFixed(2)}</strong>
               </div>
+            </div>
             </div>
             
             <!-- Amount in Words -->
-            <div class="amount-in-words">
-              <div><strong>Amount Chargeable (In Words)</strong></div>
-              <div>${numberToWords(subTotal)}</div>
-            </div>
+           
             
             <!-- Footer -->
             <div class="footer">
@@ -403,7 +454,7 @@ const ProformaInvoiceDetails = ({ route }) => {
             </div>-->
           </div>
         </body>
-      </html>
+      </html>g
     `;
   };
 
@@ -470,7 +521,7 @@ const ProformaInvoiceDetails = ({ route }) => {
       {/* Header */}
       <View className="bg-white px-4 py-4 shadow-sm">
         <View className="flex-row justify-between items-center">
-          <TouchableOpacity className="p-2 rounded-full bg-gray-100" onPress={() => navigation.navigate('Pinvoice')}>
+          <TouchableOpacity className="p-2 rounded-full bg-gray-100" onPress={() => navigation.navigate('sales')}>
             <ArrowLeft stroke="#333" width={22} height={22} />
           </TouchableOpacity>
           <Text className="text-xl font-bold text-gray-800">ProformaInvoice</Text>
@@ -605,7 +656,7 @@ const ProformaInvoiceDetails = ({ route }) => {
                 </View>
                 <View className="flex-row justify-between items-center mb-2">
                   <Text className="  flex-1 text-left text-[13px]">Discount :</Text>
-                  <Text className="w-20 text-right text-[13px]">{invoices.discountInput}</Text>
+                  <Text className="w-20 text-right text-[13px]">- {subTotal * (Number(invoices.discountInput) / 100)}</Text>
                 </View>
 
                 {Object.entries(taxSummary).map(([rate, totalTax], index) => (
@@ -629,18 +680,22 @@ const ProformaInvoiceDetails = ({ route }) => {
                     )}
                   </View>
                 ))}
-
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className="flex-1 text-left font-bold text-[13px]">Adjustment :</Text>
+                  <Text className=" w-20 text-right  font-bold text-[13px]">{invoices.adjustmentInput}</Text>
+                </View>
                 <View className="flex-row justify-between items-center mb-2">
                   <Text className="flex-1 text-left font-bold text-[13px]">Total Amount :</Text>
-                  <Text className=" w-20 text-right  font-bold text-[13px]">{(subTotal + allTaxTotal).toFixed(2)}</Text>
+                  <Text className=" w-20 text-right  font-bold text-[13px]">{(subTotal + allTaxTotal - Number(subTotal * (Number(invoices.discountInput) / 100)) + Number(invoices.adjustmentInput)).toFixed(2)}</Text>
                 </View>
+
               </View>
             </View>
 
             {/* Amount in Words */}
             <View className="p-4 border-b border-gray-200">
               <Text className="font-bold">Amount In Words</Text>
-              <Text>{numberToWords(Number(subTotal) + Number(allTaxTotal) || 0)}</Text>
+              <Text>{numberToWords(Number(subTotal) + Number(allTaxTotal) - Number(subTotal * (Number(invoices.discountInput) / 100)) + Number(invoices.adjustmentInput) || 0)}</Text>
 
             </View>
 

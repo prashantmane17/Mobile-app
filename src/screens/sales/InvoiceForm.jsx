@@ -81,6 +81,7 @@ export default function InvoiceForm() {
                 itemHsn: "",
                 type: "",
                 unit: "",
+                discount: "0",
                 details: '',
                 quantity: '1',
                 price: '0.00',
@@ -109,6 +110,7 @@ export default function InvoiceForm() {
                     type: "",
                     unit: "",
                     details: '',
+                    discount: "0",
                     quantity: '1',
                     price: '0.00',
                     intraStateTax: '0',
@@ -240,10 +242,20 @@ export default function InvoiceForm() {
         const updatedItems = [...invoiceData.items];
         updatedItems[index][field] = value ? parseFloat(value) : 0;
 
-        updatedItems[index].amount = updatedItems[index].quantity * updatedItems[index].price;
+        const quantity = Number(updatedItems[index].quantity) || 0;
+        const price = Number(updatedItems[index].price) || 0;
+        const discount = Number(updatedItems[index].discount) || 0;
+
+        if (isTaxCompany) {
+            updatedItems[index].amount = quantity * price;
+        } else {
+            const discountAmount = (quantity * price * discount) / 100;
+            updatedItems[index].amount = quantity * price - discountAmount;
+        }
 
         setInvoiceData({ ...invoiceData, items: updatedItems });
     };
+
 
     const handleSubmit = async () => {
 
@@ -277,6 +289,7 @@ export default function InvoiceForm() {
                 data.append(`items[${index}].id`, item.id);
                 data.append(`items[${index}].quantity`, item.quantity);
                 data.append(`items[${index}].itemName`, item.details);
+                data.append(`items[${index}].discount`, item.discount);
                 data.append(`items[${index}].sellingPrice`, item.price);
                 data.append(`items[${index}].intraStateTax`, item.intraStateTax);
                 data.append(`items[${index}].interStateTax`, item.interStateTax);
@@ -286,7 +299,7 @@ export default function InvoiceForm() {
             });
 
         }
-        const finalAmount = Number(totalAmt) + Number(allTaxTotal) - Number(discountValue);
+        const finalAmount = Number(totalAmt) + Number(allTaxTotal) - Number(discountValue) + Number(invoiceData.adjustmentInput);
         if (invoiceData.customer) {
             data.append("customer.id", invoiceData.customer.id);
             data.append("totalAmount", finalAmount.toFixed(2));
@@ -546,13 +559,13 @@ export default function InvoiceForm() {
                         {/* Item Details Table */}
                         <View className="mt-4">
                             <View className="bg-blue-50 p-3 rounded-t-md">
-                                <View className="flex-row">
-                                    <Text className="flex-1 font-medium text-gray-700">
+                                <View className="flex-row justify-between">
+                                    {/* <Text className="flex-1 font-medium text-gray-700">
                                         ITEM DETAILS<Text className="text-red-500">*</Text>
-                                    </Text>
+                                    </Text> */}
                                     <Text className="w-20 text-center font-medium text-gray-700">QUANTITY</Text>
                                     <Text className="w-20 text-center font-medium text-gray-700">PRICE</Text>
-                                    <Text className="w-16 text-center font-medium text-gray-700">TAX %</Text>
+                                    {isTaxCompany ? (<Text className="w-16 text-center font-medium text-gray-700">TAX %</Text>) : (<Text className="w-16 text-center font-medium text-gray-700">DISCOUNT %</Text>)}
                                     <Text className="w-20 text-center font-medium text-gray-700">AMOUNT</Text>
                                 </View>
                             </View>
@@ -589,10 +602,10 @@ export default function InvoiceForm() {
                                             {renderQuantityControl(item.quantity, index, item)}
                                         </View>
                                         {/* Price */}
-                                        <View className="flex-row items-center w-24 mr-2">
+                                        <View className={`flex-row items-center ${isTaxCompany ? "w-24" : "w-20"} mr-2`}>
                                             <Text className="mr-1">₹</Text>
                                             <TextInput
-                                                className="border flex-1 border-gray-300 rounded-md p-2 text-center"
+                                                className="border flex-1 border-gray-300 rounded-md py-2 text-center"
                                                 keyboardType="numeric"
                                                 value={item.price?.toString()}
                                                 onChangeText={(value) => handleInputChange(index, "price", value)}
@@ -600,11 +613,20 @@ export default function InvoiceForm() {
                                         </View>
 
                                         {/* Tax */}
-                                        {isTaxCompany && (
+                                        {isTaxCompany ? (
                                             <View className="flex-row items-start w-16 ml-2">
                                                 <Text className=" text-left">{isSameState ? item.intraStateTax : item.interStateTax}</Text>
                                                 <Text className="ml-1">%</Text>
                                             </View>
+                                        ) : (<View className="flex-row items-center w-20 mr-2">
+                                            <Text className="mr-1">%</Text>
+                                            <TextInput
+                                                className="border flex-1 border-gray-300 rounded-md p-2 text-center"
+                                                keyboardType="numeric"
+                                                value={item.discount?.toString()}
+                                                onChangeText={(value) => handleInputChange(index, "discount", value)}
+                                            />
+                                        </View>
                                         )}
 
                                         {/* Total Amount */}
@@ -673,7 +695,7 @@ export default function InvoiceForm() {
                                 <Text className="text-gray-700">Sub Total</Text>
                                 <Text className="font-medium">₹ {totalAmt || "0.00"}</Text>
                             </View>
-                            <View className="flex-row justify-between items-center mb-3">
+                            {isTaxCompany && (<View className="flex-row justify-between items-center mb-3">
                                 <View className="flex-row items-center">
                                     <Text className="text-gray-700">Discount %</Text>
                                     <TextInput
@@ -684,7 +706,7 @@ export default function InvoiceForm() {
                                     />
                                 </View>
                                 <Text className="font-medium">- ₹ {discountValue || "0.00"}</Text>
-                            </View>
+                            </View>)}
                             {Object.entries(taxSummary).map(([rate, amount], index) => (
                                 <View key={index}>
                                     {isSameState ? (
@@ -706,11 +728,22 @@ export default function InvoiceForm() {
                                     )}
                                 </View>
                             ))}
-
+                            <View className="flex-row justify-between items-center mb-3">
+                                <View className="flex-row items-center">
+                                    <Text className="text-gray-700">Adjustment</Text>
+                                    <TextInput
+                                        className="border w-16 ml-3 border-gray-300 rounded-md p-1.5 text-center"
+                                        keyboardType="numeric"
+                                        value={invoiceData.adjustmentInput}
+                                        onChangeText={(text) => setInvoiceData({ ...invoiceData, adjustmentInput: text })}
+                                    />
+                                </View>
+                                <Text className="font-medium">+ ₹ {invoiceData.adjustmentInput || "0.00"}</Text>
+                            </View>
 
                             <View className="flex-row justify-between items-center pt-3 border-t border-gray-300">
                                 <Text className="text-gray-700 font-medium">Total</Text>
-                                <Text className="font-bold">₹ {(totalAmt + allTaxTotal - discountValue).toFixed(2) || "0.00"}</Text>
+                                <Text className="font-bold">₹ {(totalAmt + allTaxTotal - discountValue + Number(invoiceData.adjustmentInput)).toFixed(2) || "0.00"}</Text>
                             </View>
                         </View>
                         {/* Terms & Conditions */}
@@ -720,7 +753,7 @@ export default function InvoiceForm() {
                                 className="border border-gray-300 rounded-md p-3 bg-white h-24"
                                 multiline
                                 placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
-                                value={invoiceData.termsAndConditions}
+                                value={invoiceData.termsandconditions}
                                 onChangeText={(text) => setInvoiceData({ ...invoiceData, termsAndConditions: text })}
                             />
                         </View>

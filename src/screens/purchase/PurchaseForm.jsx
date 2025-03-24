@@ -271,7 +271,7 @@ export default function PurchaseForm() {
                 data.append(`items[${index}].id`, item.id);
                 data.append(`items[${index}].quantity`, item.quantity);
                 data.append(`items[${index}].itemName`, item.details);
-                data.append(`items[${index}].sellingPrice`, item.price);
+                data.append(`items[${index}].purchasePrice`, item.price);
                 data.append(`items[${index}].intraStateTax`, item.intraStateTax);
                 data.append(`items[${index}].interStateTax`, item.interStateTax);
                 data.append(`items[${index}].itemHsn`, item.itemHsn);
