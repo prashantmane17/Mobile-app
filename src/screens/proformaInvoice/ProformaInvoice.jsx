@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { getAllProformaInvoices } from '../../api/user/proformaInvoice';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useTax } from '../../context/TaxContext';
 
 const purchaseOrders = [
     {
@@ -45,7 +46,8 @@ const purchaseOrders = [
 ];
 
 export default function ProformaInvoice() {
-    const navigation = useNavigation()
+    const navigation = useNavigation();
+    const { isTaxCompany } = useTax();
     const [invoices, setInvoices] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
