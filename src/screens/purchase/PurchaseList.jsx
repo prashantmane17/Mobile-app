@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { getAllPurchases } from '../../api/user/purchase';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -36,12 +36,29 @@ export default function PurchaseList() {
     const filteredOrders = purchases.filter(order =>
         order.vendor.displayName.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    const totalItems = filteredOrders.length;
+    const totalPages = Math.ceil(totalItems / value) || 1;
+    const startIndex = (currentPage - 1) * value
+    const endIndex = Math.min(startIndex + value, totalItems)
+    const currentInvoices = filteredOrders.slice(startIndex, endIndex)
 
-    const totalPages = Math.ceil(filteredOrders.length / value);
-    const paginatedOrders = filteredOrders.slice(
-        (currentPage - 1) * value,
-        currentPage * value
-    );
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [value, searchQuery])
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+
+
 
     const formatDate = (timestamp) => {
         const date = new Date(Number(timestamp)); // Convert to Date object
@@ -53,10 +70,11 @@ export default function PurchaseList() {
     };
 
     return (
-        <ScrollView className="flex-1 bg-gray-100">
+        <View className='flex-1'>
+
             {/* Header */}
-            <View className="bg-white p-4 shadow-sm rounded-lg">
-                <View className="flex-1 flex-row items-center bg-gray-100 rounded-md px-3 py-1 mb-4">
+            <View className="bg-white mx-4 p-4 shadow-sm rounded-lg my-2">
+                <View className=" flex-row items-center bg-gray-100 rounded-md px-3 py-1 ">
                     <Feather name="search" size={20} color="#9CA3AF" />
                     <TextInput
                         className="flex-1 ml-2 text-base"
@@ -75,7 +93,7 @@ export default function PurchaseList() {
                             <Text className="text-white font-medium">+ Create PO</Text>
                         </TouchableOpacity>
                         <Text className="text-sm text-gray-600">
-                            Total: {paginatedOrders.length}
+                            Total: {filteredOrders.length}
                         </Text>
                     </View>
 
@@ -104,102 +122,126 @@ export default function PurchaseList() {
                     </View>
                 </View>
             </View>
-
-            {/* Purchase Order Cards */}
-            <View className="px-4 py-4">
-                <View className="flex-row flex-wrap -mx-2">
-                    {paginatedOrders.map((order) => (
-                        <View key={order.id} className="w-full px-2 mb-4">
-                            <TouchableOpacity
-                                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-                                activeOpacity={0.7}
-                            >
-                                {/* Card Header */}
-                                <View className="p-4 border-b border-gray-100">
-                                    <View className="flex-row justify-between items-center">
-                                        <View className="flex-row items-center">
-                                            <Feather name="file-text" size={20} color="#60A5FA" />
-                                            <Text className="ml-2 text-sm font-medium text-gray-900"
-                                                onPress={() => navigation.navigate("PurchaseDetails", { id: order.id })}  >
-                                                {order.purchaseOrderNumber}
-                                            </Text>
-                                        </View>
-                                        <View className={`px-3 py-1 rounded-full ${order.purchaseStatus === 'Paid' ? 'bg-green-100' : 'bg-blue-100'}`}>
-                                            <Text className={`text-xs font-medium ${order.purchaseStatus === 'Paid' ? 'text-green-600' : 'text-blue-600'}`}>
-                                                {order.purchaseStatus === 'Paid' ? order.purchaseStatus : "Pending"}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                </View>
-
-                                {/* Card Content */}
-                                <View className="p-4">
-                                    <View className="space-y-3">
-                                        {/* Supplier Info */}
-                                        <View className="flex-row items-center">
-                                            <Feather name="user" size={16} color="#60A5FA" />
-                                            <Text className="ml-2 text-sm text-gray-600">
-                                                {order.vendor.displayName}
-                                            </Text>
-                                        </View>
-
-                                        {/* Email */}
-                                        <View className="flex-row items-center">
-                                            <Feather name="mail" size={16} color="#60A5FA" />
-                                            <Text className="ml-2 text-sm text-gray-600">
-                                                {order.vendor.emailAddress ? order.vendor.emailAddress : "--"}
-                                            </Text>
-                                        </View>
-
-                                        {/* Dates */}
-                                        <View className="flex-row justify-between items-center">
-                                            <View>
-                                                <Text className="text-xs text-gray-500">Purchase Date</Text>
-                                                <Text className="text-sm text-gray-900">{formatDate(order.purchaseDate)}</Text>
-                                            </View>
-                                            <View>
-                                                <Text className="text-xs text-gray-500">Due Date</Text>
-                                                <Text className="text-sm text-gray-900">{formatDate(order.dueDate)}</Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-
-                                {/* Card Footer */}
-                                <View className="p-4 bg-gray-50 border-t border-gray-100">
-                                    <View className="flex-row justify-between items-center">
-                                        <Text className="text-sm text-gray-500">Total Amount</Text>
-                                        <Text className="text-lg font-semibold text-gray-900">
-                                            ₹ {order.totalAmount}
-                                        </Text>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                    ))}
-                </View>
-            </View>
-
-            {/* Pagination */}
-            <View className="flex-row justify-center items-center p-4">
+            <View className="flex-row justify-between items-center  rounded-lg shadow-sm p-2 mx-4 mb-2 bg-white">
                 <TouchableOpacity
-                    className="mr-2 px-3 py-1 bg-gray-200 rounded-md"
-                    onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    className={`px-4 py-2 rounded-md flex-row items-center ${currentPage === 1 ? "bg-gray-100" : "bg-blue-100"}`}
+                    onPress={handlePrevPage}
                     disabled={currentPage === 1}
                 >
-                    <Text className="text-gray-600">Previous</Text>
+                    <MaterialCommunityIcons
+                        name="chevron-left"
+                        size={18}
+                        color={currentPage === 1 ? "#9CA3AF" : "#3b82f6"}
+                    />
+                    <Text className={currentPage === 1 ? "text-gray-400 ml-1" : "text-blue-600 ml-1"}>Previous</Text>
                 </TouchableOpacity>
-                <Text className="mx-2 text-gray-600">
-                    Page {currentPage} of {totalPages}
-                </Text>
+
+                <View className="flex-row items-center">
+                    <Text className="text-gray-600">
+                        Showing Page {currentPage} of {totalPages || 1}
+                        {/* <Text className="text-gray-500 text-sm">
+                                                    {" "}
+                                                    ({startIndex + 1}-{endIndex} of {totalItems})
+                                                </Text> */}
+                    </Text>
+                </View>
+
                 <TouchableOpacity
-                    className="ml-2 px-3 py-1 bg-gray-200 rounded-md"
-                    onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 rounded-md flex-row items-center ${currentPage === totalPages ? "bg-gray-100" : "bg-blue-100"}`}
+                    onPress={handleNextPage}
+                    disabled={currentPage === totalPages || totalPages === 0}
                 >
-                    <Text className="text-gray-600">Next</Text>
+                    <Text className={currentPage === totalPages ? "text-gray-400 mr-1" : "text-blue-600 mr-1"}>
+                        Next
+                    </Text>
+                    <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={18}
+                        color={currentPage === totalPages ? "#9CA3AF" : "#3b82f6"}
+                    />
                 </TouchableOpacity>
             </View>
-        </ScrollView>
+            {/* Purchase Order Cards */}
+            <ScrollView className="flex-1 bg-gray-100">
+                <View className="px-4 py-4">
+                    <View className="flex-row flex-wrap -mx-2">
+                        {currentInvoices.map((order) => (
+                            <View key={order.id} className="w-full px-2 mb-4">
+                                <TouchableOpacity
+                                    className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+                                    activeOpacity={0.7}
+                                >
+                                    {/* Card Header */}
+                                    <View className="p-4 border-b border-gray-100">
+                                        <View className="flex-row justify-between items-center">
+                                            <View className="flex-row items-center">
+                                                <Feather name="file-text" size={20} color="#60A5FA" />
+                                                <Text className="ml-2 text-sm font-medium text-gray-900"
+                                                    onPress={() => navigation.navigate("PurchaseDetails", { id: order.id })}  >
+                                                    {order.purchaseOrderNumber}
+                                                </Text>
+                                            </View>
+                                            <View className={`px-3 py-1 rounded-full ${order.purchaseStatus === 'Paid' ? 'bg-green-100' : 'bg-blue-100'}`}>
+                                                <Text className={`text-xs font-medium ${order.purchaseStatus === 'Paid' ? 'text-green-600' : 'text-blue-600'}`}>
+                                                    {order.purchaseStatus === 'Paid' ? order.purchaseStatus : "Pending"}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </View>
+
+                                    {/* Card Content */}
+                                    <View className="p-4">
+                                        <View className="space-y-3">
+                                            {/* Supplier Info */}
+                                            <View className="flex-row items-center">
+                                                <Feather name="user" size={16} color="#60A5FA" />
+                                                <Text className="ml-2 text-sm text-gray-600">
+                                                    {order.vendor.displayName}
+                                                </Text>
+                                            </View>
+
+                                            {/* Email */}
+                                            <View className="flex-row items-center">
+                                                <Feather name="mail" size={16} color="#60A5FA" />
+                                                <Text className="ml-2 text-sm text-gray-600">
+                                                    {order.vendor.emailAddress ? order.vendor.emailAddress : "--"}
+                                                </Text>
+                                            </View>
+
+                                            {/* Dates */}
+                                            <View className="flex-row justify-between items-center">
+                                                <View>
+                                                    <Text className="text-xs text-gray-500">Purchase Date</Text>
+                                                    <Text className="text-sm text-gray-900">{formatDate(order.purchaseDate)}</Text>
+                                                </View>
+                                                <View>
+                                                    <Text className="text-xs text-gray-500">Due Date</Text>
+                                                    <Text className="text-sm text-gray-900">{formatDate(order.dueDate)}</Text>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </View>
+
+                                    {/* Card Footer */}
+                                    <View className="p-4 bg-gray-50 border-t border-gray-100">
+                                        <View className="flex-row justify-between items-center">
+                                            <Text className="text-sm text-gray-500">Total Amount</Text>
+                                            <Text className="text-lg font-semibold text-gray-900">
+                                                ₹ {order.totalAmount}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                        {filteredOrders.length === 0 && <View className="flex-1 justify-center items-center py-20">
+                            <MaterialCommunityIcons name="animation" size={64} color="#9ca3af" />
+                            <Text className="mt-4 text-gray-500 text-lg">Purchase orders not found</Text>
+                        </View>}
+                    </View>
+                </View>
+
+            </ScrollView>
+        </View>
     );
 }

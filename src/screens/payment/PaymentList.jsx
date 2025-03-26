@@ -18,6 +18,7 @@ const PaymentList = () => {
         { label: '50', value: 50 },
         { label: '100', value: 100 }
     ]);
+    const [currentPage, setCurrentPage] = useState(1)
     const paymentData = async () => {
         setLoading(true)
         try {
@@ -37,7 +38,27 @@ const PaymentList = () => {
     const filteredInvoices = payment.filter(invoice =>
         invoice.customerName.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    const totalItems = filteredInvoices.length
+    const totalPages = Math.ceil(totalItems / value) || 1;
+    const startIndex = (currentPage - 1) * value
+    const endIndex = Math.min(startIndex + value, totalItems)
+    const currentPayment = filteredInvoices.slice(startIndex, endIndex)
 
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [value, searchQuery])
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
     return (
         <SafeAreaView className="flex-1 bg-gray-100">
             <View className="p-4">
@@ -95,6 +116,45 @@ const PaymentList = () => {
                         </View>
                     </View>
                 </View>
+                <View className="flex-row justify-between items-center  rounded-lg shadow-sm p-2 mb-2 bg-white">
+                    <TouchableOpacity
+                        className={`px-4 py-2 rounded-md flex-row items-center ${currentPage === 1 ? "bg-gray-100" : "bg-blue-100"}`}
+                        onPress={handlePrevPage}
+                        disabled={currentPage === 1}
+                    >
+                        <MaterialCommunityIcons
+                            name="chevron-left"
+                            size={18}
+                            color={currentPage === 1 ? "#9CA3AF" : "#3b82f6"}
+                        />
+                        <Text className={currentPage === 1 ? "text-gray-400 ml-1" : "text-blue-600 ml-1"}>Previous</Text>
+                    </TouchableOpacity>
+
+                    <View className="flex-row items-center">
+                        <Text className="text-gray-600">
+                            Showing Page {currentPage} of {totalPages || 1}
+                            {/* <Text className="text-gray-500 text-sm">
+                                                    {" "}
+                                                    ({startIndex + 1}-{endIndex} of {totalItems})
+                                                </Text> */}
+                        </Text>
+                    </View>
+
+                    <TouchableOpacity
+                        className={`px-4 py-2 rounded-md flex-row items-center ${currentPage === totalPages ? "bg-gray-100" : "bg-blue-100"}`}
+                        onPress={handleNextPage}
+                        disabled={currentPage === totalPages || totalPages === 0}
+                    >
+                        <Text className={currentPage === totalPages ? "text-gray-400 mr-1" : "text-blue-600 mr-1"}>
+                            Next
+                        </Text>
+                        <MaterialCommunityIcons
+                            name="chevron-right"
+                            size={18}
+                            color={currentPage === totalPages ? "#9CA3AF" : "#3b82f6"}
+                        />
+                    </TouchableOpacity>
+                </View>
                 <ScrollView className="mb-40">
                     <View className="">
                         {loading ? (
@@ -104,7 +164,7 @@ const PaymentList = () => {
                             </View>
                         ) : (<>
                             {filteredInvoices.length > 0 ? (
-                                filteredInvoices.map((payment, index) => (
+                                currentPayment.map((payment, index) => (
                                     <View key={index} className="bg-white rounded-lg shadow-sm p-4 mb-2">
                                         <View className="flex-row justify-between items-start mb-3">
                                             <View>
@@ -136,14 +196,7 @@ const PaymentList = () => {
                         </>
                         )}
                     </View>
-                    <View className="flex-row justify-between items-center mt-4 py-2">
-                        <Text className="text-gray-600">Showing page 1 of 1</Text>
-                        <View className="flex-row items-center space-x-2">
-                            <TouchableOpacity className="w-8 h-8 rounded bg-gray-200 items-center justify-center">
-                                <Text className="text-gray-600">1</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
+
                 </ScrollView>
 
                 {/* Pagination */}

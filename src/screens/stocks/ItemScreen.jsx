@@ -54,13 +54,12 @@ export default function ItemScreen() {
     const filteredItems = items.filter((item) => item.itemName.toLowerCase().includes(searchQuery.toLowerCase()))
 
     // Calculate pagination values
-    const totalItems = filteredItems.length
-    const totalPages = Math.ceil(totalItems / value)
+    const totalItems = filteredItems.length;
+    const totalPages = Math.ceil(totalItems / value) || 1;
     const startIndex = (currentPage - 1) * value
     const endIndex = Math.min(startIndex + value, totalItems)
     const currentItems = filteredItems.slice(startIndex, endIndex)
 
-    // Reset to first page when items per page changes or search query changes
     useEffect(() => {
         setCurrentPage(1)
     }, [value, searchQuery])
@@ -316,7 +315,7 @@ export default function ItemScreen() {
                                 </>
                             ) : (
                                 <View className="flex-1 justify-center items-center py-20">
-                                    <MaterialCommunityIcons name="package-variant-removed" size={64} color="#9ca3af" />
+                                    <MaterialCommunityIcons name="archive-search" size={64} color="#9ca3af" />
                                     <Text className="mt-4 text-gray-500 text-lg">Items not found</Text>
                                 </View>
                             )}

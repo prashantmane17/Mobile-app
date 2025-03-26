@@ -31,11 +31,11 @@ const PurchaseDetails = ({ route }) => {
       const response = await getAllPurchases();
       const orgResponse = await getOrgProfie();
       const data = response.invoices.find((invoice) => invoice.id === id)
-      console.log("dtata---", data)
+      // console.log("dtata---", data)
       setInvoices(data);
       setOrgData(orgResponse.organizationList[0]);
       const orgState = orgResponse.organizationList[0].state;
-      const placeOfSupply = data.customer.placeOfSupply;
+      const placeOfSupply = data.vendor.placeOfSupply;
       if (orgState === placeOfSupply) {
         setIsSameSate(true)
       } else {
@@ -137,7 +137,7 @@ const PurchaseDetails = ({ route }) => {
           <style>
             body {
               font-family: Arial, sans-serif;
-              margin: 10px 20px;
+              margin: 50px 70px 10px;
               padding: 0;
               font-size: 12px;
             }
@@ -209,14 +209,22 @@ const PurchaseDetails = ({ route }) => {
             .totals {
               display: flex;
               justify-content: space-between;
-              
             }
+              .totalCal{
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content:end;
+              border-left: 1px solid #000;
+              }
             .total-quantity {
               width: 50%;
               padding: 10px;
               // border-right: 1px solid #000;
             }
             .total-amount {
+            display: flex;
+            align-items: center;
               width: 50%;
               padding: 10px;
               text-align: right;
@@ -224,10 +232,11 @@ const PurchaseDetails = ({ route }) => {
             .amount-in-words {
               padding: 10px;
               border-top: 1px solid #000;
-              border-bottom: 1px solid #000;
+            
             }
             .footer {
               display: flex;
+              border-top: 1px solid #000;
             }
             .declaration {
               width: 50%;
@@ -260,6 +269,9 @@ const PurchaseDetails = ({ route }) => {
               font-size: 10px;
               border-top: 1px solid #000;
             }
+              .border_rightFor_quantity{
+              border-right: 1px solid #000;
+              }
             .gst_email{
               display: flex;
               align-items: center;
@@ -283,9 +295,9 @@ const PurchaseDetails = ({ route }) => {
                 ${orgData.state}, ${orgData.country}
               </div>
               <div class="gst_email">
-                  <div class="gst_div">
-                    GSTIN: ${orgData.gstin}
-                  </div>
+                  ${isTaxCompany ? (`<div class="gst_div">
+        GSTIN: ${orgData.gstin || ""}
+      </div>`) : ("")}
                   <div class="email_div">
                   Email: ${orgData.email}
                 </div>
@@ -298,32 +310,32 @@ const PurchaseDetails = ({ route }) => {
                 <div>${invoices.vendor.displayName}</div>
                 <div>${invoices.vendor.billingAddress.addressLine1}</div>
                 <div>Ph: ${invoices.vendor.phone}</div>
-                <div>GSTIN: ${invoices.vendor.gstin || ''}</div>
-                <div>PAN: ${invoices.vendor.billingAddress || ''}</div>
-                <div>State: ${invoices.vendor.billingAddress.state || '--'}</div>
-              </div>
-              <div class="invoice-meta">
-                <div class="meta-row">
-                  <div class="meta-label">Invoice No:</div>
-                  <div class="meta-value">${invoices.purchaseOrderNumber}</div>
-                </div>
-                <div class="meta-row">
-                  <div class="meta-label">Invoice Date:</div>
-                  <div class="meta-value">${invoices.purchaseDate}</div>
-                </div>
-                <div class="meta-row">
-                  <div class="meta-label">Ship To:</div>
-                  <div class="meta-value">${invoices.vendor.shippingAddress.addressLine1}</div>
-                </div>
-                <div class="meta-row">
-                  <div class="meta-label">Terms Of Delivery:</div>
-                  <div class="meta-value">${invoices.terms}</div>
-                </div>
-                
-              </div>
-            </div>
-            
-            <!-- Items Table -->
+                ${isTaxCompany ? (`<div>GSTIN: ${invoices.vendor.gstin || ''}</div>
+                <div>PAN: ${invoices.vendor.pan || ''}</div>`) : ("")
+      }
+
+      <div> State: ${invoices.vendor.billingAddress.state || '--'}</div >
+              </div >
+  <div class="invoice-meta">
+    <div class="meta-row">
+      <div class="meta-label">Invoice No:</div>
+      <div class="meta-value">${invoices.purchaseOrderNumber}</div>
+    </div>
+    <div class="meta-row">
+      <div class="meta-label">Invoice Date:</div>
+      <div class="meta-value">${invoices.purchaseDate}</div>
+    </div>
+    <div class="meta-row">
+      <div class="meta-label">Ship To:</div>
+      <div class="meta-value">${invoices.vendor.shippingAddress.addressLine1}</div>
+    </div>
+    <div class="meta-row">
+      <div class="meta-label">Terms Of Delivery:</div>
+      <div class="meta-value">${invoices.terms}</div>
+    </div>
+
+  </div>
+            </div >
             <table>
               <thead>
                 <tr>
@@ -332,29 +344,31 @@ const PurchaseDetails = ({ route }) => {
                   <th>HSN/SAC</th>
                   <th>Quantity</th>
                   <th>Rate</th>
+                  ${isTaxCompany ? (`<th>Tax %</th>`) : ("")}
                   <th>Amount</th>
                 </tr>
               </thead>
               <tbody>
                 ${invoices.items.map((item, index) => {
-      const itemTotal = Number(item.purchasePrice) * Number(item.quantity)
-      return (`
+        const itemTotal = Number(item.purchasePrice) * Number(item.quantity)
+        return (`
                   <tr>
                     <td>${index + 1}</td>
                     <td>${item.itemName}</td>
                     <td>${item.itemHsn}</td>
                     <td>${item.quantity}</td>
                     <td class="text-right">${item.purchasePrice.toFixed(2)}</td>
-                    <td class="text-right">${itemTotal.toFixed(2)}</td>
+                    ${isTaxCompany ? (isSameState ? (`<td>${item.interStateTax}</td>`) : (`<td>${item.intraStateTax}</td>`)) : ("")}
+            <td class="text-right">${itemTotal.toFixed(2)}</td>
                   </tr>
                 `)
-    }).join('')}
+      }).join('')}
               </tbody>
             </table>
             
-            <!-- Totals -->
+            <!--Totals -->
             <div class="totals">
-<div>
+<div class='border_rightFor_quantity'>
               <div class="total-quantity">
                 Total Quantity : ${totalQTY}
               </div>
@@ -368,7 +382,7 @@ const PurchaseDetails = ({ route }) => {
                 SubTotal  :  ${subTotal}
               </div>
 
-              ${Object.entries(taxSummary).map(([rate, totalTax]) => (`
+              ${isTaxCompany ? (Object.entries(taxSummary).map(([rate, totalTax]) => (`
                   <div >
                     ${isSameState ? (`
                       <div>
@@ -381,27 +395,22 @@ const PurchaseDetails = ({ route }) => {
                           <div class="">${(totalTax / 2).toFixed(2)}</div>
                         </div>
                       </div>`
-      ) : (`
+        ) : (`
                       <div class="gstType">
                         <div class="">IGST (${rate}%):</div>
                         <div class="">${totalTax.toFixed(2)}</div>
                       </div>`
-      )}
+        )}
                   </div>
-                `))}
+                `))
+      ) : ("")}
+  
                <div class="total-amount">
                 <strong>Total Amount : ${Number(subTotal) + Number(allTaxTotal).toFixed(2)}</strong>
               </div>
             </div>
             </div>
-            
-            <!-- Amount in Words -->
-            <div class="amount-in-words">
-              <div><strong>Amount Chargeable (In Words)</strong></div>
-              <div>${numberToWords(subTotal)}</div>
-            </div>
-            
-            <!-- Footer -->
+            <!--Footer -->
             <div class="footer">
               <div class="declaration">
                 <div><strong>Declaration:</strong></div>
@@ -417,7 +426,7 @@ const PurchaseDetails = ({ route }) => {
               </div>
             </div>
             
-            <!-- Signatures -->
+            <!--Signatures -->
             <div class="signatures">
               <div class="customer-signature">
                 <div>Customer Signature and Seal</div>
@@ -427,14 +436,14 @@ const PurchaseDetails = ({ route }) => {
               </div>
             </div>
             
-            <!-- Page Footer -->
-            <!-- <div class="page-footer">
-              Powered By Portstay
-            </div>-->
-          </div>
-        </body>
-      </html>
-    `;
+            <!--Page Footer-- >
+            < !-- < div class="page-footer" >
+  Powered By Portstay
+            </div > -->
+          </div >
+        </body >
+      </html >
+  `;
   };
 
   const generatePDF = async () => {

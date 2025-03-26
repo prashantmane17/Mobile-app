@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -40,11 +40,27 @@ export default function InvoiceCards() {
         invoice.customer?.displayName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const totalPages = Math.ceil(filteredInvoices.length / value);
-    const paginatedInvoices = filteredInvoices.slice(
-        (currentPage - 1) * value,
-        currentPage * value
-    );
+    const totalItems = filteredInvoices.length;
+    const totalPages = Math.ceil(totalItems / value) || 1;
+    const startIndex = (currentPage - 1) * value
+    const endIndex = Math.min(startIndex + value, totalItems)
+    const currentInvoices = filteredInvoices.slice(startIndex, endIndex)
+
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [value, searchQuery])
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
 
     const formatDate = (timestamp) => {
         const date = new Date(Number(timestamp)); // Convert to Date object
@@ -66,8 +82,8 @@ export default function InvoiceCards() {
 
     return (
         <View className="flex-1 bg-gray-100">
-            <View className="bg-white m-4 mb-1 p-4 shadow-sm rounded-lg">
-                <View className=" flex-row items-center bg-gray-100 rounded-md px-3 py-1 mb-4">
+            <View className="bg-white mx-4 my-2 px-4 py-2 shadow-sm rounded-lg">
+                <View className=" flex-row items-center bg-gray-100 rounded-md px-3 py-1 mb-2">
                     <Feather name="search" size={20} color="#9CA3AF" />
                     <TextInput
                         className="flex-1 ml-2 text-base"
@@ -86,7 +102,7 @@ export default function InvoiceCards() {
                             <Text className="text-white font-medium">+ Create Invoice</Text>
                         </TouchableOpacity>
                         <Text className="text-sm text-gray-600">
-                            Total: {paginatedInvoices.length}
+                            Total: {filteredInvoices.length}
                         </Text>
                     </View>
 
@@ -117,12 +133,50 @@ export default function InvoiceCards() {
                     </View>
                 </View>
             </View>
+            <View className="flex-row justify-between items-center  rounded-lg shadow-sm p-2 mx-4 mb-2 bg-white">
+                <TouchableOpacity
+                    className={`px-4 py-2 rounded-md flex-row items-center ${currentPage === 1 ? "bg-gray-100" : "bg-blue-100"}`}
+                    onPress={handlePrevPage}
+                    disabled={currentPage === 1}
+                >
+                    <MaterialCommunityIcons
+                        name="chevron-left"
+                        size={18}
+                        color={currentPage === 1 ? "#9CA3AF" : "#3b82f6"}
+                    />
+                    <Text className={currentPage === 1 ? "text-gray-400 ml-1" : "text-blue-600 ml-1"}>Previous</Text>
+                </TouchableOpacity>
 
+                <View className="flex-row items-center">
+                    <Text className="text-gray-600">
+                        Showing Page {currentPage} of {totalPages || 1}
+                        {/* <Text className="text-gray-500 text-sm">
+                                                    {" "}
+                                                    ({startIndex + 1}-{endIndex} of {totalItems})
+                                                </Text> */}
+                    </Text>
+                </View>
+
+                <TouchableOpacity
+                    className={`px-4 py-2 rounded-md flex-row items-center ${currentPage === totalPages ? "bg-gray-100" : "bg-blue-100"}`}
+                    onPress={handleNextPage}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                >
+                    <Text className={currentPage === totalPages ? "text-gray-400 mr-1" : "text-blue-600 mr-1"}>
+                        Next
+                    </Text>
+                    <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={18}
+                        color={currentPage === totalPages ? "#9CA3AF" : "#3b82f6"}
+                    />
+                </TouchableOpacity>
+            </View>
             <ScrollView className="flex-1 bg-gray-100">
 
                 <View className="px-4 py-4">
                     <View className="flex-row flex-wrap -mx-2">
-                        {paginatedInvoices.map((invoice) => {
+                        {currentInvoices.map((invoice) => {
                             const { label, color, bg } = getStatusLabel(invoice.invoiceStatus);
                             return (<View key={invoice.id} className="w-full px-2 mb-4">
                                 <TouchableOpacity
@@ -193,28 +247,14 @@ export default function InvoiceCards() {
                             </View>
                             )
                         })}
+                        {filteredInvoices.length === 0 && <View className="flex-1 justify-center items-center py-20">
+                            <MaterialCommunityIcons name="animation" size={64} color="#9ca3af" />
+                            <Text className="mt-4 text-gray-500 text-lg">Invoices not found</Text>
+                        </View>}
                     </View>
                 </View>
 
-                <View className="flex-row justify-center items-center p-4">
-                    <TouchableOpacity
-                        className="mr-2 px-3 py-1 bg-gray-200 rounded-md"
-                        onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                    >
-                        <Text className="text-gray-600">Previous</Text>
-                    </TouchableOpacity>
-                    <Text className="mx-2 text-gray-600">
-                        Page {currentPage} of {totalPages}
-                    </Text>
-                    <TouchableOpacity
-                        className="ml-2 px-3 py-1 bg-gray-200 rounded-md"
-                        onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                    >
-                        <Text className="text-gray-600">Next</Text>
-                    </TouchableOpacity>
-                </View>
+
             </ScrollView>
         </View>
     );
