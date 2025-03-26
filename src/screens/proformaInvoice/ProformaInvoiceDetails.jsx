@@ -753,4 +753,4 @@ const ProformaInvoiceDetails = ({ route }) => {
   );
 };
 
-export default InvoiceTemp;
+export default ProformaInvoiceDetails;

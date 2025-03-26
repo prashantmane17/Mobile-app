@@ -5,6 +5,7 @@ import { TextInput } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { setTimeZone } from '../api/admin/adminApi';
+import currencies from "../../assets/json/currency.json"
 
 
 // Time zone API endpoint
@@ -17,7 +18,7 @@ export default function TimeZoneForm({ onClose }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [startMonth, setStartMonth] = useState('');
     const [endMonth, setEndMonth] = useState('');
-    const [currency, setCurrency] = useState('United States Dollar (USD) - $');
+    const [currency, setCurrency] = useState('$');
     const [loading, setLoading] = useState(false);
     const [showTimeZoneList, setShowTimeZoneList] = useState(false);
 
@@ -26,14 +27,14 @@ export default function TimeZoneForm({ onClose }) {
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
-    const currencies = [
-        'United States Dollar (USD) - $',
-        'Euro (EUR) - €',
-        'British Pound (GBP) - £',
-        'Japanese Yen (JPY) - ¥',
-        'Canadian Dollar (CAD) - $',
-        'Australian Dollar (AUD) - $'
-    ];
+    // const currencies = [
+    //     'United States Dollar (USD) - $',
+    //     'Euro (EUR) - €',
+    //     'British Pound (GBP) - £',
+    //     'Japanese Yen (JPY) - ¥',
+    //     'Canadian Dollar (CAD) - $',
+    //     'Australian Dollar (AUD) - $'
+    // ];
 
 
     useEffect(() => {
@@ -212,8 +213,8 @@ export default function TimeZoneForm({ onClose }) {
                                 onValueChange={(itemValue) => setCurrency(itemValue)}
                                 className="h-12"
                             >
-                                {currencies.map((curr, index) => (
-                                    <Picker.Item key={index} label={curr} value={curr} />
+                                {Object.entries(currencies).map(([key, curr]) => (
+                                    <Picker.Item key={key} label={`${curr.name} (${curr.symbolNative})`} value={curr.symbolNative} />
                                 ))}
                             </Picker>
                         </View>

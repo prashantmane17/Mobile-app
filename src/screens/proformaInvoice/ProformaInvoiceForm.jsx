@@ -19,6 +19,7 @@ import { getAllItems } from '../../api/user/items';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getOrgProfie } from '../../api/admin/adminApi';
 import { useTax } from '../../context/TaxContext';
+import { getAllProformaInvoices } from '../../api/user/proformaInvoice';
 
 export default function ProformaInvoiceForm() {
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -31,48 +32,16 @@ export default function ProformaInvoiceForm() {
     const [taxSummary, setTaxSummary] = useState({});
     const [allTaxTotal, setAllTaxTotal] = useState(0);
     const [discountValue, setDiscountValue] = useState(0);
-    const { isTaxCompany } = useTax();
+    const { isTaxCompany, userName } = useTax();
     const [inoiceItems, setInvoiceItems] = useState([])
-    const getCustomer = async () => {
-        setISLoading(true);
-        try {
-            const response = await getAllCustomers();
-            const itemResponse = await getAllItems();
-            const orgResponse = await getOrgProfie();
-            setCustomers(response.parties)
-            setInvoiceItems(itemResponse.items)
-            setFilteredUsers(response.parties)
-            const org_State = orgResponse.organizationList[0].state;
-            setOrgState(org_State)
-
-        } catch (error) {
-
-        } finally {
-            setISLoading(false);
-        }
-    }
-    useFocusEffect(
-        useCallback(() => {
-            getCustomer();
-        }, [])
-    );
-
-    const [showInvoicePicker, setShowInvoicePicker] = useState(false);
-    const [showDuePicker, setShowDuePicker] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState(null);
-    const [filteredItems, setFilteredItems] = useState([]);
-    const [itemModalVisible, setItemModalVisible] = useState(false);
-
     const intialData = {
         customerName: '',
-        invoiceNumber: 'INV/2025/00003',
+        invoiceNumber: '',
         orderNumber: '',
         invoiceDate: new Date(),
         terms: '',
         dueDate: new Date(),
-        salesperson: 'Harish',
+        salesperson: userName,
         subject: '',
         customer: {},
         items: [
@@ -98,7 +67,60 @@ export default function ProformaInvoiceForm() {
     }
 
     const [invoiceData, setInvoiceData] = useState(intialData);
+    const getCustomer = async () => {
+        setISLoading(true);
+        try {
+            const response = await getAllCustomers();
+            const pIresponse = await getAllProformaInvoices();
+            const itemResponse = await getAllItems();
+            const orgResponse = await getOrgProfie();
+            setCustomers(response.parties)
+            const numbers = pIresponse.invoices.map((data) => data.invoiceNumber)
+            const nextInvoice = getNextInvoiceNumber(numbers);
+            setInvoiceData({ ...invoiceData, invoiceNumber: nextInvoice })
+            setInvoiceItems(itemResponse.items);
+            setFilteredUsers(response.parties)
+            const org_State = orgResponse.organizationList[0].state;
+            setOrgState(org_State)
+        } catch (error) {
 
+        } finally {
+            setISLoading(false);
+        }
+    }
+    const getNextInvoiceNumber = (numbers) => {
+        if (numbers.length === 0) {
+            return "PRO/INV/2025/00001";
+        }
+
+        const lastInvoice = numbers[0];
+        const match = lastInvoice.match(/(\d+)$/);
+
+        if (match) {
+            const lastNumber = parseInt(match[0], 10);
+            const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
+
+            return `PRO/INV/2025/${nextNumber}`;
+        }
+
+        return "PRO/INV/2025/00001";
+    };
+
+
+    const [showInvoicePicker, setShowInvoicePicker] = useState(false);
+    const [showDuePicker, setShowDuePicker] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [filteredItems, setFilteredItems] = useState([]);
+    const [itemModalVisible, setItemModalVisible] = useState(false);
+
+
+    useFocusEffect(
+        useCallback(() => {
+            getCustomer();
+        }, [])
+    );
     const addItem = () => {
         setInvoiceData({
             ...invoiceData,
@@ -313,7 +335,7 @@ export default function ProformaInvoiceForm() {
             if (response.ok) {
                 Alert.alert("Sucess", "Invoice created Successfully");
                 setInvoiceData(intialData)
-                navigation.navigate('sales')
+                navigation.navigate('Pinvoice')
             }
             else {
                 Alert.alert("error", "Failed to create Invoice");
@@ -382,10 +404,10 @@ export default function ProformaInvoiceForm() {
                 <ScrollView className="flex-1">
                     {/* Header */}
                     <View className="flex-row items-center p-4 border-b border-gray-200">
-                        <TouchableOpacity className="mr-4" onPress={() => navigation.navigate('sales')}>
+                        <TouchableOpacity className="mr-4" onPress={() => navigation.navigate('Pinvoice')}>
                             <ArrowLeft width={24} height={24} color="#2563eb" />
                         </TouchableOpacity>
-                        <Text className="text-xl font-bold text-gray-800">Create Invoice</Text>
+                        <Text className="text-xl font-bold text-gray-800">Create ProformaInvoice</Text>
                     </View>
 
                     {/* Form Content */}

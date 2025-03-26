@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Plus, Trash } from 'react-native-feather';
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { getAllCustomers } from '../../api/user/customer';
 import { getAllItems } from '../../api/user/items';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getOrgProfie } from '../../api/admin/adminApi';
@@ -24,7 +23,7 @@ import { useTax } from '../../context/TaxContext';
 export default function PurchaseForm() {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [customers, setCustomers] = useState([])
-    const { isTaxCompany } = useTax();
+    const { isTaxCompany, userName } = useTax();
     const navigation = useNavigation();
     const [isLoading, setISLoading] = useState(false)
     const [isSameState, setIsSameSate] = useState(false)
@@ -33,46 +32,14 @@ export default function PurchaseForm() {
     const [taxSummary, setTaxSummary] = useState({});
     const [allTaxTotal, setAllTaxTotal] = useState(0);
     const [inoiceItems, setInvoiceItems] = useState([])
-    const getCustomer = async () => {
-        setISLoading(true);
-        try {
-            const response = await getAllVendors();
-            const itemResponse = await getAllItems();
-            const orgResponse = await getOrgProfie();
-            setCustomers(response.vendors)
-            setInvoiceItems(itemResponse.items)
-            setFilteredUsers(response.vendors)
-            const org_State = orgResponse.organizationList[0].state;
-            setOrgState(org_State)
-
-        } catch (error) {
-
-        } finally {
-            setISLoading(false);
-        }
-    }
-    useFocusEffect(
-        useCallback(() => {
-            getCustomer();
-        }, [])
-    );
-
-    const [showInvoicePicker, setShowInvoicePicker] = useState(false);
-    const [showDuePicker, setShowDuePicker] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState(null);
-    const [filteredItems, setFilteredItems] = useState([]);
-    const [itemModalVisible, setItemModalVisible] = useState(false);
-
     const intialData = {
         customerName: '',
-        purchaseOrderNumber: 'PO-2025/00001',
+        purchaseOrderNumber: '',
         orderNumber: '',
         purchaseDate: new Date(),
         terms: '',
         dueDate: new Date(),
-        salesperson: 'Harish',
+        salesperson: userName,
         subject: '',
         customer: {},
         items: [
@@ -97,6 +64,58 @@ export default function PurchaseForm() {
     }
 
     const [invoiceData, setInvoiceData] = useState(intialData);
+    const getCustomer = async () => {
+        setISLoading(true);
+        try {
+            const response = await getAllVendors();
+            const itemResponse = await getAllItems();
+            const orgResponse = await getOrgProfie();
+            setCustomers(response.vendors)
+            const numbers = response.invoices.map((data) => data.purchaseOrderNumber)
+            const nextInvoice = getNextInvoiceNumber(numbers);
+            console.log(numbers, "numbers------", nextInvoice)
+            setInvoiceData({ ...invoiceData, purchaseOrderNumber: nextInvoice })
+            setInvoiceItems(itemResponse.items)
+            setFilteredUsers(response.vendors)
+            const org_State = orgResponse.organizationList[0].state;
+            setOrgState(org_State)
+
+        } catch (error) {
+
+        } finally {
+            setISLoading(false);
+        }
+    }
+    const getNextInvoiceNumber = (numbers) => {
+        if (numbers.length === 0) {
+            return "PO-2025/00001";
+        }
+
+        const lastInvoice = numbers[numbers.length - 1];
+        const match = lastInvoice.match(/(\d+)$/);
+
+        if (match) {
+            const lastNumber = parseInt(match[0], 10);
+            const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
+
+            return `PO-2025/${nextNumber}`;
+        }
+
+        return "PO-2025/00001";
+    };
+    useFocusEffect(
+        useCallback(() => {
+            getCustomer();
+        }, [])
+    );
+
+    const [showInvoicePicker, setShowInvoicePicker] = useState(false);
+    const [showDuePicker, setShowDuePicker] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [filteredItems, setFilteredItems] = useState([]);
+    const [itemModalVisible, setItemModalVisible] = useState(false);
 
     const addItem = () => {
         setInvoiceData({

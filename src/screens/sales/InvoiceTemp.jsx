@@ -213,8 +213,8 @@ const InvoiceTemp = ({ route }) => {
               justify-content: space-between;
 
             }
-            .totalCal{
-			  width:50%;
+            .totalCal
+			         width:50%;
               padding:10px;
               border-left: 1px solid #000;
            text-align: right;
@@ -419,10 +419,6 @@ const InvoiceTemp = ({ route }) => {
               </div>
             </div>
             </div>
-            
-          
-           
-            
             <!-- Footer -->
             <div class="footer">
               <div class="declaration">
@@ -455,7 +451,7 @@ const InvoiceTemp = ({ route }) => {
             </div>-->
           </div>
         </body>
-      </html>g
+      </html>
     `;
   };
 

@@ -31,40 +31,8 @@ export default function InvoiceForm() {
     const [taxSummary, setTaxSummary] = useState({});
     const [allTaxTotal, setAllTaxTotal] = useState(0);
     const [discountValue, setDiscountValue] = useState(0);
-    const { isTaxCompany } = useTax();
+    const { isTaxCompany, userName } = useTax();
     const [inoiceItems, setInvoiceItems] = useState([])
-    const getCustomer = async () => {
-        setISLoading(true);
-        try {
-            const response = await getAllCustomers();
-            const itemResponse = await getAllItems();
-            const orgResponse = await getOrgProfie();
-            setCustomers(response.parties)
-            setInvoiceItems(itemResponse.items)
-            setFilteredUsers(response.parties)
-            const org_State = orgResponse.organizationList[0].state;
-            setOrgState(org_State)
-
-        } catch (error) {
-
-        } finally {
-            setISLoading(false);
-        }
-    }
-    useFocusEffect(
-        useCallback(() => {
-            getCustomer();
-        }, [])
-    );
-
-    const [showInvoicePicker, setShowInvoicePicker] = useState(false);
-    const [showDuePicker, setShowDuePicker] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState(null);
-    const [filteredItems, setFilteredItems] = useState([]);
-    const [itemModalVisible, setItemModalVisible] = useState(false);
-
     const intialData = {
         customerName: '',
         invoiceNumber: 'INV/2025/00003',
@@ -72,7 +40,7 @@ export default function InvoiceForm() {
         invoiceDate: new Date(),
         terms: '',
         dueDate: new Date(),
-        salesperson: 'Harish',
+        salesperson: userName,
         subject: '',
         customer: {},
         items: [
@@ -98,6 +66,59 @@ export default function InvoiceForm() {
     }
 
     const [invoiceData, setInvoiceData] = useState(intialData);
+    const getCustomer = async () => {
+        setISLoading(true);
+        try {
+            const response = await getAllCustomers();
+            const itemResponse = await getAllItems();
+            const orgResponse = await getOrgProfie();
+            setCustomers(response.parties)
+            setInvoiceItems(itemResponse.items)
+            setFilteredUsers(response.parties)
+            const numbers = response.invoices.map((data) => data.invoiceNumber)
+            const nextInvoice = getNextInvoiceNumber(numbers);
+            setInvoiceData({ ...invoiceData, invoiceNumber: nextInvoice })
+            const org_State = orgResponse.organizationList[0].state;
+            setOrgState(org_State)
+
+        } catch (error) {
+
+        } finally {
+            setISLoading(false);
+        }
+    }
+    const getNextInvoiceNumber = (numbers) => {
+        if (numbers.length === 0) {
+            return "INV/2025/00001";
+        }
+
+        const lastInvoice = numbers[numbers.length - 1];
+        const match = lastInvoice.match(/(\d+)$/);
+
+        if (match) {
+            const lastNumber = parseInt(match[0], 10);
+            const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
+
+            return `INV/2025/${nextNumber}`;
+        }
+
+        return "INV/2025/00001";
+    };
+    useFocusEffect(
+        useCallback(() => {
+            getCustomer();
+        }, [])
+    );
+
+    const [showInvoicePicker, setShowInvoicePicker] = useState(false);
+    const [showDuePicker, setShowDuePicker] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [filteredItems, setFilteredItems] = useState([]);
+    const [itemModalVisible, setItemModalVisible] = useState(false);
+
+
 
     const addItem = () => {
         setInvoiceData({

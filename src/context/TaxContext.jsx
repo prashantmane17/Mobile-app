@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getOrgProfie } from "../api/admin/adminApi";
+import { getOrgProfie, getSession } from "../api/admin/adminApi";
 
 const TaxContext = createContext();
 
 export const TaxProvider = ({ children }) => {
     const [orgData, setOrgData] = useState(null);
+    const [userName, setUserName] = useState('');
     const [isTaxCompany, setIsTaxCompany] = useState(false);
+
 
     const orgDetails = async () => {
         try {
@@ -23,13 +25,23 @@ export const TaxProvider = ({ children }) => {
             console.error("Error fetching org profile:", error);
         }
     };
+    const userDetails = async () => {
+        try {
+            const response = await getSession();
+            setUserName(response.name);
+            console.log("getOrgProfie------------", response.name);
 
+        } catch (error) {
+            console.error("Error fetching org profile:", error);
+        }
+    };
     useEffect(() => {
         orgDetails();
+        userDetails();
     }, []);
 
     return (
-        <TaxContext.Provider value={{ isTaxCompany }}>
+        <TaxContext.Provider value={{ isTaxCompany, userName }}>
             {children}
         </TaxContext.Provider>
     );
