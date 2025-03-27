@@ -129,320 +129,324 @@ const PurchaseDetails = ({ route }) => {
   const generateHTML = () => {
     ActivityIndicator
     return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Invoice</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              margin: 50px 70px 10px;
-              padding: 0;
-              font-size: 12px;
-            }
-            .invoice-container {
-              width: 100%;
-              max-width: 800px;
-              margin: 0 auto;
-              border: 1px solid #000;
-            }
-            .header {
-              text-align: center;
-              padding: 10px;
-              border-bottom: 1px solid #000;
-            }
-            .header h1 {
-              margin: 0;
-              font-size: 18px;
-            }
-            .company-details {
-              text-align: center;
-              margin-bottom: 5px;
-            }
-            .invoice-info {
-              display: flex;
-            }
-            .customer-info {
-              width: 50%;
-              padding: 10px;
-              border-right: 1px solid #000;
-            }
-            .invoice-meta {
-              width: 50%;
-
-            }
-            .meta-row {
-              display: flex;
-              padding: 10px;
-              border-bottom: 1px solid #000;
-            }
-            .meta-row:last-child {
-              border:none;
-            }
-            .meta-label {
-              width: 50%;
-              font-weight: bold;
-            }
-            .meta-value {
-              width: 50%;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              
-            }
-            th, td {
-              border: 1px solid #000;
-              padding: 5px;
-              text-align: left;
-            }
-            th {
-              background-color: #f2f2f2;
-            }
-            .text-right {
-              text-align: right;
-            }
-            .text-center {
-              text-align: center;
-            }
-            .totals {
-              display: flex;
-              justify-content: space-between;
-            }
-              .totalCal{
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content:end;
-              border-left: 1px solid #000;
-              }
-            .total-quantity {
-              width: 50%;
-              padding: 10px;
-              // border-right: 1px solid #000;
-            }
-            .total-amount {
-            display: flex;
-            align-items: center;
-              width: 50%;
-              padding: 10px;
-              text-align: right;
-            }
-            .amount-in-words {
-              padding: 10px;
-              border-top: 1px solid #000;
-            
-            }
-            .footer {
-              display: flex;
-              border-top: 1px solid #000;
-            }
-            .declaration {
-              width: 50%;
-              padding: 10px;
-              border-right: 1px solid #000;
-            }
-            .bank-details {
-              width: 50%;
-              padding: 10px;
-            }
-            .signatures {
-              display: flex;
-              border-top: 1px solid #000;
-            }
-            .customer-signature {
-              width: 50%;
-              padding: 10px;
-              height: 80px;
-              border-right: 1px solid #000;
-            }
-            .company-signature {
-              width: 50%;
-              padding: 10px;
-              height: 80px;
-              text-align: right;
-            }
-            .page-footer {
-              text-align: center;
-              padding: 5px;
-              font-size: 10px;
-              border-top: 1px solid #000;
-            }
-              .border_rightFor_quantity{
-              border-right: 1px solid #000;
-              }
-            .gst_email{
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-            }
-              .emial_div{
-              text-align : right;
-              }
-          </style>
-        </head>
-        <body>
-          <div class="invoice-container">
-            <!-- Header -->
-            <div class="header">
-              <h1>${orgData.businessName}</h1>
-              <div class="company-details">
-                ${orgData.city}
-              </div>
-              
-              <div class="company-details">
-                ${orgData.state}, ${orgData.country}
-              </div>
-              <div class="gst_email">
-                  ${isTaxCompany ? (`<div class="gst_div">
-        GSTIN: ${orgData.gstin || ""}
-      </div>`) : ("")}
-                  <div class="email_div">
-                  Email: ${orgData.email}
-                </div>
-              </div>
-            </div>
-            <!-- Invoice Info -->
-            <div class="invoice-info">
-              <div class="customer-info">
-                <div><strong>Bill To</strong></div>
-                <div>${invoices.vendor.displayName}</div>
-                <div>${invoices.vendor.billingAddress.addressLine1}</div>
-                <div>Ph: ${invoices.vendor.phone}</div>
-                ${isTaxCompany ? (`<div>GSTIN: ${invoices.vendor.gstin || ''}</div>
-                <div>PAN: ${invoices.vendor.pan || ''}</div>`) : ("")
+     <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Invoice</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 50px 70px 10px;
+        padding: 0;
+        font-size: 12px;
       }
+      .invoice-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        border: 1px solid #000;
+      }
+      .header {
+        text-align: center;
+        padding: 10px;
+        border-bottom: 1px solid #000;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .company-details {
+        text-align: center;
+        margin-bottom: 5px;
+      }
+      .invoice-info {
+        display: flex;
+      }
+      .customer-info {
+        width: 50%;
+        padding: 10px;
+        border-right: 1px solid #000;
+      }
+      .invoice-meta {
+        width: 50%;
+      }
+      .meta-row {
+        display: flex;
+        padding: 10px;
+        border-bottom: 1px solid #000;
+      }
+      .meta-row:last-child {
+        border: none;
+      }
+      .meta-label {
+        width: 50%;
+        font-weight: bold;
+      }
+      .meta-value {
+        width: 50%;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th, td {
+        border: 1px solid #000;
+        padding: 5px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .text-right {
+        text-align: right;
+      }
+      .text-center {
+        text-align: center;
+      }
+      .totals {
+        display: flex;
+        justify-content: space-between;
+      }
+      .totalCal {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: flex-end;
+        width: 50%;
+      }
+      .total-quantity {
+        width: 100%;
+        padding: 10px;
+      }
+      .total-amount {
+        display: flex;
+        justify-content: end;
+        width: 100%;
+        padding: 10px;
+      }
+      .amount-in-words {
+        padding: 10px;
+        border-top: 1px solid #000;
+      }
+      .footer {
+        display: flex;
+        border-top: 1px solid #000;
+      }
+      .declaration {
+        width: 50%;
+        padding: 10px;
+        border-right: 1px solid #000;
+      }
+      .bank-details {
+        width: 50%;
+        padding: 10px;
+      }
+      .signatures {
+        display: flex;
+        border-top: 1px solid #000;
+      }
+      .customer-signature {
+        width: 50%;
+        padding: 10px;
+        height: 80px;
+        border-right: 1px solid #000;
+      }
+      .company-signature {
+        width: 50%;
+        padding: 10px;
+        height: 80px;
+        text-align: right;
+      }
+      .page-footer {
+        text-align: center;
+        padding: 5px;
+        font-size: 10px;
+        border-top: 1px solid #000;
+      }
+      .border_rightFor_quantity {
+        border-right: 1px solid #000;
+        width: 50%;
+      }
+      .gst_email {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .email_div {
+        text-align: right;
+      }
+      .gstType {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 5px 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="invoice-container">
+      <!-- Header -->
+      <div class="header">
+        <h1>${orgData.businessName}</h1>
+        <div class="company-details">
+          ${orgData.city}
+        </div>
 
-      <div> State: ${invoices.vendor.billingAddress.state || '--'}</div >
+        <div class="company-details">
+          ${orgData.state}, ${orgData.country}
+        </div>
+        <div class="gst_email">
+          ${isTaxCompany ?
+        `< div class="gst_div" >
+      GSTIN: ${orgData.gstin || ""}
+            </div > ` :
+        ""}
+          <div class="email_div">
+            Email: ${orgData.email}
+          </div>
+        </div>
+      </div>
+      <!-- Invoice Info -->
+      <div class="invoice-info">
+        <div class="customer-info">
+          <div><strong>Bill To</strong></div>
+          <div>${invoices.vendor.displayName}</div>
+          <div>${invoices.vendor.billingAddress.addressLine1}</div>
+          <div>Ph: ${invoices.vendor.phone}</div>
+          ${isTaxCompany ?
+        `< div > GSTIN: ${invoices.vendor.gstin || ''}</div >
+  <div>PAN: ${invoices.vendor.pan || ''}</div>` :
+        ""}
+          <div>State: ${invoices.vendor.billingAddress.state || '--'}</div>
+        </div>
+        <div class="invoice-meta">
+          <div class="meta-row">
+            <div class="meta-label">Invoice No:</div>
+            <div class="meta-value">${invoices.purchaseOrderNumber}</div>
+          </div>
+          <div class="meta-row">
+            <div class="meta-label">Invoice Date:</div>
+            <div class="meta-value">${invoices.purchaseDate}</div>
+          </div>
+          <div class="meta-row">
+            <div class="meta-label">Ship To:</div>
+            <div class="meta-value">${invoices.vendor.shippingAddress.addressLine1}</div>
+          </div>
+          <div class="meta-row">
+            <div class="meta-label">Terms Of Delivery:</div>
+            <div class="meta-value">${invoices.terms}</div>
+          </div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>S.NO</th>
+            <th>Description of goods</th>
+            <th>HSN/SAC</th>
+            <th>Quantity</th>
+            <th>Rate</th>
+            ${isTaxCompany ? `< th > Tax %</th > ` : ""}
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${invoices.items.map((item, index) => {
+          const itemTotal = Number(item.purchasePrice) * Number(item.quantity);
+          return `
+  <tr>
+                <td>${index + 1}</td>
+                <td>${item.itemName}</td>
+                <td>${item.itemHsn}</td>
+                <td>${item.quantity}</td>
+                <td class="text-right">${item.purchasePrice.toFixed(2)}</td>
+                ${isTaxCompany ?
+              (isSameState ?
+                `<td>${item.interStateTax}</td>` :
+                `<td>${item.intraStateTax}</td>`) :
+              ""
+            }
+<td class="text-right">${itemTotal.toFixed(2)}</td>
+              </tr >
+  `;
+        }).join('')}
+        </tbody>
+      </table>
+      
+      <!--Totals -->
+      <div class="totals">
+        <div class='border_rightFor_quantity'>
+          <div class="total-quantity">
+            Total Quantity: ${totalQTY}
+          </div>
+          <div class="amount-in-words">
+            <div><strong>Amount Chargeable (In Words)</strong></div>
+            <div>${numberToWords(Number(subTotal) + Number(allTaxTotal) - Number(subTotal * (Number(invoices.discountInput) / 100)) + Number(invoices.adjustmentInput) || 0)}</div>
+          </div>
+        </div>
+        <div class="totalCal">
+          <div class="total-amount">
+            <div>SubTotal:</div>
+            <div>${subTotal}</div>
+          </div>
+
+          ${isTaxCompany ?
+        Object.entries(taxSummary).map(([rate, totalTax]) => `
+  < div >
+${isSameState ? `
+                  <div>
+                    <div class="gstType">
+                      <div>SGST (${rate}%):</div>
+                      <div>${(totalTax / 2).toFixed(2)}</div>
+                    </div>
+                    <div class="gstType">
+                      <div>CGST (${rate}%):</div>
+                      <div>${(totalTax / 2).toFixed(2)}</div>
+                    </div>
+                  </div>` :
+            `<div class="gstType">
+                    <div>IGST (${rate}%):</div>
+                    <div>${totalTax.toFixed(2)}</div>
+                  </div>`}
               </div >
-  <div class="invoice-meta">
-    <div class="meta-row">
-      <div class="meta-label">Invoice No:</div>
-      <div class="meta-value">${invoices.purchaseOrderNumber}</div>
-    </div>
-    <div class="meta-row">
-      <div class="meta-label">Invoice Date:</div>
-      <div class="meta-value">${invoices.purchaseDate}</div>
-    </div>
-    <div class="meta-row">
-      <div class="meta-label">Ship To:</div>
-      <div class="meta-value">${invoices.vendor.shippingAddress.addressLine1}</div>
-    </div>
-    <div class="meta-row">
-      <div class="meta-label">Terms Of Delivery:</div>
-      <div class="meta-value">${invoices.terms}</div>
-    </div>
+  `).join('') :
+        ""}
 
-  </div>
-            </div >
-            <table>
-              <thead>
-                <tr>
-                  <th>S.NO</th>
-                  <th>Description of goods</th>
-                  <th>HSN/SAC</th>
-                  <th>Quantity</th>
-                  <th>Rate</th>
-                  ${isTaxCompany ? (`<th>Tax %</th>`) : ("")}
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${invoices.items.map((item, index) => {
-        const itemTotal = Number(item.purchasePrice) * Number(item.quantity)
-        return (`
-                  <tr>
-                    <td>${index + 1}</td>
-                    <td>${item.itemName}</td>
-                    <td>${item.itemHsn}</td>
-                    <td>${item.quantity}</td>
-                    <td class="text-right">${item.purchasePrice.toFixed(2)}</td>
-                    ${isTaxCompany ? (isSameState ? (`<td>${item.interStateTax}</td>`) : (`<td>${item.intraStateTax}</td>`)) : ("")}
-            <td class="text-right">${itemTotal.toFixed(2)}</td>
-                  </tr>
-                `)
-      }).join('')}
-              </tbody>
-            </table>
-            
-            <!--Totals -->
-            <div class="totals">
-<div class='border_rightFor_quantity'>
-              <div class="total-quantity">
-                Total Quantity : ${totalQTY}
-              </div>
-               <div class="amount-in-words">
-              <div><strong>Amount Chargeable (In Words)</strong></div>
-              <div>${numberToWords(Number(subTotal) + Number(allTaxTotal) - Number(subTotal * (Number(invoices.discountInput) / 100)) + Number(invoices.adjustmentInput) || 0)}</div>
-            </div>
-              </div>
-              <div class="totalCal">
-              <div class="total-amount">
-                SubTotal  :  ${subTotal}
-              </div>
+          <div class="total-amount">
+            <div><strong>Total Amount:</strong></div>
+            <div><strong>${(Number(subTotal) + Number(allTaxTotal)).toFixed(2)}</strong></div>
+          </div>
+        </div>
+      </div>
+      <!--Footer -->
+      <div class="footer">
+        <div class="declaration">
+          <div><strong>Declaration:</strong></div>
+          <div>${invoiceData.declaration}</div>
+        </div>
+        <div class="bank-details">
+          <div><strong>Company's Bank Details:</strong></div>
+          <div>Account Holders Name: ${orgData.businessName || "--"}</div>
+          <div>Bank Name: ${orgData.businessName || "--"}</div>
+          <div>A/c No: ${orgData.accountNumber || "--"}</div>
+          <div>IFSC Code: ${orgData.ifscCode || "--"}</div>
+          <div>Branch: ${orgData.city || "--"}</div>
+        </div>
+      </div>
 
-              ${isTaxCompany ? (Object.entries(taxSummary).map(([rate, totalTax]) => (`
-                  <div >
-                    ${isSameState ? (`
-                      <div>
-                        <div class="gstType">
-                          <div class="">SGST (${rate}%):</div>
-                          <div class="">${(totalTax / 2).toFixed(2)}</div>
-                        </div>
-                        <div class="gstType">
-                          <div class="">CGST (${rate}%):</div>
-                          <div class="">${(totalTax / 2).toFixed(2)}</div>
-                        </div>
-                      </div>`
-        ) : (`
-                      <div class="gstType">
-                        <div class="">IGST (${rate}%):</div>
-                        <div class="">${totalTax.toFixed(2)}</div>
-                      </div>`
-        )}
-                  </div>
-                `))
-      ) : ("")}
-  
-               <div class="total-amount">
-                <strong>Total Amount : ${Number(subTotal) + Number(allTaxTotal).toFixed(2)}</strong>
-              </div>
-            </div>
-            </div>
-            <!--Footer -->
-            <div class="footer">
-              <div class="declaration">
-                <div><strong>Declaration:</strong></div>
-                <div>${invoiceData.declaration}</div>
-              </div>
-              <div class="bank-details">
-                <div><strong>Company's Bank Details:</strong></div>
-                <div>Account Holders Name : ${orgData.businessName}</div>
-                <div>Bank Name : ${orgData.businessName}</div>
-                <div>A/c No : ${orgData.accountNumber}</div>
-                <div>IFSC Code : ${orgData.ifscCode}</div>
-                <div>Branch : ${orgData.city}</div>
-              </div>
-            </div>
-            
-            <!--Signatures -->
-            <div class="signatures">
-              <div class="customer-signature">
-                <div>Customer Signature and Seal</div>
-              </div>
-              <div class="company-signature">
-                <div style="margin-top: 60px;">Authorized Signature</div>
-              </div>
-            </div>
-            
-            <!--Page Footer-- >
-            < !-- < div class="page-footer" >
-  Powered By Portstay
-            </div > -->
-          </div >
-        </body >
-      </html >
+      <!--Signatures -->
+      <div class="signatures">
+        <div class="customer-signature">
+          <div>Customer Signature and Seal</div>
+        </div>
+        <div class="company-signature">
+          <div style="margin-top: 60px;">Authorized Signature</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
   `;
   };
 

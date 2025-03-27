@@ -60,6 +60,7 @@ export default function EditItemForm({ route }) {
             const data = await response.text(); // Because API returns ResponseEntity<String>
             if (response.ok) {
                 Alert.alert("Sucess", "Item updated Successfully");
+                navigation.navigate('ItemScreen')
             }
             else {
                 Alert.alert("Error", "Failed to update Item details");

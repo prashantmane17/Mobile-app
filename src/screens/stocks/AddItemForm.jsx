@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Text, TextInput, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, ScrollView, Text, TextInput, TouchableOpacity, SafeAreaView, Image, Alert } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
@@ -43,9 +43,14 @@ export default function AddItemForm() {
                 headers: {}
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+            if (response.ok) {
+                Alert.alert("Sucess", "Item created Successfully");
+                navigation.navigate('ItemScreen')
             }
+            else {
+                Alert.alert("error", "Failed to created Item");
+            }
+
             const savedItem = await response.json();
         } catch (error) {
             console.error("Error saving item:", error);

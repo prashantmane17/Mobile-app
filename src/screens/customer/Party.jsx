@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 // import { Checkbox } from 'react-native-paper';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { TextInput } from 'react-native-gesture-handler';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { deleteCustomer, getAllCustomers } from '../../api/user/customer';
 import { useTax } from '../../context/TaxContext';
 
@@ -37,10 +37,10 @@ export default function CustomerList() {
             setLoading(false)
         }
     };
-
-    useEffect(() => {
-        customerData();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            customerData();
+        }, []));
     const onRefresh = async () => {
         setRefreshing(true);
         await customerData();

@@ -106,30 +106,20 @@ export default function InvoiceCards() {
                         </Text>
                     </View>
 
-                    <View className="flex-row items-center  text-black rounded-md px-2 py-2">
+                    <View className="flex-row items-center text-black rounded-md px-2 py-2  ">
                         <Text className="text-sm text-gray-600 mr-2">Show:</Text>
-                        <DropDownPicker
-                            open={open}
-                            value={value}
-                            items={items}
-                            setOpen={setOpen}
-                            setValue={setValue}
-                            setItems={setItems}
-                            containerStyle={{ width: 80, zIndex: 1000 }}
-                            style={{
-                                borderColor: '#ccc',
-                                height: 35, // Reduced height
-                                minHeight: 35,
-                            }}
-                            dropDownContainerStyle={{
-                                borderColor: '#ccc',
-                                zIndex: 2000, // Even higher zIndex for dropdown
-                                maxHeight: 120, // Control dropdown list height
-                            }}
-                            textStyle={{ fontSize: 14 }} // Adjust font size if needed
-                        />
+                        <View className="border border-gray-300 rounded-md w-16">
+                            <Picker
+                                selectedValue={value}
+                                onValueChange={(itemValue) => setValue(itemValue)}
+                                className="flex-1 h-[35px] text-sm "
+                            >
+                                {items.map((item) => (
+                                    <Picker.Item key={item.value} label={item.label} value={item.value} />
+                                ))}
+                            </Picker>
 
-
+                        </View>
                     </View>
                 </View>
             </View>

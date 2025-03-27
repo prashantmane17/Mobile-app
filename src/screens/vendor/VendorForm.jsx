@@ -116,6 +116,7 @@ export default function VendorForm() {
                 const result = await response.json();
                 setFormData(intialData)
                 Alert.alert('Success', "Vendor Created Successfully");
+                navigation.navigate('Vendor')
             } else {
                 const errorText = await response.text();
                 console.error("Error saving party:", errorText);

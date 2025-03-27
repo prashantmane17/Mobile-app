@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Alert, RefreshControl } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { TextInput } from 'react-native-gesture-handler';
 import { deleteVendor, getAllVendors } from '../../api/user/vendor';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 
 export default function VendorScreen() {
@@ -31,10 +31,10 @@ export default function VendorScreen() {
             console.error("Error fetching Vendors:", error);
         }
     };
-
-    useEffect(() => {
-        vendorData();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            vendorData();
+        }, []));
 
     const onRefresh = async () => {
         setRefreshing(true);
